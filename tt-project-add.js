@@ -13,20 +13,20 @@ commander
     })
     .parse(process.argv);
 
-if ( !projectName ) {
+if ( projectName ) {
+  performProjectUpdate(projectName);  
+} else {
   inquirer.prompt([
     {
       name:'projectName',
       type:'String',
-      message:'Please enter the new project name',
+      message:'Please enter the new project name:',
     }
   ]).then((answer) => {
-    // console.log(JSON.stringify(answer));
+    // console.log(JSON.stringify(answer,null,'  '));
     projectName = answer.projectName;
     performProjectUpdate(projectName);  
   });
-} else {
-  performProjectUpdate(projectName);  
 }
 
 function performProjectUpdate(projectName) {

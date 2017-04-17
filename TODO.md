@@ -1,0 +1,36 @@
+# TODOs
+
+- [ ] Get Mongo Connection Included
+    - [ ] Mongoose
+    - [ ] Mongoose Models
+        - [ ] Project
+        - [ ] TimeType
+        - [ ] TimeEntry
+- [ ] Project Management
+    - [ ] Add
+    - [ ] List
+    - [ ] Remove
+- [ ] Time Type
+    - [ ] Add
+    - [ ] List
+    - [ ] Remove
+- [ ] Other Data Elements
+    - [ ] Waste (bool/checkbox)
+    - [ ] Dates
+    - [ ] Time
+    - [ ] Notes
+- [ ] Time entries
+    - [ ] Add
+        - [ ] Full Command Line
+        - [ ] UI
+            - [ ] List of projects
+            - [ ] List of time types
+            - [ ] Data entry for other elements
+    - [ ] List
+    - [ ] Edit
+        - [ ] Display List
+        - [ ] Enter the Edit screen with defaults from existing record
+    - [ ] Remove
+        - [ ] Display List as radio selection
+        - [ ] delete those selected upon confirm
+- [ ] Determine how to do colored table-based output
