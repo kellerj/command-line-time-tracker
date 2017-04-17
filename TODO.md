@@ -1,13 +1,9 @@
 # TODOs
 
 - [ ] Get Mongo Connection Included
-    - [ ] Mongoose
-    - [ ] Mongoose Models
-        - [ ] Project
-        - [ ] TimeType
-        - [ ] TimeEntry
 - [ ] Project Management
-    - [ ] Add
+    - [x] Add
+        - [x] Disallow insert of duplicate (case insensitive?)
     - [ ] List
     - [ ] Remove
 - [ ] Time Type
@@ -34,3 +30,5 @@
         - [ ] Display List as radio selection
         - [ ] delete those selected upon confirm
 - [ ] Determine how to do colored table-based output
+- [ ] Add all other "binaries"
+- [ ] Add ESLint to project
