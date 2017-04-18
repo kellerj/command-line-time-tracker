@@ -6,6 +6,9 @@
         - [x] Disallow insert of duplicate (case insensitive?)
     - [x] List
     - [ ] Remove
+    - [ ] Rename
+        - [ ] Display list of projects for selection
+        - [ ] Allow entry of new name
 - [ ] Time Type
     - [ ] Add
     - [ ] List
