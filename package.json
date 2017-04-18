@@ -15,12 +15,14 @@
     "chalk": "^1.1.3",
     "co": "^4.6.0",
     "commander": "^2.9.0",
+    "easy-table": "^1.1.0",
     "inquirer": "^3.0.6",
     "mongodb": "^2.2.25"
   },
   "bin": {
     "tt": "./tt.js",
     "tt-project": "./tt-project.js",
-    "tt-project-add": "./tt-project-add.js"
+    "tt-project-add": "./tt-project-add.js",
+    "tt-project-ls": "./tt-project-ls.js"
   }
 }
