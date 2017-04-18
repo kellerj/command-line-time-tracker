@@ -1,6 +1,6 @@
 # TODOs
 
-- [ ] Get Mongo Connection Included
+- [x] Get Mongo Connection Included
 - [ ] Project Management
     - [x] Add
         - [x] Disallow insert of duplicate (case insensitive?)
@@ -29,6 +29,6 @@
     - [ ] Remove
         - [ ] Display List as radio selection
         - [ ] delete those selected upon confirm
-- [ ] Determine how to do colored table-based output
-- [ ] Add all other "binaries"
-- [ ] Add ESLint to project
+- [x] Determine how to do colored table-based output
+- [ ] Add "binaries" for all sub-commands
+- [x] Add ESLint to project
