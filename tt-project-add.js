@@ -48,7 +48,7 @@ if (inputProjectName) {
   inquirer.prompt([
     {
       name: 'projectName',
-      type: 'String',
+      type: 'input',
       message: 'Please enter the new project name:',
     },
   ]).then((answer) => {
