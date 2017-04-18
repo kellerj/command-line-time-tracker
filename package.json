@@ -4,9 +4,7 @@
   "description": "Time Tracker Command Line Tool",
   "main": "tt.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "tt": "tt",
-    "ttp": "tt-project"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jonathan Keller <keller.jonathan@gmail.com>",
   "license": "ISC",

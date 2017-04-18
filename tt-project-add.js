@@ -19,7 +19,7 @@ commander
     .parse(process.argv);
 
 if ( projectName ) {
-  performProjectUpdate(projectName);  
+  performProjectUpdate(projectName);
 } else {
   inquirer.prompt([
     {
@@ -30,19 +30,16 @@ if ( projectName ) {
   ]).then((answer) => {
     // console.log(JSON.stringify(answer,null,'  '));
     projectName = answer.projectName;
-    performProjectUpdate(projectName);  
+    performProjectUpdate(projectName);
   });
 }
 
 function performProjectUpdate(projectName) {
   //console.log(`Request to add project "${projectName}"`)
   co(function*() {
-    // Connection URL
-    var url = config.db.url;
-    // Use connect method to connect to the Server
-    var db = yield MongoClient.connect(url);
+    const db = yield MongoClient.connect(config.db.url);
     // console.log('Connection opened to: ' + url);
-    
+
     const collection = db.collection('projects');
     let r = yield collection.findOne({ name: { $regex : `^${projectName}$`, $options: 'i' } });
     // console.log(JSON.stringify(r));
@@ -53,11 +50,10 @@ function performProjectUpdate(projectName) {
       assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the project.'));
       console.log(chalk.green('Project ' + chalk.white.bold(projectName) + ' added'))
     }
-    
+
     // Close the connection
     db.close();
   }).catch(function(err) {
     console.log(chalk.bgRed(err.stack));
   });
-
 }
