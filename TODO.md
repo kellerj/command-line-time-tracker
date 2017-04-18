@@ -4,7 +4,7 @@
 - [ ] Project Management
     - [x] Add
         - [x] Disallow insert of duplicate (case insensitive?)
-    - [ ] List
+    - [x] List
     - [ ] Remove
 - [ ] Time Type
     - [ ] Add

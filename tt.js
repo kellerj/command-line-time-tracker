@@ -9,4 +9,3 @@ commander
     .command('project <subCommand> [otherArguments]', 'Work with project definition.')
     .command('timetype <subCommand> [otherArguments]', 'Work with type type definitions.')
     .parse(process.argv);
-    

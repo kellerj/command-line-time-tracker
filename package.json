@@ -4,7 +4,8 @@
   "description": "Time Tracker Command Line Tool",
   "main": "tt.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "eslint": "eslint"
   },
   "author": "Jonathan Keller <keller.jonathan@gmail.com>",
   "license": "ISC",
@@ -22,5 +23,12 @@
     "tt-project": "./tt-project.js",
     "tt-project-add": "./tt-project-add.js",
     "tt-project-ls": "./tt-project-ls.js"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3"
   }
 }
