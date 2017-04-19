@@ -5,10 +5,10 @@
     - [x] Add
         - [x] Disallow insert of duplicate (case insensitive?)
     - [x] List
-    - [ ] Remove
+    - [x] Remove
         - [x] Display list of projects for selection
-        - [ ] handle name list if given on command line
-        - [ ] output results of deletion
+        - [x] handle name list if given on command line
+        - [x] output results of deletion
     - [ ] Rename
         - [ ] Display list of projects for selection
         - [ ] Allow entry of new name
