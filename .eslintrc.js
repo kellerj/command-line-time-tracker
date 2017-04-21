@@ -3,5 +3,6 @@ module.exports = {
   rules: {
     "no-console": "off",
     "spaced-comment": "off",
+    "no-underscore-dangle": "off"
   }
 }
