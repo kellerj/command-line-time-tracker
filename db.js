@@ -5,6 +5,10 @@ const chalk = require('chalk');
 
 module.exports = {
   project: {
+    /**
+     * Get all project entries.
+     * Generator function - must be used with co module or next().value.
+     */
     * getAll() {
       const db = yield MongoClient.connect(config.db.url);
       const collection = db.collection('projects');
@@ -14,6 +18,11 @@ module.exports = {
 
       return r;
     },
+
+    /**
+     * Insert the given project into the database.  Return false if the project
+     * aready exists.  Comparison is case-insensitive.
+     */
     * insert(projectName) {
       const db = yield MongoClient.connect(config.db.url);
       const collection = db.collection('projects');
@@ -29,6 +38,23 @@ module.exports = {
       assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the project.'));
 
       return true;
+    },
+
+    * remove(projectName) {
+      const db = yield MongoClient.connect(config.db.url);
+      const collection = db.collection('projects');
+
+      const r = yield collection.findAndRemove({ name: projectName });
+      // console.log(JSON.stringify(r));
+      if (r && r.ok === 1 && r.value !== null) {
+        db.close();
+        return true;
+      } else if (r && r.ok !== 1) {
+        console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(r)}`));
+      }
+
+      db.close();
+      return false;
     },
   },
 };

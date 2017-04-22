@@ -6,20 +6,17 @@ const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
 
-let inputProjectName = '';
-
 commander
     .version('1.0.0')
     .description('Add a time tracking project to the database')
     .arguments('<projectName>')
-    .action((pn) => {
-      inputProjectName = pn;
-    })
     .parse(process.argv);
 
+const inputProjectName = commander.args.join(' ');
+
 function performProjectUpdate(projectName) {
-  // console.log(`Request to add project "${projectName}"`)
   co(function* run() {
+    // console.log(`Request to add project "${projectName}"`)
     const insertSuceeded = yield* db.project.insert(projectName);
     if (insertSuceeded) {
       console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));

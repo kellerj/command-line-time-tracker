@@ -1,45 +1,35 @@
 #!/usr/bin/env node
 
-const MongoClient = require('mongodb').MongoClient;
 const commander = require('commander');
 const inquirer = require('inquirer');
 const co = require('co');
-// const assert = require('assert');
-const config = require('./config');
+const db = require('./db');
 const chalk = require('chalk');
 
 commander
     .version('1.0.0')
-    .arguments('[projectName...]', 'Remove time tracking projects from the database')
+    .arguments('[projectName]', 'Remove time tracking projects from the database')
     .parse(process.argv);
 
-const inputProjectNames = commander.args;
+const inputProjectName = commander.args.join(' ');
 
 function* removeProjects(projectNames) {
-  const db = yield MongoClient.connect(config.db.url);
-  const collection = db.collection('projects');
-
   // console.log(JSON.stringify(projectNames));
   for (let i = 0; i < projectNames.length; i += 1) {
     // console.log(`Deleting ${projectNames[i]}`);
-    const r2 = yield collection.findAndRemove({ name: projectNames[i] });
-    // console.log(JSON.stringify(r2));
-    if (r2 && r2.ok === 1 && r2.value !== null) {
+    const wasDeleted = yield db.project.remove(projectNames[i]);
+    if (wasDeleted) {
       console.log(chalk.green(`Project ${chalk.white(projectNames[i])} Removed`));
     } else {
       // console.log(chalk.red(JSON.stringify(r2)));
       console.log(chalk.red(`Project ${chalk.white(projectNames[i])} Not Present In database`));
     }
   }
-  db.close();
 }
 
-if (inputProjectNames.length === 0) {
+if (inputProjectName === '') {
   co(function* run() {
-    const db = yield MongoClient.connect(config.db.url);
-    const collection = db.collection('projects');
-    const r = yield collection.find({}, { _id: 0 }).sort({ name: 1 }).toArray();
-    db.close();
+    const r = yield db.project.getAll();
     if (r) {
       // console.log(JSON.stringify(r));
       const answer = yield inquirer.prompt([
@@ -56,6 +46,5 @@ if (inputProjectNames.length === 0) {
     }
   });
 } else {
-  co(removeProjects(inputProjectNames));
+  co(removeProjects([inputProjectName]));
 }
-

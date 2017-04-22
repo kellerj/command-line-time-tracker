@@ -1,19 +1,18 @@
 # TODOs
 
 - [x] Get Mongo Connection Included
-- [ ] Project Management
+- [x] Project Management
     - [x] Add
         - [x] Disallow insert of duplicate (case insensitive?)
+        - [x] Change command line to use all remaining words as a single project name
     - [x] List
     - [x] Remove
         - [x] Display list of projects for selection
         - [x] handle name list if given on command line
         - [x] output results of deletion
-    - [ ] Rename
-        - [ ] Display list of projects for selection
-        - [ ] Allow entry of new name
-        - [ ] Command line old name / new name parameters
+        - [x] Change command line to use all remaining words as a single project name
 - [ ] Time Type
+    - [ ] Command base file
     - [ ] Add
     - [ ] List
     - [ ] Remove
@@ -39,3 +38,12 @@
 - [x] Determine how to do colored table-based output
 - [ ] Add "binaries" for all sub-commands
 - [x] Add ESLint to project
+
+
+## Phase 2 Work
+
+- [ ] Project Maintenance
+    - [ ] Rename
+        - [ ] Display list of projects for selection
+        - [ ] Allow entry of new name
+        - [ ] Command line old name / new name parameters
