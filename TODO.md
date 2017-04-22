@@ -12,7 +12,7 @@
         - [x] output results of deletion
         - [x] Change command line to use all remaining words as a single project name
 - [ ] Time Type
-    - [ ] Command base file
+    - [x] Command base file
     - [ ] Add
     - [ ] List
     - [ ] Remove
