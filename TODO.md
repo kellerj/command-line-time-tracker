@@ -11,11 +11,11 @@
         - [x] handle name list if given on command line
         - [x] output results of deletion
         - [x] Change command line to use all remaining words as a single project name
-- [ ] Time Type
+- [x] Time Type
     - [x] Command base file
-    - [ ] Add
-    - [ ] List
-    - [ ] Remove
+    - [x] Add
+    - [x] List
+    - [x] Remove
 - [ ] Other Data Elements
     - [ ] Waste (bool/checkbox)
     - [ ] Dates
@@ -47,3 +47,9 @@
         - [ ] Display list of projects for selection
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
+- [ ] Time Type Categories
+    - [ ] Add
+    - [ ] ls
+    - [ ] Remove
+    - [ ] Assign
+        - [ ] Display list of all time types with pre-selected radio buttons

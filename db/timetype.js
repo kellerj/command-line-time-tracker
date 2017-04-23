@@ -3,7 +3,7 @@ const config = require('./config');
 const assert = require('assert');
 const chalk = require('chalk');
 
-const collectionName = 'projects';
+const collectionName = 'timetype';
 
 module.exports = {
   /**

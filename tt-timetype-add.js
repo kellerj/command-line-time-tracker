@@ -8,37 +8,37 @@ const chalk = require('chalk');
 
 commander
     .version('1.0.0')
-    .description('Add a time tracking project to the database')
-    .arguments('<projectName>')
+    .description('Add a time type to the database')
+    .arguments('<timeType>')
     .parse(process.argv);
 
-const inputProjectName = commander.args.join(' ');
+const inputName = commander.args.join(' ');
 
-function performProjectUpdate(projectName) {
+function performUpdate(timeTypeName) {
   co(function* run() {
-    // console.log(`Request to add project "${projectName}"`)
-    const insertSuceeded = yield* db.project.insert(projectName);
+    // console.log(`Request to add timeType "${timeTypeName}"`)
+    const insertSuceeded = yield* db.timetype.insert(timeTypeName);
     if (insertSuceeded) {
-      console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
+      console.log(chalk.green(`Time Type ${chalk.white.bold(timeTypeName)} added`));
     } else {
-      console.log(chalk.bgRed(`Project ${chalk.yellow.bold(projectName)} already exists.`));
+      console.log(chalk.bgRed(`Time Type ${chalk.yellow.bold(timeTypeName)} already exists.`));
     }
   }).catch((err) => {
     console.log(chalk.bgRed(err.stack));
   });
 }
 
-if (inputProjectName) {
-  performProjectUpdate(inputProjectName);
+if (inputName) {
+  performUpdate(inputName);
 } else {
   inquirer.prompt([
     {
-      name: 'projectName',
+      name: 'timeTypeName',
       type: 'input',
-      message: 'Please enter the new project name:',
+      message: 'Please enter the new time type name:',
     },
   ]).then((answer) => {
     // console.log(JSON.stringify(answer,null,'  '));
-    performProjectUpdate(answer.projectName);
+    performUpdate(answer.timeTypeName);
   });
 }
