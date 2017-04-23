@@ -42,6 +42,9 @@
 
 ## Phase 2 Work
 
+- [ ] Export Function
+    - [ ] JSON
+    - [ ] CSV?
 - [ ] Project Maintenance
     - [ ] Rename
         - [ ] Display list of projects for selection
