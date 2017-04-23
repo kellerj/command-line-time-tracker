@@ -28,13 +28,23 @@
             - [ ] List of projects
             - [ ] List of time types
             - [ ] Data entry for other elements
+                - [ ] Amount of Time
+                - [ ] WasUseless
+        - [ ] Compute # minutes since last entry added as default for time
     - [ ] List
+        - [ ] Defaulting Today
+        - [ ] Date Parameter Support
+        - [ ] Date Range Support
     - [ ] Edit
         - [ ] Display List
         - [ ] Enter the Edit screen with defaults from existing record
     - [ ] Remove
         - [ ] Display List as radio selection
         - [ ] delete those selected upon confirm
+    - [ ] Summaries
+        - [ ] Total by Time Type
+        - [ ] Total by Project
+        - [ ] Grid...time type and project?
 - [x] Determine how to do colored table-based output
 - [ ] Add "binaries" for all sub-commands
 - [x] Add ESLint to project
