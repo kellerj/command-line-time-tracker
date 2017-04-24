@@ -2,8 +2,8 @@
 
 const commander = require('commander');
 const inquirer = require('inquirer');
-// const co = require('co');
-// const db = require('./db');
+const co = require('co');
+const db = require('./db');
 // const chalk = require('chalk');
 
 commander
@@ -12,7 +12,7 @@ commander
     .usage('[options] [entryDescription]')
     .option('-t, --time <min>', 'Minutes spent', parseInt)
     .option('-y, --type <timeType>')
-    .arguments('<projectName>')
+    .option('-p, --project <projectName>')
     .parse(process.argv);
 
 const entryDescription = commander.args.join(' ');
@@ -31,27 +31,40 @@ const entryDescription = commander.args.join(' ');
   // });
 // }
 
-inquirer.prompt([
-  {
-    name: 'entryDescription',
-    type: 'input',
-    message: 'Entry Description:',
-    default: entryDescription,
-    when: () => (entryDescription === ''),
-  },
-  {
-    name: 'minutes',
-    type: 'input',
-    message: 'Minutes:',
-    default: 60,
-    validate: (val) => {
-      if (Number.isNaN(val)) {
-        return 'Invalid Integer';
-      }
-      return true;
+function* run() {
+  const projects = yield* db.project.getAll();
+
+  inquirer.prompt([
+    {
+      name: 'entryDescription',
+      type: 'input',
+      message: 'Entry Description:',
+      default: entryDescription,
+      filter: input => (input || entryDescription),
+      when: () => (entryDescription === ''),
     },
-  },
-]).then((answer) => {
-  console.log(JSON.stringify(answer, null, '  '));
-  //performProjectUpdate(answer.projectName);
-});
+    {
+      name: 'project',
+      type: 'list',
+      message: 'Project:',
+      choices: projects.map(item => (item.name)),
+    },
+    {
+      name: 'minutes',
+      type: 'input',
+      message: 'Minutes:',
+      default: 60,
+      validate: (val) => {
+        if (Number.isNaN(val)) {
+          return 'Invalid Integer';
+        }
+        return true;
+      },
+    },
+  ]).then((answer) => {
+    console.log(JSON.stringify(answer, null, '  '));
+    //performProjectUpdate(answer.projectName);
+  });
+}
+
+co(run);

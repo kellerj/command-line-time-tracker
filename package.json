@@ -1,5 +1,5 @@
 {
-  "name": "tt",
+  "name": "command-line-time-tracker",
   "version": "1.0.0",
   "description": "Time Tracker Command Line Tool",
   "main": "tt.js",
@@ -30,9 +30,9 @@
   },
   "devDependencies": {
     "eslint": "^3.19.0",
-    "eslint-config-airbnb": "^14.1.0",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-react": "^6.10.3"
+    "eslint-config-airbnb": "14.1.x",
+    "eslint-plugin-import": "2.2.x",
+    "eslint-plugin-jsx-a11y": "4.0.x",
+    "eslint-plugin-react": "6.10.x"
   }
 }

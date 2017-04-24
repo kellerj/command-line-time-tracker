@@ -1,21 +1,25 @@
 # TODOs
 
+## Phase 1
+
 - [x] Get Mongo Connection Included
-- [x] Project Management
+- [ ] Project Management
     - [x] Add
         - [x] Disallow insert of duplicate (case insensitive?)
         - [x] Change command line to use all remaining words as a single project name
     - [x] List
-    - [x] Remove
+    - [ ] Remove
         - [x] Display list of projects for selection
         - [x] handle name list if given on command line
         - [x] output results of deletion
         - [x] Change command line to use all remaining words as a single project name
-- [x] Time Type
+        - [ ] Add confirmation question before remove
+- [ ] Time Type
     - [x] Command base file
     - [x] Add
     - [x] List
-    - [x] Remove
+    - [ ] Remove
+        - [ ] Add confirmation question before remove
 - [ ] Other Data Elements
     - [ ] Waste (bool/checkbox)
     - [ ] Dates
@@ -23,13 +27,15 @@
     - [ ] Notes
 - [ ] Time entries
     - [ ] Add
-        - [ ] Full Command Line
+        - [ ] Full Command Line ??
         - [ ] UI
             - [ ] List of projects
             - [ ] List of time types
             - [ ] Data entry for other elements
                 - [ ] Amount of Time
-                - [ ] WasUseless
+                    - [ ] Numeric Validation
+                    - [ ] Range validation (> 0, <= 8 hours)
+                - [ ] WasUseless (boolean)
         - [ ] Compute # minutes since last entry added as default for time
     - [ ] List
         - [ ] Defaulting Today
@@ -50,7 +56,7 @@
 - [x] Add ESLint to project
 
 
-## Phase 2 Work
+## Phase 2
 
 - [ ] Export Function
     - [ ] JSON
