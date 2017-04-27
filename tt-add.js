@@ -33,14 +33,20 @@ const entryDescription = commander.args.join(' ');
 
 function* run() {
   const projects = yield* db.project.getAll();
+  const timeTypes = yield* db.timetype.getAll();
 
   inquirer.prompt([
     {
       name: 'entryDescription',
       type: 'input',
       message: 'Entry Description:',
-      default: entryDescription,
-      filter: input => (input || entryDescription),
+      filter: input => (input.trim()),
+      validate: (input) => {
+        if (!input) {
+          return 'description is required';
+        }
+        return true;
+      },
       when: () => (entryDescription === ''),
     },
     {
@@ -50,6 +56,12 @@ function* run() {
       choices: projects.map(item => (item.name)),
     },
     {
+      name: 'timeType',
+      type: 'list',
+      message: 'Type of Type:',
+      choices: timeTypes.map(item => (item.name)),
+    },
+    {
       name: 'minutes',
       type: 'input',
       message: 'Minutes:',
@@ -57,11 +69,25 @@ function* run() {
       validate: (val) => {
         if (Number.isNaN(val)) {
           return 'Invalid Integer';
+        } else if (Number.parseInt(val, 10) < 1) {
+          return 'Time must be positive';
+        } else if (Number.parseInt(val, 10) > 8 * 60) {
+          return 'Time must be <= 8 hours';
         }
         return true;
       },
+      filter: val => (Number.parseInt(val, 10)),
+    },
+    {
+      name: 'wasteOfTime',
+      type: 'confirm',
+      message: 'Waste of Time?',
+      default: false,
     },
   ]).then((answer) => {
+    if (!answer.entryDescription) {
+      answer.entryDescription = entryDescription.trim();
+    }
     console.log(JSON.stringify(answer, null, '  '));
     //performProjectUpdate(answer.projectName);
   });

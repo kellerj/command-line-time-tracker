@@ -29,14 +29,16 @@
     - [ ] Add
         - [ ] Full Command Line ??
         - [ ] UI
-            - [ ] List of projects
-            - [ ] List of time types
-            - [ ] Data entry for other elements
-                - [ ] Amount of Time
-                    - [ ] Numeric Validation
-                    - [ ] Range validation (> 0, <= 8 hours)
-                - [ ] WasUseless (boolean)
+            - [x] List of projects
+            - [x] List of time types
+            - [x] Data entry for other elements
+                - [x] Amount of Time
+                    - [x] Numeric Validation
+                    - [x] Range validation (> 0, <= 8 hours)
+                - [x] WasUseless (boolean)
         - [ ] Compute # minutes since last entry added as default for time
+        - [ ] Add control data (times)
+        - [ ] save item to database
     - [ ] List
         - [ ] Defaulting Today
         - [ ] Date Parameter Support
