@@ -27,7 +27,10 @@
     - [ ] Notes
 - [ ] Time entries
     - [ ] Add
-        - [ ] Full Command Line ??
+        - [ ] Full Command Line
+            - [ ] Parse parameters
+            - [ ] Validate parameters (via commander?)
+            - [ ] Default parameters and skip questions for those on command line
         - [ ] UI
             - [x] List of projects
             - [x] List of time types
@@ -37,15 +40,23 @@
                     - [x] Range validation (> 0, <= 8 hours)
                 - [x] WasUseless (boolean)
         - [ ] Compute # minutes since last entry added as default for time
-        - [ ] Add control data (times)
-        - [ ] save item to database
+            - [ ] Add API method to get last time entry for today
+            - [ ] Compute # minutes (using moment) since then
+            - [ ] Default to 60 min if no record found today
+            - [ ] Don't attempt the calculation if the entry date has been set manually
+        - [x] Add control data (times)
+        - [x] save item to database
     - [ ] List
         - [ ] Defaulting Today
         - [ ] Date Parameter Support
         - [ ] Date Range Support
+        - [ ] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
     - [ ] Edit
-        - [ ] Display List
+        - [ ] Date parameter (optional - default to today)
+        - [ ] Display List to use as selection for the given date
         - [ ] Enter the Edit screen with defaults from existing record
+            - [ ] See if there is a way to re-use the inquirer settings from the add function
+        - [ ] Perform the DB update - don't alter the insert time
     - [ ] Remove
         - [ ] Display List as radio selection
         - [ ] delete those selected upon confirm
@@ -53,6 +64,7 @@
         - [ ] Total by Time Type
         - [ ] Total by Project
         - [ ] Grid...time type and project?
+        - [ ] Daily Summary in Markdown format
 - [x] Determine how to do colored table-based output
 - [ ] Add "binaries" for all sub-commands
 - [x] Add ESLint to project

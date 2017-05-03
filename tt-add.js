@@ -4,7 +4,7 @@ const commander = require('commander');
 const inquirer = require('inquirer');
 const co = require('co');
 const db = require('./db');
-// const chalk = require('chalk');
+const chalk = require('chalk');
 
 commander
     .version('1.0.0')
@@ -17,23 +17,30 @@ commander
 
 const entryDescription = commander.args.join(' ');
 
-// function performProjectUpdate(projectName) {
-  // co(function* run() {
-  //   // console.log(`Request to add project "${projectName}"`)
-  //   const insertSuceeded = yield* db.timeentry.insert(projectName);
-  //   if (insertSuceeded) {
-  //     console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
-  //   } else {
-  //     console.log(chalk.bgRed(`Project ${chalk.yellow.bold(projectName)} already exists.`));
-  //   }
-  // }).catch((err) => {
-  //   console.log(chalk.bgRed(err.stack));
-  // });
-// }
+// TODO: save option values
+
+function performUpdate(timeEntry) {
+  co(function* runUpdate() {
+    console.log(`Request to add timeEntry "${JSON.stringify(timeEntry)}"`);
+    const insertSuceeded = yield* db.timeEntry.insert(timeEntry);
+    if (insertSuceeded) {
+      console.log(chalk.green(`Time Entry ${chalk.white.bold(JSON.stringify(timeEntry))} added`));
+    } else {
+      console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
+    }
+  }).catch((err) => {
+    console.log(chalk.bgRed(err.stack));
+  });
+}
 
 function* run() {
   const projects = yield* db.project.getAll();
   const timeTypes = yield* db.timetype.getAll();
+
+  // TODO: If project option is not a valid project, reject with list of project names
+  // TODO: If time type option is not a valid project, reject with list of type names
+  // TODO: If time number is not valid project, reject
+  // TODO: extract validation functions so can be used here and in the inquirer code below
 
   inquirer.prompt([
     {
@@ -89,7 +96,7 @@ function* run() {
       answer.entryDescription = entryDescription.trim();
     }
     console.log(JSON.stringify(answer, null, '  '));
-    //performProjectUpdate(answer.projectName);
+    performUpdate(answer);
   });
 }
 
