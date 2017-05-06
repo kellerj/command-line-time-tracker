@@ -8,6 +8,8 @@ const collectionName = 'timeEntry';
 
 //    * Generator function - must be used with co module or next().value.
 
+const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
+
 module.exports = {
   /**
    * Insert the given project into the database.  Return false if the project
@@ -20,7 +22,7 @@ module.exports = {
     // add the timing data to the object
     if (!timeEntry.entryDate) {
       // it's possible the date may be specified from the command line - if so, don't set
-      timeEntry.entryDate = moment().startOf('day').toDate();
+      timeEntry.entryDate = moment().startOf('day').format(ENTRY_DATE_FORMAT);
     }
     timeEntry.insertTime = new Date();
 
@@ -32,7 +34,7 @@ module.exports = {
   },
 
   * get(startDate, endDate) {
-    console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
+    // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = yield MongoClient.connect(config.db.url);
     const collection = db.collection(collectionName);
 
@@ -41,12 +43,12 @@ module.exports = {
       endDate = startDate;
     }
 
-    require('mongodb').Logger.setLevel('debug');
+    // require('mongodb').Logger.setLevel('debug');
 
     const r = yield collection.find({
       entryDate: {
-        $gte: moment(startDate).toDate(),
-        $lte: moment(endDate).toDate(),
+        $gte: moment(startDate).format(ENTRY_DATE_FORMAT),
+        $lte: moment(endDate).format(ENTRY_DATE_FORMAT),
       },
     }).sort({ insertTime: 1 }).toArray();
     db.close();

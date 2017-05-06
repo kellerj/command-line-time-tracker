@@ -47,10 +47,9 @@
         - [x] Add control data (times)
         - [x] save item to database
     - [ ] List
-        - [ ] Defaulting Today
-        - [ ] Date Parameter Support
-        - [ ] Date Range Support
-        - [ ] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
+        - [x] Defaulting Today
+        - [x] Date Parameter Support
+        - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
     - [ ] Edit
         - [ ] Date parameter (optional - default to today)
         - [ ] Display List to use as selection for the given date
@@ -80,6 +79,9 @@
         - [ ] Display list of projects for selection
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
+- [ ] Entry List
+    - [ ] Date Range Support
+    - [ ] CSV format option
 - [ ] Time Type Categories
     - [ ] Add
     - [ ] ls

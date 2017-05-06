@@ -11,7 +11,7 @@ commander
     .version('1.0.0')
     .description('List time entries in a tabular format.')
     .option('--csv', 'Output in a CSV format instead of ASCII table.')
-    .option('-d, --date', 'Specify the date to output, otherwise use today\'s date.')
+    .option('-d, --date <date>', 'Specify the date to output (YYYY-MM-DD), otherwise use today\'s date.')
     .parse(process.argv);
 
 let entryDate = commander.date;
@@ -20,6 +20,10 @@ let entryDate = commander.date;
 if (!entryDate) {
   entryDate = moment().startOf('day').toDate();
 } else {
+  if (!moment(entryDate, 'YYYY-MM-DD').isValid()) {
+    console.log(chalk.red(`Date ${entryDate} is not a valid date.`));
+    process.exit(-1);
+  }
   entryDate = moment(entryDate).startOf('day').toDate();
 }
 
@@ -52,8 +56,8 @@ function timePrinter(val, width) {
 co(function* run() {
   const r = yield* db.timeEntry.get(entryDate);
 
-  if (r) {
-    console.log(JSON.stringify(r));
+  if (r && r.length) {
+    // console.log(JSON.stringify(r));
     const t = new Table();
     r.forEach((item) => {
       t.cell('Date', item.entryDate, entryDatePrinter);
@@ -67,7 +71,7 @@ co(function* run() {
     t.total('Time', { printer: timePrinter });
     console.log(t.toString());
   } else {
-    console.log(chalk.yellow('No Time Entries Defined'));
+    console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
   }
 }).catch((err) => {
   console.log(chalk.bgRed(err.stack));
