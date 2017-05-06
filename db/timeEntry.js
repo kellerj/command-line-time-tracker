@@ -30,4 +30,26 @@ module.exports = {
 
     return true;
   },
+
+  * get(startDate, endDate) {
+    console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
+    const db = yield MongoClient.connect(config.db.url);
+    const collection = db.collection(collectionName);
+
+    if (!endDate) {
+      // eslint-disable-next-line no-param-reassign
+      endDate = startDate;
+    }
+
+    require('mongodb').Logger.setLevel('debug');
+
+    const r = yield collection.find({
+      entryDate: {
+        $gte: moment(startDate).toDate(),
+        $lte: moment(endDate).toDate(),
+      },
+    }).sort({ insertTime: 1 }).toArray();
+    db.close();
+    return r;
+  },
 };
