@@ -27,24 +27,33 @@ function* performUpdate(names) {
   }
 }
 
-if (inputName === '') {
-  co(function* run() {
-    const r = yield db.project.getAll();
-    if (r) {
-      // console.log(JSON.stringify(r));
-      const answer = yield inquirer.prompt([
-        {
-          name: 'names',
-          type: 'checkbox',
-          message: 'Select Projects to Remove',
-          choices: r.map(item => (item.name)),
-        },
-      ]);
+co(function* run() {
+  const r = yield db.project.getAll();
+  if (r) {
+    // console.log(JSON.stringify(r));
+    const answer = yield inquirer.prompt([
+      {
+        name: 'names',
+        type: 'checkbox',
+        message: 'Select Projects to Remove',
+        choices: r.map(item => (item.name)),
+        when: () => (inputName === ''),
+      },
+      {
+        name: 'confirm',
+        type: 'confirm',
+        message: 'Are you sure you want to delete this project?',
+        default: false,
+      },
+    ]);
+    if (answer.confirm) {
+      // If we got a project name on the command line, use that
+      if (inputName !== '') {
+        answer.names = [inputName];
+      }
       yield* performUpdate(answer.names);
-    } else {
-      console.log(chalk.yellow('No Projects Defined'));
     }
-  });
-} else {
-  co(performUpdate([inputName]));
-}
+  } else {
+    console.log(chalk.yellow('No Projects Defined'));
+  }
+});

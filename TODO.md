@@ -3,17 +3,17 @@
 ## Phase 1
 
 - [x] Get Mongo Connection Included
-- [ ] Project Management
+- [x] Project Management
     - [x] Add
         - [x] Disallow insert of duplicate (case insensitive?)
         - [x] Change command line to use all remaining words as a single project name
     - [x] List
-    - [ ] Remove
+    - [x] Remove
         - [x] Display list of projects for selection
         - [x] handle name list if given on command line
         - [x] output results of deletion
         - [x] Change command line to use all remaining words as a single project name
-        - [ ] Add confirmation question before remove
+        - [x] Add confirmation question before remove
 - [ ] Time Type
     - [x] Command base file
     - [x] Add
@@ -29,7 +29,7 @@
     - [ ] Add
         - [ ] Full Command Line
             - [ ] Parse parameters
-            - [ ] Validate parameters (via commander?)
+            - [ ] Validate parameters
             - [ ] Default parameters and skip questions for those on command line
         - [ ] UI
             - [x] List of projects
@@ -46,7 +46,7 @@
             - [ ] Don't attempt the calculation if the entry date has been set manually
         - [x] Add control data (times)
         - [x] save item to database
-    - [ ] List
+    - [x] List
         - [x] Defaulting Today
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
