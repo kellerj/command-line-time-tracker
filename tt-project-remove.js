@@ -44,6 +44,7 @@ co(function* run() {
         type: 'confirm',
         message: 'Are you sure you want to delete this project?',
         default: false,
+        when: answers => ((answers.names && answers.names.length) || inputName),
       },
     ]);
     if (answer.confirm) {

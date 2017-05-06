@@ -14,12 +14,14 @@
         - [x] output results of deletion
         - [x] Change command line to use all remaining words as a single project name
         - [x] Add confirmation question before remove
+        - [x] Skip confirmation if no projects marked for removal
 - [ ] Time Type
     - [x] Command base file
     - [x] Add
     - [x] List
     - [ ] Remove
         - [ ] Add confirmation question before remove
+        - [ ] Skip confirmation if no projects marked for removal
 - [ ] Other Data Elements
     - [ ] Waste (bool/checkbox)
     - [ ] Dates
