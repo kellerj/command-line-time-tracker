@@ -62,13 +62,15 @@ co(function* run() {
     r.forEach((item) => {
       t.cell('Date', item.entryDate, entryDatePrinter);
       t.cell('Logged', item.insertTime, insertTimePrinter);
-      t.cell('Project', item.project);
-      t.cell('Type', item.timeType);
-      t.cell('Time', item.minutes, timePrinter);
+      t.cell('Project', item.project ? item.project : '');
+      t.cell('Type', item.timeType ? item.timeType : '');
+      t.cell('Time', item.minutes ? item.minutes : 0, timePrinter);
       t.cell('Description', item.entryDescription);
       t.newRow();
     });
-    t.total('Time', { printer: timePrinter });
+    t.total('Time', {
+      printer: timePrinter,
+    });
     console.log(t.toString());
   } else {
     console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
