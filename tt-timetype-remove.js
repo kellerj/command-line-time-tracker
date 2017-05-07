@@ -5,6 +5,7 @@ const inquirer = require('inquirer');
 const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
+const debug = require('debug')('tt:timetype:remove');
 
 commander
     .version('1.0.0')
@@ -14,37 +15,46 @@ commander
 const inputName = commander.args.join(' ');
 
 function* performUpdate(names) {
-  // console.log(JSON.stringify(names));
+  debug(JSON.stringify(names, null, 2));
   for (let i = 0; i < names.length; i += 1) {
-    // console.log(`Deleting ${names[i]}`);
+    debug(`Deleting ${names[i]}`);
     const wasDeleted = yield db.timetype.remove(names[i]);
     if (wasDeleted) {
       console.log(chalk.green(`Time Type ${chalk.white(names[i])} Removed`));
     } else {
-      // console.log(chalk.red(JSON.stringify(r2)));
       console.log(chalk.red(`Time Type ${chalk.white(names[i])} Not Present In database`));
     }
   }
 }
 
-if (inputName === '') {
-  co(function* run() {
-    const r = yield db.timetype.getAll();
-    if (r) {
-      // console.log(JSON.stringify(r));
-      const answer = yield inquirer.prompt([
-        {
-          name: 'names',
-          type: 'checkbox',
-          message: 'Select Time Types to Remove',
-          choices: r.map(item => (item.name)),
-        },
-      ]);
+co(function* run() {
+  const r = yield db.timetype.getAll();
+  if (r) {
+    debug(JSON.stringify(r, null, 2));
+    const answer = yield inquirer.prompt([
+      {
+        name: 'names',
+        type: 'checkbox',
+        message: 'Select Time Types to Remove',
+        choices: r.map(item => (item.name)),
+        when: () => (inputName === ''),
+      },
+      {
+        name: 'confirm',
+        type: 'confirm',
+        message: 'Are you sure you want to delete this time type?',
+        default: false,
+        when: answers => ((answers.names && answers.names.length) || inputName),
+      },
+    ]);
+    if (answer.confirm) {
+      // If we got a name on the command line, use that
+      if (inputName !== '') {
+        answer.names = [inputName];
+      }
       yield* performUpdate(answer.names);
-    } else {
-      console.log(chalk.yellow('No Time Types Defined'));
     }
-  });
-} else {
-  co(performUpdate([inputName]));
-}
+  } else {
+    console.log(chalk.yellow('No Time Types Defined'));
+  }
+});

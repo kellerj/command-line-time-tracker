@@ -15,25 +15,24 @@
         - [x] Change command line to use all remaining words as a single project name
         - [x] Add confirmation question before remove
         - [x] Skip confirmation if no projects marked for removal
-- [ ] Time Type
+- [x] Time Type
     - [x] Command base file
     - [x] Add
     - [x] List
-    - [ ] Remove
-        - [ ] Add confirmation question before remove
-        - [ ] Skip confirmation if no projects marked for removal
-- [ ] Other Data Elements
-    - [ ] Waste (bool/checkbox)
-    - [ ] Dates
-    - [ ] Time
-    - [ ] Notes
+    - [x] Remove
+        - [x] Add confirmation question before remove
+        - [x] Skip confirmation if no projects marked for removal
+- [x] Other Data Elements
+    - [x] Waste (bool/checkbox)
+    - [x] Dates
+    - [x] Time
 - [ ] Time entries
-    - [ ] Add
-        - [ ] Full Command Line
-            - [ ] Parse parameters
-            - [ ] Validate parameters
-            - [ ] Default parameters and skip questions for those on command line
-        - [ ] UI
+    - [x] Add
+        - [x] Full Command Line
+            - [x] Parse parameters
+            - [x] Validate parameters
+            - [x] Default parameters and skip questions for those on command line
+        - [x] UI
             - [x] List of projects
             - [x] List of time types
             - [x] Data entry for other elements
@@ -68,6 +67,10 @@
         - [ ] Daily Summary in Markdown format
 - [x] Determine how to do colored table-based output
 - [ ] Add "binaries" for all sub-commands
+    - [ ] Time Entry
+    - [x] Project
+    - [x] Time Type
+    - [ ] Summary
 - [x] Add ESLint to project
 
 
