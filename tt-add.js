@@ -5,23 +5,52 @@ const inquirer = require('inquirer');
 const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
+const debug = require('debug')('tt:add');
+const Table = require('easy-table');
+
+const validateMinutes = (val) => {
+  if (Number.isNaN(val)) {
+    return 'Invalid Integer';
+  } else if (Number.parseInt(val, 10) < 1) {
+    return 'Time must be positive';
+  } else if (Number.parseInt(val, 10) > 8 * 60) {
+    return 'Time must be <= 8 hours';
+  }
+  return true;
+};
 
 commander
     .version('1.0.0')
     .description('Record a time entry')
     .usage('[options] [entryDescription]')
-    .option('-t, --time <min>', 'Minutes spent', parseInt)
+    .option('-t, --time <min>', 'Minutes spent')
     .option('-y, --type <timeType>')
     .option('-p, --project <projectName>')
     .parse(process.argv);
 
-const entryDescription = commander.args.join(' ');
+const entryDescription = commander.args.join(' ').trim();
+let projectName = commander.project;
+let timeType = commander.type;
+let minutes = commander.time;
 
-// TODO: save option values
+debug(JSON.stringify(commander, null, 2));
+debug(`Input Project Name: ${projectName}`);
+debug(`Input Time Type: ${timeType}`);
+debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
+
+if (minutes) {
+  minutes = Number.parseInt(minutes, 10);
+  const validationMessage = validateMinutes(minutes);
+  debug(validationMessage);
+  if (validationMessage !== true) {
+    console.log(chalk.red(`-t, --time: ${validationMessage}`));
+    process.exit(1);
+  }
+}
 
 function performUpdate(timeEntry) {
   co(function* runUpdate() {
-    console.log(`Request to add timeEntry "${JSON.stringify(timeEntry)}"`);
+    debug(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
     const insertSuceeded = yield* db.timeEntry.insert(timeEntry);
     if (insertSuceeded) {
       console.log(chalk.green(`Time Entry ${chalk.white.bold(JSON.stringify(timeEntry))} added`));
@@ -33,14 +62,38 @@ function performUpdate(timeEntry) {
   });
 }
 
-function* run() {
-  const projects = yield* db.project.getAll();
-  const timeTypes = yield* db.timetype.getAll();
+const validateEntryDescription = (input) => {
+  if (!input) {
+    return 'description is required';
+  }
+  return true;
+};
 
-  // TODO: If project option is not a valid project, reject with list of project names
-  // TODO: If time type option is not a valid project, reject with list of type names
-  // TODO: If time number is not valid project, reject
-  // TODO: extract validation functions so can be used here and in the inquirer code below
+function* run() {
+  // pull the lists of projects and time types from MongoDB
+  const projects = (yield* db.project.getAll()).map(item => (item.name));
+  const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
+
+  // If project option is not a valid project, reject with list of project names
+  if (projectName) {
+    projectName = projectName.trim();
+    if (projects.findIndex(e => (e === projectName)) === -1) {
+      console.log(chalk.red(`Project ${chalk.yellow(projectName)} does not exist.  Known Projects:`));
+      console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
+        { name: { name: chalk.white.bold('Project Name') } })));
+      process.exit(1);
+    }
+  }
+  // If time type option is not a valid project, reject with list of type names
+  if (timeType) {
+    timeType = timeType.trim();
+    if (timeTypes.findIndex(e => (e === timeType)) === -1) {
+      console.log(chalk.red(`Project ${chalk.yellow(timeType)} does not exist.  Known Time Types:`));
+      console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
+        { name: { name: chalk.white.bold('Time Type') } })));
+      process.exit(1);
+    }
+  }
 
   inquirer.prompt([
     {
@@ -48,54 +101,57 @@ function* run() {
       type: 'input',
       message: 'Entry Description:',
       filter: input => (input.trim()),
-      validate: (input) => {
-        if (!input) {
-          return 'description is required';
-        }
-        return true;
-      },
+      validate: validateEntryDescription,
       when: () => (entryDescription === ''),
     },
     {
       name: 'project',
       type: 'list',
       message: 'Project:',
-      choices: projects.map(item => (item.name)),
+      choices: projects,
+      when: () => (projectName === undefined),
     },
     {
       name: 'timeType',
       type: 'list',
       message: 'Type of Type:',
-      choices: timeTypes.map(item => (item.name)),
+      choices: timeTypes,
+      when: () => (timeType === undefined),
     },
     {
       name: 'minutes',
       type: 'input',
       message: 'Minutes:',
       default: 60,
-      validate: (val) => {
-        if (Number.isNaN(val)) {
-          return 'Invalid Integer';
-        } else if (Number.parseInt(val, 10) < 1) {
-          return 'Time must be positive';
-        } else if (Number.parseInt(val, 10) > 8 * 60) {
-          return 'Time must be <= 8 hours';
-        }
-        return true;
-      },
+      validate: validateMinutes,
       filter: val => (Number.parseInt(val, 10)),
+      when: () => (minutes === undefined || minutes === null),
     },
     {
       name: 'wasteOfTime',
       type: 'confirm',
       message: 'Waste of Time?',
       default: false,
+      when: answer => (answer.minutes !== undefined),
     },
   ]).then((answer) => {
+    // fill in for questions which were skipped because they were on the command line
     if (!answer.entryDescription) {
       answer.entryDescription = entryDescription.trim();
     }
-    console.log(JSON.stringify(answer, null, '  '));
+    if (!answer.project) {
+      answer.project = projectName;
+    }
+    if (!answer.timeType) {
+      answer.timeType = timeType;
+    }
+    if (!answer.minutes) {
+      answer.minutes = Number.parseInt(minutes, 10);
+    }
+    if (answer.wasteOfTime === undefined) {
+      answer.wasteOfTime = false;
+    }
+    // debug(JSON.stringify(answer, null, 2));
     performUpdate(answer);
   });
 }
