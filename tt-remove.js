@@ -7,6 +7,7 @@ const db = require('./db');
 const chalk = require('chalk');
 const moment = require('moment');
 const debug = require('debug')('tt:remove');
+const sprintf = require('sprintf-js').sprintf;
 
 commander
     .version('1.0.0')
@@ -16,16 +17,15 @@ commander
 const entryDate = commander.date;
 
 function* performUpdate(entries) {
-  debug(JSON.stringify(entries, null, 2));
-  // for (let i = 0; i < names.length; i += 1) {
-  //   debug(`Deleting ${names[i]}`);
-  //   const wasDeleted = yield db.project.remove(names[i]);
-  //   if (wasDeleted) {
-  //     console.log(chalk.green(`Project ${chalk.white(names[i])} Removed`));
-  //   } else {
-  //     console.log(chalk.red(`Project ${chalk.white(names[i])} Not Present In database`));
-  //   }
-  // }
+  for (let i = 0; i < entries.length; i += 1) {
+    debug(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
+    const wasDeleted = yield db.timeEntry.remove(entries[i]);
+    if (wasDeleted) {
+      console.log(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed`));
+    } else {
+      console.log(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database`));
+    }
+  }
 }
 
 co(function* run() {
@@ -42,8 +42,15 @@ co(function* run() {
       {
         name: 'entries',
         type: 'checkbox',
-        message: 'Select Time Types to Remove',
-        choices: r.map(item => ({ _id: item._id, name: item.entryDescription })),
+        message: 'Select Time Entries to Remove',
+        choices: r.map(item => ({
+          value: item._id,
+          name: sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
+            moment(item.insertTime).format('h:mm a'),
+            item.entryDescription,
+            item.minutes,
+            item.project,
+            item.timeType) })),
       },
       {
         name: 'confirm',
@@ -54,7 +61,7 @@ co(function* run() {
       },
     ]);
     if (answer.confirm) {
-      yield* performUpdate(answer.names);
+      yield* performUpdate(answer.entries);
     }
   } else {
     console.log(chalk.yellow(`No Time Entries Entered for ${entryDate}`));

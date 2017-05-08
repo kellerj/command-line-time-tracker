@@ -57,9 +57,9 @@
         - [ ] Enter the Edit screen with defaults from existing record
             - [ ] See if there is a way to re-use the inquirer settings from the add function
         - [ ] Perform the DB update - don't alter the insert time
-    - [ ] Remove
-        - [ ] Display List as radio selection
-        - [ ] delete those selected upon confirm
+    - [x] Remove
+        - [x] Display List as radio selection
+        - [x] delete those selected upon confirm
     - [ ] Summaries
         - [ ] Total by Time Type
         - [ ] Total by Project

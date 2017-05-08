@@ -67,6 +67,28 @@ module.exports = {
     return r;
   },
 
+  * remove(entryId) {
+    const db = yield MongoClient.connect(config.db.url);
+    const collection = db.collection(collectionName);
+
+    if (debug.enabled) {
+      // eslint-disable-next-line global-require
+      require('mongodb').Logger.setLevel('debug');
+    }
+
+    const r = yield collection.findAndRemove({ _id: entryId });
+    debug(JSON.stringify(r, null, 2));
+    if (r && r.ok === 1 && r.value !== null) {
+      db.close();
+      return true;
+    } else if (r && r.ok !== 1) {
+      console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(r)}`));
+    }
+
+    db.close();
+    return false;
+  },
+
   * getMostRecentEntry() {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = yield MongoClient.connect(config.db.url);
