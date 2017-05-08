@@ -73,7 +73,9 @@ function* run() {
   // pull the lists of projects and time types from MongoDB
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
+  const lastEntry = yield* db.timeEntry.getMostRecentEntry();
 
+  debug(JSON.stringify(lastEntry, null, 2));
   // If project option is not a valid project, reject with list of project names
   if (projectName) {
     projectName = projectName.trim();
