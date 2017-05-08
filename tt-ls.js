@@ -6,12 +6,13 @@ const chalk = require('chalk');
 const Table = require('easy-table');
 const moment = require('moment');
 const db = require('./db');
+const debug = require('debug')('tt:ls');
 
 commander
     .version('1.0.0')
     .description('List time entries in a tabular format.')
-    .option('--csv', 'Output in a CSV format instead of ASCII table.')
-    .option('-d, --date <date>', 'Specify the date to output (YYYY-MM-DD), otherwise use today\'s date.')
+    //.option('--csv', 'Output in a CSV format instead of ASCII table.')
+    .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
     .parse(process.argv);
 
 let entryDate = commander.date;
@@ -57,7 +58,7 @@ co(function* run() {
   const r = yield* db.timeEntry.get(entryDate);
 
   if (r && r.length) {
-    // console.log(JSON.stringify(r));
+    debug(JSON.stringify(r, null, 2));
     const t = new Table();
     r.forEach((item) => {
       t.cell('Date', item.entryDate, entryDatePrinter);

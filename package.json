@@ -24,6 +24,7 @@
     "tt": "./tt.js",
     "tt-add": "./tt-add.js",
     "tt-ls": "./tt-ls.js",
+    "tt-remove": "./tt-remove.js",
     "tt-project": "./tt-project.js",
     "tt-project-add": "./tt-project-add.js",
     "tt-project-ls": "./tt-project-ls.js",

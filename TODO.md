@@ -52,7 +52,7 @@
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
     - [ ] Edit
-        - [ ] Date parameter (optional - default to today)
+        - [x] Date parameter (optional - default to today)
         - [ ] Display List to use as selection for the given date
         - [ ] Enter the Edit screen with defaults from existing record
             - [ ] See if there is a way to re-use the inquirer settings from the add function
