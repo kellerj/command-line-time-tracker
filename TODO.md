@@ -40,11 +40,11 @@
                     - [x] Numeric Validation
                     - [x] Range validation (> 0, <= 8 hours)
                 - [x] WasUseless (boolean)
-        - [ ] Compute # minutes since last entry added as default for time
-            - [ ] Add API method to get last time entry for today
-            - [ ] Compute # minutes (using moment) since then
-            - [ ] Default to 60 min if no record found today
-            - [ ] Don't attempt the calculation if the entry date has been set manually
+        - [x] Compute # minutes since last entry added as default for time
+            - [x] Add API method to get last time entry for today
+            - [x] Compute # minutes (using moment) since then
+            - [x] Default to 60 min if no record found today
+            - [x] Don't attempt the calculation if the entry date has been set manually
         - [x] Add control data (times)
         - [x] save item to database
     - [x] List

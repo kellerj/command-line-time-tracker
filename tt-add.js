@@ -7,6 +7,7 @@ const db = require('./db');
 const chalk = require('chalk');
 const debug = require('debug')('tt:add');
 const Table = require('easy-table');
+const moment = require('moment');
 
 const validateMinutes = (val) => {
   if (Number.isNaN(val)) {
@@ -23,17 +24,28 @@ commander
     .version('1.0.0')
     .description('Record a time entry')
     .usage('[options] [entryDescription]')
-    .option('-t, --time <min>', 'Minutes spent')
-    .option('-y, --type <timeType>')
-    .option('-p, --project <projectName>')
+    .option('-t, --time <minutes>', 'Minutes spent on the activity.')
+    .option('-y, --type <timeType>', 'Name of the time type - must be existing.')
+    .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
+    .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
     .parse(process.argv);
 
 const entryDescription = commander.args.join(' ').trim();
 let projectName = commander.project;
 let timeType = commander.type;
 let minutes = commander.time;
+let entryDate = commander.date;
 
-debug(JSON.stringify(commander, null, 2));
+if (entryDate) {
+  const temp = moment(entryDate, 'YYYY-MM-DD');
+  if (!temp.isValid()) {
+    console.log(chalk.red('-d, --date: Invalid Time'));
+    process.exit(1);
+  }
+  entryDate = temp.format('YYYY-MM-DD');
+}
+
+// debug(JSON.stringify(commander, null, 2));
 debug(`Input Project Name: ${projectName}`);
 debug(`Input Time Type: ${timeType}`);
 debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
@@ -74,6 +86,12 @@ function* run() {
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
   const lastEntry = yield* db.timeEntry.getMostRecentEntry();
+  // use the minutes since the last entry was added as the default time
+  // default to 60 in the case there is no entry yet today
+  let minutesSinceLastEntry = 60;
+  if (!entryDate && lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
+    minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
+  }
 
   debug(JSON.stringify(lastEntry, null, 2));
   // If project option is not a valid project, reject with list of project names
@@ -124,7 +142,7 @@ function* run() {
       name: 'minutes',
       type: 'input',
       message: 'Minutes:',
-      default: 60,
+      default: minutesSinceLastEntry,
       validate: validateMinutes,
       filter: val => (Number.parseInt(val, 10)),
       when: () => (minutes === undefined || minutes === null),
@@ -152,6 +170,9 @@ function* run() {
     }
     if (answer.wasteOfTime === undefined) {
       answer.wasteOfTime = false;
+    }
+    if (entryDate) {
+      answer.entryDate = entryDate;
     }
     // debug(JSON.stringify(answer, null, 2));
     performUpdate(answer);
