@@ -53,6 +53,7 @@
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
     - [ ] Edit
         - [x] Date parameter (optional - default to today)
+        - [ ] parameter --last to auto-edit the most recent entry
         - [ ] Display List to use as selection for the given date
         - [ ] Enter the Edit screen with defaults from existing record
             - [ ] See if there is a way to re-use the inquirer settings from the add function
@@ -76,6 +77,7 @@
 
 ## Phase 2
 
+- [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Export Function
     - [ ] JSON
     - [ ] CSV?
