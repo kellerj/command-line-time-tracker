@@ -1,5 +1,10 @@
+const host = 'localhost';
+const port = 27017;
+const database = 'tt';
+
 module.exports = {
   db: {
-    url: 'mongodb://localhost:27017/tt',
+    baseUrl: `mongodb://${host}:${port}`,
+    url: `mongodb://${host}:${port}/${database}`,
   },
 };
