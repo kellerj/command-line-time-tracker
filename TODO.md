@@ -27,7 +27,7 @@
     - [x] Dates
     - [x] Time
 - [ ] Time entries
-    - [x] Add
+    - [ ] Add
         - [x] Full Command Line
             - [x] Parse parameters
             - [x] Validate parameters
@@ -47,14 +47,22 @@
             - [x] Don't attempt the calculation if the entry date has been set manually
         - [x] Add control data (times)
         - [x] save item to database
+        - [ ] Add a bottom bar with current minutes derived from last entry
+        - [ ] Switch implementation to the observable pattern
+        - [ ] Allow addition of new project
+            - [ ] add a separator bar
+            - [ ] option for new project
+            - [ ] Asking of question for project name
+            - [ ] saving of project name
+            - [ ] setting in answer array
     - [x] List
         - [x] Defaulting Today
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
     - [ ] Edit
         - [x] Date parameter (optional - default to today)
-        - [ ] parameter --last to auto-edit the most recent entry
-        - [ ] Display List to use as selection for the given date
+        - [x] parameter --last to auto-edit the most recent entry
+        - [x] Display List to use as selection for the given date
         - [ ] Enter the Edit screen with defaults from existing record
             - [ ] See if there is a way to re-use the inquirer settings from the add function
         - [ ] Perform the DB update - don't alter the insert time
@@ -77,6 +85,7 @@
 
 ## Phase 2
 
+- [ ] On entry add - check for name of project in description and set as default
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Export Function
     - [ ] JSON
