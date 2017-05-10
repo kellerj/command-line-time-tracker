@@ -8,6 +8,7 @@ const chalk = require('chalk');
 const debug = require('debug')('tt:add');
 const Table = require('easy-table');
 const moment = require('moment');
+const sprintf = require('sprintf-js').sprintf;
 
 const validateMinutes = (val) => {
   if (Number.isNaN(val)) {
@@ -65,7 +66,11 @@ function performUpdate(timeEntry) {
     debug(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
     const insertSuceeded = yield* db.timeEntry.insert(timeEntry);
     if (insertSuceeded) {
-      console.log(chalk.green(`Time Entry ${chalk.white.bold(JSON.stringify(timeEntry))} added`));
+      const timeEntrySummary = sprintf('%s : %s : %s',
+        timeEntry.entryDescription,
+        timeEntry.project,
+        timeEntry.timeType);
+      console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} added`));
     } else {
       console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
     }
