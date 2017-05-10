@@ -2,7 +2,6 @@
 
 const commander = require('commander');
 const inquirer = require('inquirer');
-const Rx = require('rx');
 const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
@@ -121,79 +120,68 @@ function* run() {
     }
   }
 
-  const observable = Rx.Observable.create((observer) => {
-    if (entryDescription === '') {
-      observer.onNext({
-        name: 'entryDescription',
-        type: 'input',
-        message: 'Entry Description:',
-        filter: input => (input.trim()),
-        validate: validateEntryDescription,
-      });
-    } else {
-      console.log(JSON.stringify(observer, null, 2));
+  inquirer.prompt([
+    {
+      name: 'entryDescription',
+      type: 'input',
+      message: 'Entry Description:',
+      filter: input => (input.trim()),
+      validate: validateEntryDescription,
+      when: () => (entryDescription === ''),
+    },
+    {
+      name: 'project',
+      type: 'list',
+      message: 'Project:',
+      choices: projects,
+      when: () => (projectName === undefined),
+    },
+    {
+      name: 'timeType',
+      type: 'list',
+      message: 'Type of Type:',
+      choices: timeTypes,
+      when: () => (timeType === undefined),
+    },
+    {
+      name: 'minutes',
+      type: 'input',
+      message: 'Minutes:',
+      default: minutesSinceLastEntry,
+      validate: validateMinutes,
+      filter: val => (Number.parseInt(val, 10)),
+      when: () => (minutes === undefined || minutes === null),
+    },
+    {
+      name: 'wasteOfTime',
+      type: 'confirm',
+      message: 'Waste of Time?',
+      default: false,
+      when: answer => (answer.minutes !== undefined),
+    },
+  ]).then((answer) => {
+    // fill in for questions which were skipped because they were on the command line
+    if (!answer.entryDescription) {
+      answer.entryDescription = entryDescription.trim();
     }
-    observer.onCompleted();
+    if (!answer.project) {
+      answer.project = projectName;
+    }
+    if (!answer.timeType) {
+      answer.timeType = timeType;
+    }
+    if (!answer.minutes) {
+      answer.minutes = Number.parseInt(minutes, 10);
+    }
+    if (answer.wasteOfTime === undefined) {
+      answer.wasteOfTime = false;
+    }
+    if (entryDate) {
+      answer.entryDate = entryDate;
+    }
+    // debug(JSON.stringify(answer, null, 2));
+    performUpdate(answer);
   });
-
-  inquirer.prompt(observable).then((answers) => {
-    console.log(JSON.stringify(answers, null, '  '));
-  });
-  // inquirer.prompt([
-  //   ,
-  //   {
-  //     name: 'project',
-  //     type: 'list',
-  //     message: 'Project:',
-  //     choices: projects,
-  //     when: () => (projectName === undefined),
-  //   },
-  //   {
-  //     name: 'timeType',
-  //     type: 'list',
-  //     message: 'Type of Type:',
-  //     choices: timeTypes,
-  //     when: () => (timeType === undefined),
-  //   },
-  //   {
-  //     name: 'minutes',
-  //     type: 'input',
-  //     message: 'Minutes:',
-  //     default: minutesSinceLastEntry,
-  //     validate: validateMinutes,
-  //     filter: val => (Number.parseInt(val, 10)),
-  //     when: () => (minutes === undefined || minutes === null),
-  //   },
-  //   {
-  //     name: 'wasteOfTime',
-  //     type: 'confirm',
-  //     message: 'Waste of Time?',
-  //     default: false,
-  //     when: answer => (answer.minutes !== undefined),
-  //   },
-  // ]).then((answer) => {
-  //   // fill in for questions which were skipped because they were on the command line
-  //   if (!answer.entryDescription) {
-  //     answer.entryDescription = entryDescription.trim();
-  //   }
-  //   if (!answer.project) {
-  //     answer.project = projectName;
-  //   }
-  //   if (!answer.timeType) {
-  //     answer.timeType = timeType;
-  //   }
-  //   if (!answer.minutes) {
-  //     answer.minutes = Number.parseInt(minutes, 10);
-  //   }
-  //   if (answer.wasteOfTime === undefined) {
-  //     answer.wasteOfTime = false;
-  //   }
-  //   if (entryDate) {
-  //     answer.entryDate = entryDate;
-  //   }
-  //   // debug(JSON.stringify(answer, null, 2));
-  //   performUpdate(answer);
-  // });
 }
 
 co(run);
