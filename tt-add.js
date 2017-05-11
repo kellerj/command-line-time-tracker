@@ -79,6 +79,20 @@ function performUpdate(timeEntry) {
   });
 }
 
+function addProject(newProject) {
+  co(function* runProjectAdd() {
+    debug(`Request to add project "${newProject}"`);
+    const insertSuceeded = yield* db.project.insert(newProject);
+    if (insertSuceeded) {
+      console.log(chalk.green(`Project ${chalk.white.bold(newProject)} added`));
+    } else {
+      console.log(chalk.bgRed(`Project ${chalk.yellow.bold(newProject)} already exists.`));
+    }
+  }).catch((err) => {
+    console.log(chalk.bgRed(err.stack));
+  });
+}
+
 const validateEntryDescription = (input) => {
   if (!input) {
     return 'description is required';
@@ -89,6 +103,9 @@ const validateEntryDescription = (input) => {
 function* run() {
   // pull the lists of projects and time types from MongoDB
   const projects = (yield* db.project.getAll()).map(item => (item.name));
+  projects.push(new inquirer.Separator());
+  projects.push('(New Project)');
+  projects.push(new inquirer.Separator());
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
   const lastEntry = yield* db.timeEntry.getMostRecentEntry();
   // use the minutes since the last entry was added as the default time
@@ -135,6 +152,14 @@ function* run() {
       message: 'Project:',
       choices: projects,
       when: () => (projectName === undefined),
+      pageSize: 15,
+    },
+    {
+      name: 'newProject',
+      type: 'input',
+      message: 'New Project Name:',
+      filter: input => (input.trim()),
+      when: answers => (answers.project === '(New Project)'),
     },
     {
       name: 'timeType',
@@ -142,6 +167,7 @@ function* run() {
       message: 'Type of Type:',
       choices: timeTypes,
       when: () => (timeType === undefined),
+      pageSize: 15,
     },
     {
       name: 'minutes',
@@ -164,6 +190,11 @@ function* run() {
     if (!answer.entryDescription) {
       answer.entryDescription = entryDescription.trim();
     }
+    if (answer.newProject) {
+      addProject(answer.newProject);
+      answer.project = answer.newProject;
+      delete answer.newProject;
+    }
     if (!answer.project) {
       answer.project = projectName;
     }
@@ -179,7 +210,7 @@ function* run() {
     if (entryDate) {
       answer.entryDate = entryDate;
     }
-    // debug(JSON.stringify(answer, null, 2));
+    debug(JSON.stringify(answer, null, 2));
     performUpdate(answer);
   });
 }

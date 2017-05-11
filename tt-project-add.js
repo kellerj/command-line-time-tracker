@@ -5,6 +5,7 @@ const inquirer = require('inquirer');
 const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
+const debug = require('debug')('tt:project:add');
 
 commander
     .version('1.0.0')
@@ -16,7 +17,7 @@ const inputProjectName = commander.args.join(' ');
 
 function performProjectUpdate(projectName) {
   co(function* run() {
-    // console.log(`Request to add project "${projectName}"`)
+    debug(`Request to add project "${projectName}"`);
     const insertSuceeded = yield* db.project.insert(projectName);
     if (insertSuceeded) {
       console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
@@ -38,7 +39,7 @@ if (inputProjectName) {
       message: 'Please enter the new project name:',
     },
   ]).then((answer) => {
-    // console.log(JSON.stringify(answer,null,'  '));
+    debug(JSON.stringify(answer, null, 2));
     performProjectUpdate(answer.projectName);
   });
 }

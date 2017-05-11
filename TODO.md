@@ -48,13 +48,12 @@
         - [x] Add control data (times)
         - [x] save item to database
         - [ ] Add a bottom bar with current minutes derived from last entry
-        - [ ] Switch implementation to the observable pattern
-        - [ ] Allow addition of new project
-            - [ ] add a separator bar
-            - [ ] option for new project
-            - [ ] Asking of question for project name
-            - [ ] saving of project name
-            - [ ] setting in answer array
+        - [x] Allow addition of new project
+            - [x] add a separator bar
+            - [x] option for new project
+            - [x] Asking of question for project name
+            - [x] saving of project name
+            - [x] setting in answer array
     - [x] List
         - [x] Defaulting Today
         - [x] Date Parameter Support
@@ -85,6 +84,7 @@
 
 ## Phase 2
 
+- [ ] Switch implementation to the observable pattern??
 - [ ] On entry add - check for name of project in description and set as default
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Export Function
