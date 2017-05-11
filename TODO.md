@@ -54,10 +54,11 @@
             - [x] Asking of question for project name
             - [x] saving of project name
             - [x] setting in answer array
-    - [x] List
+    - [ ] List
         - [x] Defaulting Today
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
+        - [ ] Add emoji column for waste of time Entries
     - [x] Edit
         - [x] Date parameter (optional - default to today)
         - [x] parameter --last to auto-edit the most recent entry
@@ -72,8 +73,17 @@
     - [ ] Summaries
         - [ ] Total by Time Type
         - [ ] Total by Project
-        - [ ] Grid...time type and project?
+        - [ ] Grid...projects down side, time types as columns - totals right and bottom
         - [ ] Daily Summary in Markdown format
+            - [ ] Group by project as level 3 headings
+            - [ ] include total time for project
+            - [ ] summary of time types for the day
+        - [ ] default report for today
+        - [ ] --day (default)
+        - [ ] --week
+        - [ ] --month
+        - [ ] -p --previous
+        - [ ] -s --startDate, -e --endDate
 - [x] Determine how to do colored table-based output
 - [ ] Add "binaries" for all sub-commands
     - [ ] Time Entry
