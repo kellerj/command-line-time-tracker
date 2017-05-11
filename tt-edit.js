@@ -8,6 +8,7 @@ const chalk = require('chalk');
 const moment = require('moment');
 const debug = require('debug')('tt:edit');
 const sprintf = require('sprintf-js').sprintf;
+const validations = require('./validations');
 
 commander
     .version('1.0.0')
@@ -20,13 +21,17 @@ const editLast = commander.last;
 debug(JSON.stringify(commander, null, 2));
 
 function* performUpdate(entry) {
-  //   debug(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
-  //   const wasDeleted = yield db.timeEntry.remove(entries[i]);
-  //   if (wasDeleted) {
-  //     console.log(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed`));
-  //   } else {
-  //     console.log(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database`));
-  //   }
+  debug(`Updating ${JSON.stringify(entry, null, 2)}`);
+  const wasUpdated = yield db.timeEntry.update(entry);
+  if (wasUpdated) {
+    const timeEntrySummary = sprintf('%s : %s : %s',
+      entry.entryDescription,
+      entry.project,
+      entry.timeType);
+    console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} Updated`));
+  } else {
+    console.log(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update`));
+  }
 }
 
 function* getEntryToEdit() {
@@ -61,7 +66,56 @@ function* getEntryToEdit() {
 }
 
 function* handleEntryChanges(entry) {
+  debug(`Starting Edit for Entry: ${JSON.stringify(entry)}`);
+  const projects = (yield* db.project.getAll()).map(item => (item.name));
+  const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
+  return yield inquirer.prompt([
+    {
+      name: 'entryDescription',
+      type: 'input',
+      message: 'Entry Description:',
+      default: entry.entryDescription,
+      filter: input => (input.trim()),
+      validate: validations.validateEntryDescription,
+    },
+    {
+      name: 'project',
+      type: 'list',
+      message: 'Project:',
+      choices: projects,
+      default: entry.project,
+      pageSize: 15,
+    },
+    {
+      name: 'timeType',
+      type: 'list',
+      message: 'Type of Type:',
+      choices: timeTypes,
+      default: entry.timeType,
+      pageSize: 15,
+    },
+    {
+      name: 'minutes',
+      type: 'input',
+      message: 'Minutes:',
+      default: entry.minutes,
+      validate: validations.validateMinutes,
+      filter: val => (Number.parseInt(val, 10)),
+    },
+    {
+      name: 'wasteOfTime',
+      type: 'confirm',
+      message: 'Waste of Time?',
+      default: entry.wasteOfTime,
+    },
+  ]).then((answer) => {
+    answer._id = entry._id;
+    answer.entryDate = entry.entryDate;
+    answer.insertTime = entry.insertTime;
+    debug(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
+    return answer;
+  });
 }
 
 co(function* run() {
@@ -73,13 +127,8 @@ co(function* run() {
   }
   debug(`Entry Selected: ${JSON.stringify(entry)}`);
 
-  // TODO: implement the edit UI
+  // implement the edit UI
   entry = yield* handleEntryChanges(entry);
   // TODO: Update the record in the database - new db API method
   yield* performUpdate(entry);
 });
-
-
-// if (answer.confirm) {
-//   yield* performUpdate(answer.entries);
-// }

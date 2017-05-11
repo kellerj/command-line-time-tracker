@@ -37,7 +37,26 @@ module.exports = {
 
     const r = yield collection.insertOne(timeEntry);
     db.close();
+    debug(`Result: ${JSON.stringify(r)}`);
     assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the timeEntry.'));
+
+    return true;
+  },
+
+  * update(timeEntry) {
+    const db = yield MongoClient.connect(config.db.url);
+    const collection = db.collection(collectionName);
+
+    if (debug.enabled) {
+      // eslint-disable-next-line global-require
+      require('mongodb').Logger.setLevel('debug');
+    }
+    debug(`Updating ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
+
+    const r = yield collection.updateOne({ _id: timeEntry._id }, timeEntry);
+    db.close();
+    debug(`Result: ${JSON.stringify(r.result)}`);
+    assert.equal(1, r.result.nModified, chalk.bgRed(`Unable to update the timeEntry: ${JSON.stringify(r.result)}`));
 
     return true;
   },

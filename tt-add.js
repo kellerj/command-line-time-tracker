@@ -9,17 +9,7 @@ const debug = require('debug')('tt:add');
 const Table = require('easy-table');
 const moment = require('moment');
 const sprintf = require('sprintf-js').sprintf;
-
-const validateMinutes = (val) => {
-  if (Number.isNaN(val)) {
-    return 'Invalid Integer';
-  } else if (Number.parseInt(val, 10) < 1) {
-    return 'Time must be positive';
-  } else if (Number.parseInt(val, 10) > 8 * 60) {
-    return 'Time must be <= 8 hours';
-  }
-  return true;
-};
+const validations = require('./validations');
 
 commander
     .version('1.0.0')
@@ -53,7 +43,7 @@ debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
 
 if (minutes) {
   minutes = Number.parseInt(minutes, 10);
-  const validationMessage = validateMinutes(minutes);
+  const validationMessage = validations.validateMinutes(minutes);
   debug(validationMessage);
   if (validationMessage !== true) {
     console.log(chalk.red(`-t, --time: ${validationMessage}`));
@@ -92,13 +82,6 @@ function addProject(newProject) {
     console.log(chalk.bgRed(err.stack));
   });
 }
-
-const validateEntryDescription = (input) => {
-  if (!input) {
-    return 'description is required';
-  }
-  return true;
-};
 
 function* run() {
   // pull the lists of projects and time types from MongoDB
@@ -143,7 +126,7 @@ function* run() {
       type: 'input',
       message: 'Entry Description:',
       filter: input => (input.trim()),
-      validate: validateEntryDescription,
+      validate: validations.validateEntryDescription,
       when: () => (entryDescription === ''),
     },
     {
@@ -174,7 +157,7 @@ function* run() {
       type: 'input',
       message: 'Minutes:',
       default: minutesSinceLastEntry,
-      validate: validateMinutes,
+      validate: validations.validateMinutes,
       filter: val => (Number.parseInt(val, 10)),
       when: () => (minutes === undefined || minutes === null),
     },

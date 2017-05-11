@@ -58,16 +58,17 @@
         - [x] Defaulting Today
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
-    - [ ] Edit
+    - [x] Edit
         - [x] Date parameter (optional - default to today)
         - [x] parameter --last to auto-edit the most recent entry
         - [x] Display List to use as selection for the given date
-        - [ ] Enter the Edit screen with defaults from existing record
-            - [ ] See if there is a way to re-use the inquirer settings from the add function
-        - [ ] Perform the DB update - don't alter the insert time
-    - [x] Remove
+        - [x] Enter the Edit screen with defaults from existing record
+            - [x] See if there is a way to re-use the inquirer settings from the add function
+        - [x] Perform the DB update - don't alter the insert time
+    - [ ] Remove
         - [x] Display List as radio selection
         - [x] delete those selected upon confirm
+        - [ ] Add --last option for deletions - but include confirmation
     - [ ] Summaries
         - [ ] Total by Time Type
         - [ ] Total by Project
