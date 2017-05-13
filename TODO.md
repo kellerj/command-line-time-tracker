@@ -59,6 +59,7 @@
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
         - [ ] Add emoji column for waste of time Entries
+        - [x] Add option to suppress the date output
     - [x] Edit
         - [x] Date parameter (optional - default to today)
         - [x] parameter --last to auto-edit the most recent entry
@@ -115,3 +116,4 @@
     - [ ] Remove
     - [ ] Assign
         - [ ] Display list of all time types with pre-selected radio buttons
+- [ ] Add function to log break time - hidden from lists unless option given - use on getting last minute count

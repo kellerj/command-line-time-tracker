@@ -10,6 +10,7 @@ const Table = require('easy-table');
 const moment = require('moment');
 const sprintf = require('sprintf-js').sprintf;
 const validations = require('./validations');
+const Rx = require('rx');
 
 commander
     .version('1.0.0')
@@ -91,6 +92,7 @@ function* run() {
   projects.push(new inquirer.Separator());
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
   const lastEntry = yield* db.timeEntry.getMostRecentEntry();
+  debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = 60;
@@ -98,7 +100,6 @@ function* run() {
     minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
   }
 
-  debug(JSON.stringify(lastEntry, null, 2));
   // If project option is not a valid project, reject with list of project names
   if (projectName) {
     projectName = projectName.trim();
@@ -120,81 +121,95 @@ function* run() {
     }
   }
 
-  inquirer.prompt([
-    {
-      name: 'entryDescription',
-      type: 'input',
-      message: 'Entry Description:',
-      filter: input => (input.trim()),
-      validate: validations.validateEntryDescription,
-      when: () => (entryDescription === ''),
+  // Build the new entry object with command line arguments
+  const newEntry = {
+    entryDescription,
+    project: projectName,
+    timeType,
+    minutes,
+    entryDate,
+    wasteOfTime: false,
+  };
+
+  // const bottomBar = new inquirer.ui.BottomBar();
+  // bottomBar.updateBottomBar(minutesSinceLastEntry);
+  const prompts = new Rx.Subject();
+
+  inquirer.prompt(prompts).ui.process.subscribe(
+    // handle each answer
+    (lastAnswer) => {
+      debug(JSON.stringify(lastAnswer));
+      newEntry[lastAnswer.name] = lastAnswer.answer;
+      if (lastAnswer.name === 'wasteOfTime') {
+        prompts.onCompleted();
+      }
     },
-    {
-      name: 'project',
-      type: 'list',
-      message: 'Project:',
-      choices: projects,
-      when: () => (projectName === undefined),
-      pageSize: 15,
+    (err) => {
+      console.log(chalk.bgRed(JSON.stringify(err)));
     },
-    {
-      name: 'newProject',
-      type: 'input',
-      message: 'New Project Name:',
-      filter: input => (input.trim()),
-      when: answers => (answers.project === '(New Project)'),
-    },
-    {
-      name: 'timeType',
-      type: 'list',
-      message: 'Type of Type:',
-      choices: timeTypes,
-      when: () => (timeType === undefined),
-      pageSize: 15,
-    },
-    {
-      name: 'minutes',
-      type: 'input',
-      message: 'Minutes:',
-      default: minutesSinceLastEntry,
-      validate: validations.validateMinutes,
-      filter: val => (Number.parseInt(val, 10)),
-      when: () => (minutes === undefined || minutes === null),
-    },
-    {
-      name: 'wasteOfTime',
-      type: 'confirm',
-      message: 'Waste of Time?',
-      default: false,
-      when: answer => (answer.minutes !== undefined),
-    },
-  ]).then((answer) => {
-    // fill in for questions which were skipped because they were on the command line
-    if (!answer.entryDescription) {
-      answer.entryDescription = entryDescription.trim();
-    }
-    if (answer.newProject) {
-      addProject(answer.newProject);
-      answer.project = answer.newProject;
-      delete answer.newProject;
-    }
-    if (!answer.project) {
-      answer.project = projectName;
-    }
-    if (!answer.timeType) {
-      answer.timeType = timeType;
-    }
-    if (!answer.minutes) {
-      answer.minutes = Number.parseInt(minutes, 10);
-    }
-    if (answer.wasteOfTime === undefined) {
-      answer.wasteOfTime = false;
-    }
-    if (entryDate) {
-      answer.entryDate = entryDate;
-    }
-    debug(JSON.stringify(answer, null, 2));
-    performUpdate(answer);
+    () => {
+      const answer = newEntry;
+      // fill in for questions which were skipped because they were on the command line
+      if (!answer.entryDescription) {
+        answer.entryDescription = entryDescription.trim();
+      }
+      if (answer.newProject) {
+        addProject(answer.newProject);
+        answer.project = answer.newProject;
+        delete answer.newProject;
+      }
+      debug(JSON.stringify(answer, null, 2));
+      performUpdate(answer);
+    });
+
+
+  prompts.onNext({
+    name: 'entryDescription',
+    type: 'input',
+    message: 'Entry Description:',
+    filter: input => (input.trim()),
+    validate: validations.validateEntryDescription,
+    when: () => (entryDescription === ''),
+  });
+  prompts.onNext({
+    name: 'project',
+    type: 'list',
+    message: 'Project:',
+    choices: projects,
+    when: () => (projectName === undefined),
+    pageSize: 15,
+  });
+  prompts.onNext({
+    name: 'newProject',
+    type: 'input',
+    message: 'New Project Name:',
+    validate: validations.validateProjectName,
+    filter: input => (input.trim()),
+    when: () => (newEntry.project === '(New Project)'),
+  });
+  prompts.onNext({
+    name: 'timeType',
+    type: 'list',
+    message: 'Type of Type:',
+    choices: timeTypes,
+    when: () => (timeType === undefined),
+    pageSize: 15,
+  });
+  prompts.onNext({
+    name: 'minutes',
+    type: 'input',
+    message: 'Minutes:',
+    default: minutesSinceLastEntry,
+    validate: validations.validateMinutes,
+    filter: val => (Number.parseInt(val, 10)),
+    when: () => (minutes === undefined || minutes === null),
+  });
+  prompts.onNext({
+    name: 'wasteOfTime',
+    type: 'confirm',
+    message: 'Waste of Time?',
+    default: false,
+    when: answer => (answer.minutes !== undefined),
   });
 }
 

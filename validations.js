@@ -18,4 +18,10 @@ module.exports = {
     return true;
   },
 
+  validateProjectName: (input) => {
+    if (!input) {
+      return 'project name is required';
+    }
+    return true;
+  },
 };
