@@ -17,6 +17,7 @@ commander
     .parse(process.argv);
 
 let entryDate = commander.date;
+const noDateOutput = commander.nodate;
 
 // if not set, use today.  In either case set to start of day
 if (!entryDate) {
@@ -62,7 +63,9 @@ co(function* run() {
     debug(JSON.stringify(r, null, 2));
     const t = new Table();
     r.forEach((item) => {
-      t.cell('Date', item.entryDate, entryDatePrinter);
+      if (!noDateOutput) {
+        t.cell('Date', item.entryDate, entryDatePrinter);
+      }
       t.cell('Logged', item.insertTime, insertTimePrinter);
       t.cell('Project', item.project ? item.project : '');
       t.cell('Type', item.timeType ? item.timeType : '');
