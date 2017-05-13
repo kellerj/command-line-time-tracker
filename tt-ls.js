@@ -13,6 +13,7 @@ commander
     .description('List time entries in a tabular format.')
     //.option('--csv', 'Output in a CSV format instead of ASCII table.')
     .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
+    .option('--nodate', 'Suppress the date in the first column')
     .parse(process.argv);
 
 let entryDate = commander.date;
