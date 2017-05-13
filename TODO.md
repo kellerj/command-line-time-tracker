@@ -27,7 +27,7 @@
     - [x] Dates
     - [x] Time
 - [ ] Time entries
-    - [ ] Add
+    - [x] Add
         - [x] Full Command Line
             - [x] Parse parameters
             - [x] Validate parameters
@@ -47,7 +47,7 @@
             - [x] Don't attempt the calculation if the entry date has been set manually
         - [x] Add control data (times)
         - [x] save item to database
-        - [ ] Add a bottom bar with current minutes derived from last entry
+        - [x] Add a bottom bar with current minutes derived from last entry
         - [x] Allow addition of new project
             - [x] add a separator bar
             - [x] option for new project

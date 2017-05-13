@@ -131,14 +131,14 @@ function* run() {
     wasteOfTime: false,
   };
 
-  // const bottomBar = new inquirer.ui.BottomBar();
-  // bottomBar.updateBottomBar(minutesSinceLastEntry);
+  const ui = new inquirer.ui.BottomBar();
   const prompts = new Rx.Subject();
 
   inquirer.prompt(prompts).ui.process.subscribe(
     // handle each answer
     (lastAnswer) => {
       debug(JSON.stringify(lastAnswer));
+      // for each answer, update the newEntry object
       newEntry[lastAnswer.name] = lastAnswer.answer;
       if (lastAnswer.name === 'wasteOfTime') {
         prompts.onCompleted();
@@ -148,21 +148,18 @@ function* run() {
       console.log(chalk.bgRed(JSON.stringify(err)));
     },
     () => {
-      const answer = newEntry;
-      // fill in for questions which were skipped because they were on the command line
-      if (!answer.entryDescription) {
-        answer.entryDescription = entryDescription.trim();
+      debug(JSON.stringify(newEntry, null, 2));
+      // if they answered the newProject question, create that project first
+      if (newEntry.newProject) {
+        addProject(newEntry.newProject);
+        newEntry.project = newEntry.newProject;
+        delete newEntry.newProject;
       }
-      if (answer.newProject) {
-        addProject(answer.newProject);
-        answer.project = answer.newProject;
-        delete answer.newProject;
-      }
-      debug(JSON.stringify(answer, null, 2));
-      performUpdate(answer);
+      // write the time entry to the database
+      performUpdate(newEntry);
     });
 
-
+  // Initialize all the prompts
   prompts.onNext({
     name: 'entryDescription',
     type: 'input',
@@ -211,6 +208,7 @@ function* run() {
     default: false,
     when: answer => (answer.minutes !== undefined),
   });
+  ui.log.write(`${minutesSinceLastEntry} minutes since last entry logged`);
 }
 
 co(run);
