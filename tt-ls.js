@@ -71,6 +71,7 @@ co(function* run() {
       t.cell('Type', item.timeType ? item.timeType : '');
       t.cell('Time', item.minutes ? item.minutes : 0, timePrinter);
       t.cell('Description', item.entryDescription);
+      t.cell(' ', item.wasteOfTime ? '💩' : '');
       t.newRow();
     });
     t.total('Time', {

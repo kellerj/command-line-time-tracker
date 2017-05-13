@@ -54,11 +54,11 @@
             - [x] Asking of question for project name
             - [x] saving of project name
             - [x] setting in answer array
-    - [ ] List
+    - [x] List
         - [x] Defaulting Today
         - [x] Date Parameter Support
         - [x] Format (table): Entry Date : Insert Time, Project, Type, Time, Description
-        - [ ] Add emoji column for waste of time Entries
+        - [x] Add emoji column for waste of time Entries
         - [x] Add option to suppress the date output
     - [x] Edit
         - [x] Date parameter (optional - default to today)
