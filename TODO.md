@@ -72,6 +72,7 @@
         - [x] delete those selected upon confirm
         - [ ] Add --last option for deletions - but include confirmation
     - [ ] Summaries
+        - [ ] Heading indicating the nature of the summary and the timeframe
         - [ ] Total by Time Type
         - [ ] Total by Project
         - [ ] Grid...projects down side, time types as columns - totals right and bottom
@@ -87,12 +88,12 @@
         - [ ] -s --startDate, -e --endDate
 - [x] Determine how to do colored table-based output
 - [ ] Add "binaries" for all sub-commands
-    - [ ] Time Entry
+    - [x] Time Entry
     - [x] Project
     - [x] Time Type
     - [ ] Summary
 - [x] Add ESLint to project
-
+- [ ] rename remove to delete
 
 ## Phase 2
 
@@ -117,3 +118,5 @@
     - [ ] Assign
         - [ ] Display list of all time types with pre-selected radio buttons
 - [ ] Add function to log break time - hidden from lists unless option given - use on getting last minute count
+- [ ] add Start and end date parameters to the list command
+- [ ] See if sub-commands can be aliased

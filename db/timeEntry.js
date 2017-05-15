@@ -123,4 +123,34 @@ module.exports = {
     }
     return null;
   },
+
+  * summarizeByProjectAndTimeType(startDate, endDate) {
+    debug(`Summarize Time Entries: ${startDate} -- ${endDate}`);
+    const db = yield MongoClient.connect(config.db.url);
+    const collection = db.collection(collectionName);
+
+    if (!endDate) {
+      // eslint-disable-next-line no-param-reassign
+      endDate = startDate;
+    }
+
+    if (debug.enabled) {
+      // eslint-disable-next-line global-require
+      require('mongodb').Logger.setLevel('debug');
+    }
+
+    const cursor = collection.aggregate(
+      [
+        { $match: { entryDate: '2017-05-13' } },
+        { $group: {
+          _id: { project: '$project', timeType: '$timeType' },
+          minutes: { $sum: '$minutes' },
+        } },
+        { $project: { project: '$_id.project', timeType: '$_id.timeType', minutes: '$minutes', _id: 0 } },
+        { $sort: { _id: 1 } },
+      ]);
+    const r = yield cursor.toArray();
+    db.close();
+    return r;
+  },
 };

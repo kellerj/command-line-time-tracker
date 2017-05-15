@@ -206,7 +206,7 @@ function* run() {
     type: 'confirm',
     message: 'Waste of Time?',
     default: false,
-    when: answer => (answer.minutes !== undefined),
+    // when: answer => (answer.minutes !== undefined),
   });
   ui.log.write(`${minutesSinceLastEntry} minutes since last entry logged`);
 }
