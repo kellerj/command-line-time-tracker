@@ -13,21 +13,47 @@ commander
     .description('Summarize time entry data in various formats.')
     //.option('--csv', 'Output in a CSV format instead of ASCII table.')
     .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
+    .option('-s, --startDate <YYYY-MM-DD>')
+    .option('-e, --endDate <YYYY-MM-DD>')
     .parse(process.argv);
 
+// Initialize to string values: will be converted to date objects later
 let entryDate = commander.date;
+let startDate = commander.startDate;
+let endDate = commander.endDate;
 
-// if not set, use today.  In either case set to start of day
-if (!entryDate) {
-  entryDate = moment().startOf('day').toDate();
-} else {
-  if (!moment(entryDate, 'YYYY-MM-DD').isValid()) {
-    console.log(chalk.red(`Date ${entryDate} is not a valid date.`));
+// debug(commander);
+
+function validateAndDefaultInputDateString(dateString) {
+  if (!dateString) {
+    return moment().startOf('day');
+  }
+  if (!moment(dateString, 'YYYY-MM-DD').isValid()) {
+    console.log(chalk.red(`Date ${dateString} is not a valid date.`));
     process.exit(-1);
   }
-  entryDate = moment(entryDate).startOf('day').toDate();
+  return moment(dateString).startOf('day');
 }
 
+// if not set, use today.  In either case set to start of day
+if (entryDate || (!startDate && !endDate)) {
+  debug(`Start and end date not set, using entryDate: ${entryDate}`);
+  entryDate = validateAndDefaultInputDateString(entryDate);
+  startDate = entryDate;
+  endDate = entryDate;
+} else {
+  debug(`Using start and end dates: ${startDate} -- ${endDate}`);
+  // we have a start date and/or end date
+  startDate = validateAndDefaultInputDateString(startDate);
+  endDate = validateAndDefaultInputDateString(endDate);
+  if (startDate.isAfter(endDate)) {
+    debug(`${startDate} is after ${endDate}`);
+    startDate = endDate;
+  }
+}
+// done with the moment objects - convert to dates for later use
+startDate = startDate.toDate();
+endDate = endDate.toDate();
 
 // eslint-disable-next-line no-unused-vars
 function entryDatePrinter(val, width) {
@@ -55,7 +81,7 @@ function timePrinter(val, width) {
 }
 
 co(function* run() {
-  const r = yield* db.timeEntry.summarizeByProjectAndTimeType(entryDate);
+  const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   debug(JSON.stringify(r, null, 2));
 
   // need to transform the structure into a new grid format - group by project
