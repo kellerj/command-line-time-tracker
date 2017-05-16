@@ -73,25 +73,25 @@
         - [ ] Add --last option for deletions - but include confirmation
     - [ ] Summaries
         - [ ] Heading indicating the nature of the summary and the timeframe
-        - [ ] Total by Time Type
-        - [ ] Total by Project
-        - [ ] Grid...projects down side, time types as columns - totals right and bottom
+        - [x] Total by Time Type
+        - [x] Total by Project
+        - [x] Grid...projects down side, time types as columns - totals right and bottom
         - [ ] Daily Summary in Markdown format
             - [ ] Group by project as level 3 headings
             - [ ] include total time for project
             - [ ] summary of time types for the day
-        - [ ] default report for today
+        - [x] default report for today
         - [ ] --day (default)
         - [ ] --week
         - [ ] --month
         - [ ] -p --previous
         - [ ] -s --startDate, -e --endDate
 - [x] Determine how to do colored table-based output
-- [ ] Add "binaries" for all sub-commands
+- [x] Add "binaries" for all sub-commands
     - [x] Time Entry
     - [x] Project
     - [x] Time Type
-    - [ ] Summary
+    - [x] Summary
 - [x] Add ESLint to project
 - [ ] rename remove to delete
 

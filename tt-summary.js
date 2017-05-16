@@ -60,15 +60,42 @@ co(function* run() {
 
   // need to transform the structure into a new grid format - group by project
   // and build a record with keys for each time type
-
+  const headings = r.reduce((acc, item) => {
+    if (acc.indexOf(item.timeType) === -1) {
+      acc.push(item.timeType);
+    }
+    return acc;
+  }, []);
+  const grid = r.reduce((acc, item) => {
+    let projectRow = acc.find(i => (i.project === item.project));
+    if (!projectRow) {
+      projectRow = { project: item.project };
+      acc.push(projectRow);
+    }
+    if (!projectRow[item.timeType]) {
+      projectRow[item.timeType] = 0;
+    }
+    projectRow[item.timeType] += item.minutes;
+    return acc;
+  }, []);
 
   const t = new Table();
-  r.forEach((item) => {
+  grid.forEach((item) => {
     t.cell('Project', item.project ? item.project : '');
-    t.cell('Time', item.minutes ? item.minutes : 0, timePrinter);
+    let projectTotal = 0;
+    headings.forEach((heading) => {
+      t.cell(heading, item[heading] ? item[heading] : 0, timePrinter);
+      projectTotal += item[heading] ? item[heading] : 0;
+    });
+    t.cell('Project Total', projectTotal, timePrinter);
     t.newRow();
   });
-  t.total('Time', {
+  headings.forEach((heading) => {
+    t.total(heading, {
+      printer: timePrinter,
+    });
+  });
+  t.total('Project Total', {
     printer: timePrinter,
   });
   console.log(t.toString());

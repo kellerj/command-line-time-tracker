@@ -141,7 +141,12 @@ module.exports = {
 
     const cursor = collection.aggregate(
       [
-        { $match: { entryDate: '2017-05-13' } },
+        { $match: {
+          entryDate: {
+            $gte: moment(startDate).format(ENTRY_DATE_FORMAT),
+            $lte: moment(endDate).format(ENTRY_DATE_FORMAT),
+          },
+        } },
         { $group: {
           _id: { project: '$project', timeType: '$timeType' },
           minutes: { $sum: '$minutes' },
