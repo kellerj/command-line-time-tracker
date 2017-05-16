@@ -70,11 +70,11 @@ function insertTimePrinter(val, width) {
 function timePrinter(val, width) {
   const duration = moment.duration(val, 'minutes');
   let str = '';
-  if (duration.get('hours')) {
-    str += `${duration.get('hours')}h `;
+  if (duration.asHours()) {
+    str += `${Math.floor(duration.asHours())}h `;
   }
-  if (duration.get('minutes')) {
-    str += `${duration.get('minutes')}m`;
+  if (duration.minutes()) {
+    str += `${duration.minutes()}m`;
   }
   str = str.trim();
   return width ? Table.padLeft(str, width) : str;
