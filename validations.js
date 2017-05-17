@@ -1,3 +1,6 @@
+const moment = require('moment');
+const chalk = require('chalk');
+
 module.exports = {
 
   validateMinutes: (val) => {
@@ -24,4 +27,16 @@ module.exports = {
     }
     return true;
   },
+
+  validateAndDefaultInputDateString: (dateString) => {
+    if (!dateString) {
+      return moment().startOf('day');
+    }
+    if (!moment(dateString, 'YYYY-MM-DD').isValid()) {
+      console.log(chalk.red(`Date ${dateString} is not a valid date.`));
+      process.exit(-1);
+    }
+    return moment(dateString).startOf('day');
+  },
+
 };

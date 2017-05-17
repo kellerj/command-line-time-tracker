@@ -7,6 +7,7 @@ const Table = require('easy-table');
 const moment = require('moment');
 const db = require('./db');
 const debug = require('debug')('tt:summary');
+const validations = require('./validations');
 
 commander
     .version('1.0.0')
@@ -24,28 +25,17 @@ let endDate = commander.endDate;
 
 // debug(commander);
 
-function validateAndDefaultInputDateString(dateString) {
-  if (!dateString) {
-    return moment().startOf('day');
-  }
-  if (!moment(dateString, 'YYYY-MM-DD').isValid()) {
-    console.log(chalk.red(`Date ${dateString} is not a valid date.`));
-    process.exit(-1);
-  }
-  return moment(dateString).startOf('day');
-}
-
 // if not set, use today.  In either case set to start of day
 if (entryDate || (!startDate && !endDate)) {
   debug(`Start and end date not set, using entryDate: ${entryDate}`);
-  entryDate = validateAndDefaultInputDateString(entryDate);
+  entryDate = validations.validateAndDefaultInputDateString(entryDate);
   startDate = entryDate;
   endDate = entryDate;
 } else {
   debug(`Using start and end dates: ${startDate} -- ${endDate}`);
   // we have a start date and/or end date
-  startDate = validateAndDefaultInputDateString(startDate);
-  endDate = validateAndDefaultInputDateString(endDate);
+  startDate = validations.validateAndDefaultInputDateString(startDate);
+  endDate = validations.validateAndDefaultInputDateString(endDate);
   if (startDate.isAfter(endDate)) {
     debug(`${startDate} is after ${endDate}`);
     startDate = endDate;
