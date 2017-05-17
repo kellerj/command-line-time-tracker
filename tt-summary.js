@@ -84,7 +84,9 @@ function timePrinter(val, width) {
 co(function* run() {
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   debug(JSON.stringify(r, null, 2));
-
+  // eslint-disable-next-line no-param-reassign
+  const totalTime = r.reduce((acc, item) => (acc += item.minutes), 0);
+  console.log(totalTime);
   // need to transform the structure into a new grid format - group by project
   // and build a record with keys for each time type
   const headings = r.reduce((acc, item) => {
@@ -115,6 +117,7 @@ co(function* run() {
       projectTotal += item[heading] ? item[heading] : 0;
     });
     t.cell('Totals', projectTotal, timePrinter);
+    t.cell('   %', Table.padLeft(`${Math.round(100 * (projectTotal / totalTime), 0)}%`, 4));
     t.newRow();
   });
   headings.forEach((heading) => {
