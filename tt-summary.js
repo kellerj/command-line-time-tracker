@@ -70,13 +70,14 @@ function insertTimePrinter(val, width) {
 function timePrinter(val, width) {
   const duration = moment.duration(val, 'minutes');
   let str = '';
-  if (duration.asHours()) {
+  if (duration.asHours() >= 1) {
     str += `${Math.floor(duration.asHours())}h `;
   }
   if (duration.minutes()) {
-    str += `${duration.minutes()}m`;
+    str += Table.padLeft(`${duration.minutes()}m`, 3);
+  } else {
+    str += '   ';
   }
-  str = str.trim();
   return width ? Table.padLeft(str, width) : str;
 }
 
@@ -113,7 +114,7 @@ co(function* run() {
       t.cell(heading, item[heading] ? item[heading] : 0, timePrinter);
       projectTotal += item[heading] ? item[heading] : 0;
     });
-    t.cell('Project Total', projectTotal, timePrinter);
+    t.cell('Totals', projectTotal, timePrinter);
     t.newRow();
   });
   headings.forEach((heading) => {
@@ -121,7 +122,7 @@ co(function* run() {
       printer: timePrinter,
     });
   });
-  t.total('Project Total', {
+  t.total('Totals', {
     printer: timePrinter,
   });
   console.log(t.toString());
