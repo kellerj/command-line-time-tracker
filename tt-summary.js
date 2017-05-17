@@ -73,10 +73,13 @@ function timePrinter(val, width) {
 
 co(function* run() {
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
+  if (!r.length) {
+    console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
+    return;
+  }
   debug(JSON.stringify(r, null, 2));
   // eslint-disable-next-line no-param-reassign
   const totalTime = r.reduce((acc, item) => (acc += item.minutes), 0);
-  console.log(totalTime);
   // need to transform the structure into a new grid format - group by project
   // and build a record with keys for each time type
   const headings = r.reduce((acc, item) => {

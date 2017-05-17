@@ -7,6 +7,6 @@ commander
     .description('Manage current projects for time tracking.')
     .command('add', 'Add a time tracking project to the database')
     .command('ls', 'List existing projects.', { isDefault: true })
-    .command('remove', 'Remove a time tracking project from the database')
+    .command('del', 'Remove a time tracking project from the database')
     // .command('rename', 'Rename an existing project throughout the database.')
     .parse(process.argv);

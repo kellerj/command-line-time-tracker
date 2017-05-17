@@ -93,7 +93,7 @@
     - [x] Time Type
     - [x] Summary
 - [x] Add ESLint to project
-- [ ] rename remove to delete
+- [x] rename remove to delete
 
 ## Phase 2
 
@@ -111,7 +111,7 @@
 - [ ] Entry List
     - [ ] Date Range Support
     - [ ] CSV format option
-- [ ] Time Type Categories
+- [ ] Time Type Categories (Communication, Team Support, Design/Development)
     - [ ] Add
     - [ ] ls
     - [ ] Remove
