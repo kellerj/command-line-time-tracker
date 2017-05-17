@@ -165,9 +165,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-commander@2.9.x:
+"commander@git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f":
   version "2.9.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.9.0.tgz#9c99094176e12240cb22d6c5146098400fe0f7d4"
+  resolved "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f"
   dependencies:
     graceful-readlink ">= 1.0.0"
 

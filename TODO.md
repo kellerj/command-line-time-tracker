@@ -111,6 +111,8 @@
 - [ ] Entry List
     - [ ] Date Range Support
     - [ ] CSV format option
+    - [ ] project criteria option
+    - [ ] max description length option
 - [ ] Time Type Categories (Communication, Team Support, Design/Development)
     - [ ] Add
     - [ ] ls
@@ -118,5 +120,5 @@
     - [ ] Assign
         - [ ] Display list of all time types with pre-selected radio buttons
 - [ ] Add function to log break time - hidden from lists unless option given - use on getting last minute count
-- [ ] add Start and end date parameters to the list command
-- [ ] See if sub-commands can be aliased
+    - [ ] Use different column for minutes to preserve existing code
+- [x] See if sub-commands can be aliased

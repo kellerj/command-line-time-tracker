@@ -13,7 +13,7 @@
     "assert": "1.4.x",
     "chalk": "1.1.x",
     "co": "4.6.x",
-    "commander": "2.9.x",
+    "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
     "debug": "2.6.x",
     "easy-table": "1.1.x",
     "inquirer": "3.0.x",
