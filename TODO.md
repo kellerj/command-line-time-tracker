@@ -84,8 +84,8 @@
         - [ ] --day (default)
         - [ ] --week
         - [ ] --month
-        - [ ] -p --previous
-        - [ ] -s --startDate, -e --endDate
+        - [ ] --prev
+        - [x] -s --startDate, -e --endDate
 - [x] Determine how to do colored table-based output
 - [x] Add "binaries" for all sub-commands
     - [x] Time Entry
