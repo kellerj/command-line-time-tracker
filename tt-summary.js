@@ -4,10 +4,10 @@ const commander = require('commander');
 const co = require('co');
 const chalk = require('chalk');
 const Table = require('easy-table');
-const moment = require('moment');
 const db = require('./db');
-const debug = require('debug')('tt:summary');
 const validations = require('./validations');
+const tableUtils = require('./table-utils');
+const debug = require('debug')('tt:summary');
 
 commander
     .version('1.0.0')
@@ -45,32 +45,6 @@ if (entryDate || (!startDate && !endDate)) {
 startDate = startDate.toDate();
 endDate = endDate.toDate();
 
-// eslint-disable-next-line no-unused-vars
-function entryDatePrinter(val, width) {
-  const str = moment(val).format('ddd, MMM Do');
-  return str;
-}
-
-// eslint-disable-next-line no-unused-vars
-function insertTimePrinter(val, width) {
-  const str = moment(val).format('h:mm a');
-  return str;
-}
-
-function timePrinter(val, width) {
-  const duration = moment.duration(val, 'minutes');
-  let str = '';
-  if (duration.asHours() >= 1) {
-    str += `${Math.floor(duration.asHours())}h `;
-  }
-  if (duration.minutes()) {
-    str += Table.padLeft(`${duration.minutes()}m`, 3);
-  } else {
-    str += '   ';
-  }
-  return width ? Table.padLeft(str, width) : str;
-}
-
 co(function* run() {
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
@@ -106,20 +80,20 @@ co(function* run() {
     t.cell('Project', item.project ? item.project : '');
     let projectTotal = 0;
     headings.forEach((heading) => {
-      t.cell(heading, item[heading] ? item[heading] : 0, timePrinter);
+      t.cell(heading, item[heading] ? item[heading] : 0, tableUtils.timePrinter);
       projectTotal += item[heading] ? item[heading] : 0;
     });
-    t.cell('Totals', projectTotal, timePrinter);
+    t.cell('Totals', projectTotal, tableUtils.timePrinter);
     t.cell('   %', Table.padLeft(`${Math.round(100 * (projectTotal / totalTime), 0)}%`, 4));
     t.newRow();
   });
   headings.forEach((heading) => {
     t.total(heading, {
-      printer: timePrinter,
+      printer: tableUtils.timePrinter,
     });
   });
   t.total('Totals', {
-    printer: timePrinter,
+    printer: tableUtils.timePrinter,
   });
   console.log(t.toString());
 }).catch((err) => {

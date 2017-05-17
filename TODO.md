@@ -86,6 +86,7 @@
         - [ ] --month
         - [ ] --prev
         - [x] -s --startDate, -e --endDate
+        - [ ] Add percentage to time type totals on main grid
 - [x] Determine how to do colored table-based output
 - [x] Add "binaries" for all sub-commands
     - [x] Time Entry
@@ -94,6 +95,7 @@
     - [x] Summary
 - [x] Add ESLint to project
 - [x] rename remove to delete
+- [x] See if sub-commands can be aliased
 
 ## Phase 2
 
@@ -121,4 +123,6 @@
         - [ ] Display list of all time types with pre-selected radio buttons
 - [ ] Add function to log break time - hidden from lists unless option given - use on getting last minute count
     - [ ] Use different column for minutes to preserve existing code
-- [x] See if sub-commands can be aliased
+- [ ] Add sort order to time types
+- [ ] Make "Other" project special (not in DB) and always sort at end
+
