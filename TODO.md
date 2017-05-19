@@ -73,6 +73,9 @@
         - [ ] Add --last option for deletions - but include confirmation
     - [ ] Summaries
         - [ ] Heading indicating the nature of the summary and the timeframe
+        - [ ] sort of project names - perform in MongoDB
+        - [ ] Sort list of time types for display
+        - [ ] sort "Other" project to end
         - [x] Total by Time Type
         - [x] Total by Project
         - [x] Grid...projects down side, time types as columns - totals right and bottom
@@ -96,9 +99,17 @@
 - [x] Add ESLint to project
 - [x] rename remove to delete
 - [x] See if sub-commands can be aliased
+- [ ] Entry edit and remove lists - increase display size
+- [ ] Fix name of tt-remove
 
 ## Phase 2
 
+- [ ] Notes functionality on time Entries
+    - [ ] --note option on add to tell system that we want to include a note
+    - [ ] editor style prompt for the note
+    - [ ] --notes on list command to show notes
+    - [ ] column on normal list display to indicate existence of note
+    - [ ] second row for display of notes?
 - [ ] Switch implementation to the observable pattern??
 - [ ] On entry add - check for name of project in description and set as default
 - [ ] Additional parameter to change the MongoDB database used for commands
