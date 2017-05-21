@@ -7,14 +7,17 @@ const db = require('./db');
 const chalk = require('chalk');
 const moment = require('moment');
 const debug = require('debug')('tt:delete');
-const sprintf = require('sprintf-js').sprintf;
+const displayUtils = require('./display-utils');
 
 commander
     .version('1.0.0')
     .option('-d, --date <YYYY-MM-DD>', 'Date from which to remove items.')
+    .option('--last', 'Remove the most recent entry.')
     .parse(process.argv);
 
 const entryDate = commander.date;
+const deleteLast = commander.last;
+debug(JSON.stringify(commander, null, 2));
 
 function* performUpdate(entries) {
   for (let i = 0; i < entries.length; i += 1) {
@@ -29,38 +32,47 @@ function* performUpdate(entries) {
 }
 
 co(function* run() {
-  const r = yield* db.timeEntry.get(entryDate);
+  let entries = [];
+  if (deleteLast) {
+    debug('Getting last entry');
+    const entry = yield* db.timeEntry.getMostRecentEntry();
+    debug('Got Last Entry');
+    console.log(chalk.yellow(displayUtils.formatEntryChoice(entry)));
+    entries.push(entry);
+  } else {
+    entries = yield* db.timeEntry.get(entryDate);
+  }
 
-  if (r && r.length) {
-    debug(JSON.stringify(r, null, 2));
+  if (entries && entries.length) {
+    debug(JSON.stringify(entries, null, 2));
   } else {
     console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
   }
-  if (r) {
-    debug(JSON.stringify(r, null, 2));
+  if (entries) {
     const answer = yield inquirer.prompt([
       {
         name: 'entries',
         type: 'checkbox',
         message: 'Select Time Entries to Remove',
-        choices: r.map(item => ({
+        pageSize: 15,
+        when: () => (!deleteLast),
+        choices: entries.map(item => ({
           value: item._id,
-          name: sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
-            moment(item.insertTime).format('h:mm a'),
-            item.entryDescription,
-            item.minutes,
-            item.project,
-            item.timeType) })),
+          name: displayUtils.formatEntryChoice(item),
+        })),
       },
       {
         name: 'confirm',
         type: 'confirm',
         message: 'Are you sure you want to delete these time entries?',
         default: false,
-        when: answers => (answers.entries.length),
+        when: answers => (deleteLast || (answers.entries && answers.entries.length)),
       },
     ]);
     if (answer.confirm) {
+      if (deleteLast) {
+        answer.entries = [entries[0]._id];
+      }
       yield* performUpdate(answer.entries);
     }
   } else {

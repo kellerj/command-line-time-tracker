@@ -1,5 +1,6 @@
 const Table = require('easy-table');
 const moment = require('moment');
+const sprintf = require('sprintf-js').sprintf;
 
 module.exports = {
 
@@ -29,4 +30,10 @@ module.exports = {
     return width ? Table.padLeft(str, width) : str;
   },
 
+  formatEntryChoice: entry => sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
+      moment(entry.insertTime).format('h:mm a'),
+      entry.entryDescription,
+      entry.minutes,
+      entry.project,
+      entry.timeType),
 };

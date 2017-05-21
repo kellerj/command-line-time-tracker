@@ -9,6 +9,7 @@ const moment = require('moment');
 const debug = require('debug')('tt:edit');
 const sprintf = require('sprintf-js').sprintf;
 const validations = require('./validations');
+const displayUtils = require('./display-utils');
 
 commander
     .version('1.0.0')
@@ -49,14 +50,10 @@ function* getEntryToEdit() {
         name: 'entry',
         type: 'list',
         message: 'Select the Time Entry to Edit',
+        pageSize: 15,
         choices: r.map(item => ({
           value: item._id,
-          name: sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
-            moment(item.insertTime).format('h:mm a'),
-            item.entryDescription,
-            item.minutes,
-            item.project,
-            item.timeType) })),
+          name: displayUtils.formatEntryChoice(item) })),
       },
     ]);
     return r.find(e => (e._id === answer.entry));

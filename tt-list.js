@@ -6,7 +6,7 @@ const chalk = require('chalk');
 const Table = require('easy-table');
 const moment = require('moment');
 const db = require('./db');
-const tableUtils = require('./table-utils');
+const displayUtils = require('./display-utils');
 const debug = require('debug')('tt:ls');
 
 commander
@@ -39,18 +39,18 @@ co(function* run() {
     const t = new Table();
     r.forEach((item) => {
       if (!noDateOutput) {
-        t.cell('Date', item.entryDate, tableUtils.entryDatePrinter);
+        t.cell('Date', item.entryDate, displayUtils.entryDatePrinter);
       }
-      t.cell('Logged', item.insertTime, tableUtils.insertTimePrinter);
+      t.cell('Logged', item.insertTime, displayUtils.insertTimePrinter);
       t.cell('Project', item.project ? item.project : '');
       t.cell('Type', item.timeType ? item.timeType : '');
-      t.cell('Time', item.minutes ? item.minutes : 0, tableUtils.timePrinter);
+      t.cell('Time', item.minutes ? item.minutes : 0, displayUtils.timePrinter);
       t.cell('Description', item.entryDescription);
       t.cell(' ', item.wasteOfTime ? '💩' : '');
       t.newRow();
     });
     t.total('Time', {
-      printer: tableUtils.timePrinter,
+      printer: displayUtils.timePrinter,
     });
     console.log(t.toString());
   } else {

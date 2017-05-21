@@ -67,10 +67,10 @@
         - [x] Enter the Edit screen with defaults from existing record
             - [x] See if there is a way to re-use the inquirer settings from the add function
         - [x] Perform the DB update - don't alter the insert time
-    - [ ] Remove
+    - [x] Remove
         - [x] Display List as radio selection
         - [x] delete those selected upon confirm
-        - [ ] Add --last option for deletions - but include confirmation
+        - [x] Add --last option for deletions - but include confirmation
     - [ ] Summaries
         - [ ] Heading indicating the nature of the summary and the timeframe
         - [ ] sort of project names - perform in MongoDB
@@ -99,19 +99,45 @@
 - [x] Add ESLint to project
 - [x] rename remove to delete
 - [x] See if sub-commands can be aliased
-- [ ] Entry edit and remove lists - increase display size
-- [ ] Fix name of tt-remove
+- [x] Entry edit and remove lists - increase display size
+- [x] Fix name of tt-remove
 
-## Phase 2
+## Roadmap
 
+### 2.0
+
+- [ ] On entry add - check for name of project in description and set as default
+- [ ] Entry List
+    - [ ] Date Range Support
+    - [ ] CSV format option
+    - [ ] project criteria option
+    - [ ] max description length option
+- [ ] Add sort order to time types
+    - [ ] Database update
+    - [ ] new UI questions
+    - [ ] use of sort flag...how - no DB joins - need to sort in code
+- [ ] Make "Other" project special (not in DB) and always sort at end
+
+### 3.0
+
+- [ ] Add function to log break time - hidden from lists unless option given - use on getting last minute count
+    - [ ] Use different column for minutes to preserve existing code
+- [ ] Time Type Categories (Communication, Team Support, Design/Development)
+    - [ ] Add
+    - [ ] ls
+    - [ ] Remove
+    - [ ] Assign
+        - [ ] Display list of all time types with pre-selected radio buttons
 - [ ] Notes functionality on time Entries
     - [ ] --note option on add to tell system that we want to include a note
     - [ ] editor style prompt for the note
     - [ ] --notes on list command to show notes
     - [ ] column on normal list display to indicate existence of note
     - [ ] second row for display of notes?
-- [ ] Switch implementation to the observable pattern??
-- [ ] On entry add - check for name of project in description and set as default
+
+### Future
+
+- [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Export Function
     - [ ] JSON
@@ -121,19 +147,3 @@
         - [ ] Display list of projects for selection
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
-- [ ] Entry List
-    - [ ] Date Range Support
-    - [ ] CSV format option
-    - [ ] project criteria option
-    - [ ] max description length option
-- [ ] Time Type Categories (Communication, Team Support, Design/Development)
-    - [ ] Add
-    - [ ] ls
-    - [ ] Remove
-    - [ ] Assign
-        - [ ] Display list of all time types with pre-selected radio buttons
-- [ ] Add function to log break time - hidden from lists unless option given - use on getting last minute count
-    - [ ] Use different column for minutes to preserve existing code
-- [ ] Add sort order to time types
-- [ ] Make "Other" project special (not in DB) and always sort at end
-

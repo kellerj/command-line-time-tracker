@@ -6,7 +6,7 @@ const chalk = require('chalk');
 const Table = require('easy-table');
 const db = require('./db');
 const validations = require('./validations');
-const tableUtils = require('./table-utils');
+const displayUtils = require('./display-utils');
 const debug = require('debug')('tt:summary');
 
 commander
@@ -80,20 +80,20 @@ co(function* run() {
     t.cell('Project', item.project ? item.project : '');
     let projectTotal = 0;
     headings.forEach((heading) => {
-      t.cell(heading, item[heading] ? item[heading] : 0, tableUtils.timePrinter);
+      t.cell(heading, item[heading] ? item[heading] : 0, displayUtils.timePrinter);
       projectTotal += item[heading] ? item[heading] : 0;
     });
-    t.cell('Totals', projectTotal, tableUtils.timePrinter);
+    t.cell('Totals', projectTotal, displayUtils.timePrinter);
     t.cell('   %', Table.padLeft(`${Math.round(100 * (projectTotal / totalTime), 0)}%`, 4));
     t.newRow();
   });
   headings.forEach((heading) => {
     t.total(heading, {
-      printer: tableUtils.timePrinter,
+      printer: displayUtils.timePrinter,
     });
   });
   t.total('Totals', {
-    printer: tableUtils.timePrinter,
+    printer: displayUtils.timePrinter,
   });
   console.log(t.toString());
 }).catch((err) => {
