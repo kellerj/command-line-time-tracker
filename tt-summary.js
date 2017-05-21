@@ -16,6 +16,9 @@ commander
     .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
     .option('-s, --startDate <YYYY-MM-DD>')
     .option('-e, --endDate <YYYY-MM-DD>')
+    .option('--week', 'Report for the current week (starting Monday).')
+    .option('--month', 'Report for the current month.')
+    .option('--last', 'Change the week or month criteria to the prior week or month.')
     .parse(process.argv);
 
 // Initialize to string values: will be converted to date objects later
@@ -61,8 +64,15 @@ co(function* run() {
       acc.push(item.timeType);
     }
     return acc;
-  }, []);
-  const grid = r.reduce((acc, item) => {
+  }, []).sort((a, b) => {
+    if (a !== 'Other' && b === 'Other') {
+      return -1;
+    } else if (a === 'Other' && b !== 'Other') {
+      return 1;
+    }
+    return a.localeCompare(b);
+  });
+  let grid = r.reduce((acc, item) => {
     let projectRow = acc.find(i => (i.project === item.project));
     if (!projectRow) {
       projectRow = { project: item.project };
@@ -74,7 +84,14 @@ co(function* run() {
     projectRow[item.timeType] += item.minutes;
     return acc;
   }, []);
-
+  grid = grid.sort((a, b) => {
+    if (a.project !== 'Other' && b.project === 'Other') {
+      return -1;
+    } else if (a.project === 'Other' && b.project !== 'Other') {
+      return 1;
+    }
+    return a.project.localeCompare(b.project);
+  });
   const t = new Table();
   grid.forEach((item) => {
     t.cell('Project', item.project ? item.project : '');

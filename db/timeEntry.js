@@ -152,10 +152,11 @@ module.exports = {
           minutes: { $sum: '$minutes' },
         } },
         { $project: { project: '$_id.project', timeType: '$_id.timeType', minutes: '$minutes', _id: 0 } },
-        { $sort: { _id: 1 } },
+        { $sort: { project: 1, timeType: 1 } },
       ]);
     const r = yield cursor.toArray();
     db.close();
+    debug(`Summary Data: ${JSON.stringify(r, null, 2)}`);
     return r;
   },
 };

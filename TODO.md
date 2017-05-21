@@ -73,8 +73,8 @@
         - [x] Add --last option for deletions - but include confirmation
     - [ ] Summaries
         - [ ] Heading indicating the nature of the summary and the timeframe
-        - [ ] sort of project names - perform in MongoDB
-        - [ ] Sort list of time types for display
+        - [x] sort of project names - perform in MongoDB
+        - [x] Sort list of time types for display
         - [ ] sort "Other" project to end
         - [x] Total by Time Type
         - [x] Total by Project
@@ -84,10 +84,9 @@
             - [ ] include total time for project
             - [ ] summary of time types for the day
         - [x] default report for today
-        - [ ] --day (default)
         - [ ] --week
         - [ ] --month
-        - [ ] --prev
+        - [ ] --last
         - [x] -s --startDate, -e --endDate
         - [ ] Add percentage to time type totals on main grid
 - [x] Determine how to do colored table-based output
