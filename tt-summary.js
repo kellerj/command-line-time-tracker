@@ -118,13 +118,13 @@ co(function* run() {
       t.cell(heading, item[heading] ? item[heading] : 0, displayUtils.timePrinter);
       projectTotal += item[heading] ? item[heading] : 0;
     });
-    t.cell('Totals', projectTotal, displayUtils.timePrinter);
-    t.cell('   %', Table.padLeft(`${Math.round(100 * (projectTotal / totalTime), 0)}%`, 4));
+    t.cell('Totals', projectTotal, displayUtils.timeAndPercentPrinter(totalTime));
+    // t.cell('   %', Table.padLeft(`${Math.round(100 * (projectTotal / totalTime), 0)}%`, 4));
     t.newRow();
   });
   headings.forEach((heading) => {
     t.total(heading, {
-      printer: displayUtils.timePrinter,
+      printer: displayUtils.timeAndPercentPrinter(totalTime),
     });
   });
   t.total('Totals', {

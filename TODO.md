@@ -88,7 +88,7 @@
         - [x] --month
         - [x] --last
         - [x] -s --startDate, -e --endDate
-        - [ ] Add percentage to time type totals on main grid
+        - [x] Add percentage to time type totals on main grid
 - [x] Determine how to do colored table-based output
 - [x] Add "binaries" for all sub-commands
     - [x] Time Entry

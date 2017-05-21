@@ -30,6 +30,24 @@ module.exports = {
     return width ? Table.padLeft(str, width) : str;
   },
 
+  // this method returns a printer function for easy-table
+  // after incorporating the total time into the function
+  // so it can display percents
+  timeAndPercentPrinter: totalTime => (val, width) => {
+    const duration = moment.duration(val, 'minutes');
+    let str = '';
+    if (duration.asHours() >= 1) {
+      str += `${Math.floor(duration.asHours())}h `;
+    }
+    if (duration.minutes()) {
+      str += Table.padLeft(`${duration.minutes()}m`, 3);
+    } else {
+      str += '   ';
+    }
+    str = `(${Math.round(100 * (val / totalTime), 0)}%) ${str}`;
+    return width ? Table.padLeft(str, width) : str;
+  },
+
   formatEntryChoice: entry => sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
       moment(entry.insertTime).format('h:mm a'),
       entry.entryDescription,
