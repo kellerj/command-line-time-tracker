@@ -5,9 +5,10 @@ const co = require('co');
 const chalk = require('chalk');
 const Table = require('easy-table');
 const db = require('./db');
+const debug = require('debug')('tt:summary');
 const validations = require('./validations');
 const displayUtils = require('./display-utils');
-const debug = require('debug')('tt:summary');
+const moment = require('moment');
 
 commander
     .version('1.0.0')
@@ -26,7 +27,24 @@ let entryDate = commander.date;
 let startDate = commander.startDate;
 let endDate = commander.endDate;
 
-// debug(commander);
+if (commander.week || commander.month) {
+  const reportDate = moment();
+  if (commander.week) {
+    if (commander.last) {
+      reportDate.subtract(1, 'week');
+    }
+    debug(`Setting to week containing: ${reportDate}`);
+    startDate = moment(reportDate.startOf('isoWeek'));
+    endDate = moment(reportDate.endOf('isoWeek'));
+  } else if (commander.month) {
+    if (commander.last) {
+      reportDate.subtract(1, 'month');
+    }
+    debug(`Setting to month containing: ${reportDate}`);
+    startDate = moment(reportDate.startOf('month'));
+    endDate = moment(reportDate.endOf('month'));
+  }
+}
 
 // if not set, use today.  In either case set to start of day
 if (entryDate || (!startDate && !endDate)) {

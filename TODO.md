@@ -75,7 +75,7 @@
         - [ ] Heading indicating the nature of the summary and the timeframe
         - [x] sort of project names - perform in MongoDB
         - [x] Sort list of time types for display
-        - [ ] sort "Other" project to end
+        - [x] sort "Other" project to end
         - [x] Total by Time Type
         - [x] Total by Project
         - [x] Grid...projects down side, time types as columns - totals right and bottom
@@ -84,9 +84,9 @@
             - [ ] include total time for project
             - [ ] summary of time types for the day
         - [x] default report for today
-        - [ ] --week
-        - [ ] --month
-        - [ ] --last
+        - [x] --week
+        - [x] --month
+        - [x] --last
         - [x] -s --startDate, -e --endDate
         - [ ] Add percentage to time type totals on main grid
 - [x] Determine how to do colored table-based output
