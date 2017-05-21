@@ -72,7 +72,7 @@
         - [x] delete those selected upon confirm
         - [x] Add --last option for deletions - but include confirmation
     - [ ] Summaries
-        - [ ] Heading indicating the nature of the summary and the timeframe
+        - [x] Heading indicating the nature of the summary and the timeframe
         - [x] sort of project names - perform in MongoDB
         - [x] Sort list of time types for display
         - [x] sort "Other" project to end

@@ -130,6 +130,17 @@ co(function* run() {
   t.total('Totals', {
     printer: displayUtils.timePrinter,
   });
+
+  let reportHeader = '';
+  if (startDate.getTime() === endDate.getTime()) {
+    reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)}`;
+  } else {
+    reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
+  }
+  console.log(chalk.yellow('-'.repeat(reportHeader.length)));
+  console.log(chalk.yellow(reportHeader));
+  console.log(chalk.yellow('-'.repeat(reportHeader.length)));
+
   console.log(t.toString());
 }).catch((err) => {
   console.log(chalk.bgRed(err.stack));
