@@ -5,7 +5,7 @@ const inquirer = require('inquirer');
 const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
-const debug = require('debug')('tt:project:remove');
+const debug = require('debug')('tt:project:delete');
 
 commander
     .version('1.0.0')

@@ -6,7 +6,7 @@ const co = require('co');
 const db = require('./db');
 const chalk = require('chalk');
 const moment = require('moment');
-const debug = require('debug')('tt:remove');
+const debug = require('debug')('tt:delete');
 const sprintf = require('sprintf-js').sprintf;
 
 commander
