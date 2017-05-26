@@ -121,6 +121,8 @@
     - [ ] use of sort flag...how - no DB joins - need to sort in code
 - [ ] Make "Other" project special (not in DB) and always sort at end
 - [ ] Eliminate extra column when no wasted time entries on a day
+- [ ] support --last option on list
+- [ ] support --last option on summary when no modifier given
 
 ### 3.0
 

@@ -23,48 +23,7 @@ commander
     .parse(process.argv);
 
 // Initialize to string values: will be converted to date objects later
-let entryDate = commander.date;
-let startDate = commander.startDate;
-let endDate = commander.endDate;
-
-if (commander.week || commander.month) {
-  const reportDate = moment();
-  if (commander.week) {
-    if (commander.last) {
-      reportDate.subtract(1, 'week');
-    }
-    debug(`Setting to week containing: ${reportDate}`);
-    startDate = moment(reportDate.startOf('isoWeek'));
-    endDate = moment(reportDate.endOf('isoWeek'));
-  } else if (commander.month) {
-    if (commander.last) {
-      reportDate.subtract(1, 'month');
-    }
-    debug(`Setting to month containing: ${reportDate}`);
-    startDate = moment(reportDate.startOf('month'));
-    endDate = moment(reportDate.endOf('month'));
-  }
-}
-
-// if not set, use today.  In either case set to start of day
-if (entryDate || (!startDate && !endDate)) {
-  debug(`Start and end date not set, using entryDate: ${entryDate}`);
-  entryDate = validations.validateAndDefaultInputDateString(entryDate);
-  startDate = entryDate;
-  endDate = entryDate;
-} else {
-  debug(`Using start and end dates: ${startDate} -- ${endDate}`);
-  // we have a start date and/or end date
-  startDate = validations.validateAndDefaultInputDateString(startDate);
-  endDate = validations.validateAndDefaultInputDateString(endDate);
-  if (startDate.isAfter(endDate)) {
-    debug(`${startDate} is after ${endDate}`);
-    startDate = endDate;
-  }
-}
-// done with the moment objects - convert to dates for later use
-startDate = startDate.toDate();
-endDate = endDate.toDate();
+const { startDate, endDate } = validations.getStartAndEndDates(commander);
 
 co(function* run() {
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
