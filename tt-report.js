@@ -5,13 +5,13 @@ const co = require('co');
 const chalk = require('chalk');
 const Table = require('easy-table');
 const db = require('./db');
-const debug = require('debug')('tt:summary');
+const debug = require('debug')('tt:report');
 const validations = require('./validations');
 const displayUtils = require('./display-utils');
 
 commander
     .version('1.0.0')
-    .description('Summarize time entry data in various formats.')
+    .description('Generate report of time entries')
     //.option('--csv', 'Output in a CSV format instead of ASCII table.')
     .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
     .option('-s, --startDate <YYYY-MM-DD>')
