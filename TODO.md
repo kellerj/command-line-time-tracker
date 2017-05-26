@@ -100,11 +100,15 @@
 - [x] See if sub-commands can be aliased
 - [x] Entry edit and remove lists - increase display size
 - [x] Fix name of tt-remove
+- [ ] Update color of last entry logged message
+- [ ] Move time for entry to just after description entry
 
 ## Roadmap
 
 ### 2.0
 
+- [ ] Add CL option to back-date the insert time entry on add
+- [ ] Add ability to edit the logged time on an entry
 - [ ] On entry add - check for name of project in description and set as default
 - [ ] Entry List
     - [ ] Date Range Support
@@ -116,6 +120,7 @@
     - [ ] new UI questions
     - [ ] use of sort flag...how - no DB joins - need to sort in code
 - [ ] Make "Other" project special (not in DB) and always sort at end
+- [ ] Eliminate extra column when no wasted time entries on a day
 
 ### 3.0
 
@@ -146,3 +151,4 @@
         - [ ] Display list of projects for selection
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
+- [ ] Find place to report on "wasted time"
