@@ -71,7 +71,7 @@
         - [x] Display List as radio selection
         - [x] delete those selected upon confirm
         - [x] Add --last option for deletions - but include confirmation
-    - [ ] Summaries
+    - [x] Summaries
         - [x] Heading indicating the nature of the summary and the timeframe
         - [x] sort of project names - perform in MongoDB
         - [x] Sort list of time types for display
@@ -79,16 +79,17 @@
         - [x] Total by Time Type
         - [x] Total by Project
         - [x] Grid...projects down side, time types as columns - totals right and bottom
-        - [ ] Daily Summary in Markdown format
-            - [ ] Group by project as level 3 headings
-            - [ ] include total time for project
-            - [ ] summary of time types for the day
         - [x] default report for today
         - [x] --week
         - [x] --month
         - [x] --last
         - [x] -s --startDate, -e --endDate
         - [x] Add percentage to time type totals on main grid
+    - [ ] Reports
+        - [ ] Daily Summary in Markdown format
+            - [ ] Group by project as level 3 headings
+            - [ ] include total time for project
+            - [ ] summary of time types for the day
 - [x] Determine how to do colored table-based output
 - [x] Add "binaries" for all sub-commands
     - [x] Time Entry
@@ -100,8 +101,15 @@
 - [x] See if sub-commands can be aliased
 - [x] Entry edit and remove lists - increase display size
 - [x] Fix name of tt-remove
-- [ ] Update color of last entry logged message
-- [ ] Move time for entry to just after description entry
+- [x] Update color of last entry logged message
+- [x] Move time for entry to just after description entry
+- [ ] Add Readme
+    - [ ] install info
+    - [ ] commands
+    - [ ] purpose
+    - [ ] requirements
+        - [ ] mongo
+- [ ] Update Mongo to connect once in module - not per call
 
 ## Roadmap
 

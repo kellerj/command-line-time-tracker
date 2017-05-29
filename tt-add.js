@@ -169,6 +169,15 @@ function* run() {
     when: () => (entryDescription === ''),
   });
   prompts.onNext({
+    name: 'minutes',
+    type: 'input',
+    message: 'Minutes:',
+    default: minutesSinceLastEntry,
+    validate: validations.validateMinutes,
+    filter: val => (Number.parseInt(val, 10)),
+    when: () => (minutes === undefined || minutes === null),
+  });
+  prompts.onNext({
     name: 'project',
     type: 'list',
     message: 'Project:',
@@ -193,22 +202,12 @@ function* run() {
     pageSize: 15,
   });
   prompts.onNext({
-    name: 'minutes',
-    type: 'input',
-    message: 'Minutes:',
-    default: minutesSinceLastEntry,
-    validate: validations.validateMinutes,
-    filter: val => (Number.parseInt(val, 10)),
-    when: () => (minutes === undefined || minutes === null),
-  });
-  prompts.onNext({
     name: 'wasteOfTime',
     type: 'confirm',
     message: 'Waste of Time?',
     default: false,
-    // when: answer => (answer.minutes !== undefined),
   });
-  ui.log.write(`${minutesSinceLastEntry} minutes since last entry logged`);
+  ui.log.write(chalk.black.bgWhite(`${minutesSinceLastEntry} minutes since last entry logged`));
 }
 
 co(run);

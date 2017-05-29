@@ -77,6 +77,14 @@ function* handleEntryChanges(entry) {
       validate: validations.validateEntryDescription,
     },
     {
+      name: 'minutes',
+      type: 'input',
+      message: 'Minutes:',
+      default: entry.minutes,
+      validate: validations.validateMinutes,
+      filter: val => (Number.parseInt(val, 10)),
+    },
+    {
       name: 'project',
       type: 'list',
       message: 'Project:',
@@ -91,14 +99,6 @@ function* handleEntryChanges(entry) {
       choices: timeTypes,
       default: entry.timeType,
       pageSize: 15,
-    },
-    {
-      name: 'minutes',
-      type: 'input',
-      message: 'Minutes:',
-      default: entry.minutes,
-      validate: validations.validateMinutes,
-      filter: val => (Number.parseInt(val, 10)),
     },
     {
       name: 'wasteOfTime',
