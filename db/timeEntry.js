@@ -1,5 +1,3 @@
-const MongoClient = require('mongodb').MongoClient;
-const config = require('./config');
 const assert = require('assert');
 const chalk = require('chalk');
 const moment = require('moment');
@@ -11,13 +9,13 @@ const collectionName = 'timeEntry';
 
 const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
 
-module.exports = {
+module.exports = getConnection => ({
   /**
    * Insert the given project into the database.  Return false if the project
    * aready exists.  Comparison is case-insensitive.
    */
   * insert(timeEntry) {
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     if (debug.enabled) {
@@ -44,7 +42,7 @@ module.exports = {
   },
 
   * update(timeEntry) {
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     if (debug.enabled) {
@@ -63,7 +61,7 @@ module.exports = {
 
   * get(startDate, endDate) {
     debug(`Get Time Entries: ${startDate} -- ${endDate}`);
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     if (!endDate) {
@@ -87,7 +85,7 @@ module.exports = {
   },
 
   * remove(entryId) {
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     if (debug.enabled) {
@@ -110,7 +108,7 @@ module.exports = {
 
   * getMostRecentEntry() {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     // find .sort -1 .limit 1
@@ -126,7 +124,7 @@ module.exports = {
 
   * summarizeByProjectAndTimeType(startDate, endDate) {
     debug(`Summarize Time Entries: ${startDate} -- ${endDate}`);
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     if (!endDate) {
@@ -159,4 +157,4 @@ module.exports = {
     debug(`Summary Data: ${JSON.stringify(r, null, 2)}`);
     return r;
   },
-};
+});

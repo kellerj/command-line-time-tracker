@@ -1,17 +1,15 @@
-const MongoClient = require('mongodb').MongoClient;
-const config = require('./config');
 const assert = require('assert');
 const chalk = require('chalk');
 
 const collectionName = 'projects';
 
-module.exports = {
+module.exports = getConnection => ({
   /**
    * Get all project entries.
    * Generator function - must be used with co module or next().value.
    */
   * getAll() {
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
     const r = yield collection.find({}).sort({ name: 1 }).toArray();
     // Close the connection
@@ -25,7 +23,7 @@ module.exports = {
    * aready exists.  Comparison is case-insensitive.
    */
   * insert(name) {
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     let r = yield collection.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
@@ -42,7 +40,7 @@ module.exports = {
   },
 
   * remove(name) {
-    const db = yield MongoClient.connect(config.db.url);
+    const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
     const r = yield collection.findAndRemove({ name });
@@ -57,4 +55,4 @@ module.exports = {
     db.close();
     return false;
   },
-};
+});

@@ -109,7 +109,7 @@
     - [ ] purpose
     - [ ] requirements
         - [ ] mongo
-- [ ] Update Mongo to connect once in module - not per call
+- [x] Reduce to only make a single connection: maxPoolSize
 
 ## Roadmap
 
