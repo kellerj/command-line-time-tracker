@@ -162,3 +162,4 @@
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
 - [ ] Find place to report on "wasted time"
+- [ ] Add explicit support for MongoDB credentials
