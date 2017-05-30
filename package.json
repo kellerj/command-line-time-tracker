@@ -7,8 +7,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "eslint"
   },
-  "author": "Jonathan Keller <keller.jonathan@gmail.com>",
-  "license": "ISC",
+  "author": {
+    "name": "Jonathan Keller",
+    "email": "<keller.jonathan@gmail.com>"
+  },
+  "license": "GPL-3.0+",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kellerj/command-line-time-tracker.git"
+  },
   "dependencies": {
     "assert": "1.4.x",
     "chalk": "1.1.x",
