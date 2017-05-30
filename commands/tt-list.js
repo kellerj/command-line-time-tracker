@@ -5,8 +5,8 @@ const co = require('co');
 const chalk = require('chalk');
 const Table = require('easy-table');
 const moment = require('moment');
-const db = require('./db');
-const displayUtils = require('./display-utils');
+const db = require('../db');
+const displayUtils = require('../utils/display-utils');
 const debug = require('debug')('tt:ls');
 
 commander

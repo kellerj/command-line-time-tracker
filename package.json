@@ -2,7 +2,7 @@
   "name": "command-line-time-tracker",
   "version": "1.1.0-0",
   "description": "Time Tracker Command Line Tool",
-  "main": "tt.js",
+  "main": "commands/tt.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "eslint"
@@ -30,21 +30,21 @@
     "sprintf-js": "1.1.x"
   },
   "bin": {
-    "tt": "./tt.js",
-    "tt-add": "./tt-add.js",
-    "tt-edit": "./tt-edit.js",
-    "tt-list": "./tt-list.js",
-    "tt-delete": "./tt-delete.js",
-    "tt-project": "./tt-project.js",
-    "tt-project-add": "./tt-project-add.js",
-    "tt-project-list": "./tt-project-list.js",
-    "tt-project-delete": "./tt-project-delete.js",
-    "tt-timetype": "./tt-timetype.js",
-    "tt-timetype-list": "./tt-timetype-list.js",
-    "tt-timetype-add": "./tt-timetype-add.js",
-    "tt-timetype-delete": "./tt-timetype-delete.js",
-    "tt-summary": "./tt-summary.js",
-    "tt-report": "./tt-report.js"
+    "tt": "./commands/tt.js",
+    "tt-add": "./commands/tt-add.js",
+    "tt-edit": "./commands/tt-edit.js",
+    "tt-list": "./commands/tt-list.js",
+    "tt-delete": "./commands/tt-delete.js",
+    "tt-project": "./commands/tt-project.js",
+    "tt-project-add": "./commands/tt-project-add.js",
+    "tt-project-list": "./commands/tt-project-list.js",
+    "tt-project-delete": "./commands/tt-project-delete.js",
+    "tt-timetype": "./commands/tt-timetype.js",
+    "tt-timetype-list": "./commands/tt-timetype-list.js",
+    "tt-timetype-add": "./commands/tt-timetype-add.js",
+    "tt-timetype-delete": "./commands/tt-timetype-delete.js",
+    "tt-summary": "./commands/tt-summary.js",
+    "tt-report": "./commands/tt-report.js"
   },
   "devDependencies": {
     "eslint": "3.19.x",

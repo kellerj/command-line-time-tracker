@@ -3,7 +3,7 @@
 const commander = require('commander');
 const inquirer = require('inquirer');
 const co = require('co');
-const db = require('./db');
+const db = require('../db');
 const chalk = require('chalk');
 
 commander

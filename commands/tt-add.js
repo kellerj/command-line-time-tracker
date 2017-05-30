@@ -3,13 +3,13 @@
 const commander = require('commander');
 const inquirer = require('inquirer');
 const co = require('co');
-const db = require('./db');
+const db = require('../db');
 const chalk = require('chalk');
 const debug = require('debug')('tt:add');
 const Table = require('easy-table');
 const moment = require('moment');
 const sprintf = require('sprintf-js').sprintf;
-const validations = require('./validations');
+const validations = require('../utils/validations');
 const Rx = require('rx');
 
 commander

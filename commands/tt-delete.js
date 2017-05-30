@@ -3,11 +3,11 @@
 const commander = require('commander');
 const inquirer = require('inquirer');
 const co = require('co');
-const db = require('./db');
+const db = require('../db');
 const chalk = require('chalk');
 const moment = require('moment');
 const debug = require('debug')('tt:delete');
-const displayUtils = require('./display-utils');
+const displayUtils = require('../utils/display-utils');
 
 commander
     .version('1.0.0')
