@@ -15,7 +15,12 @@ commander.command('timetype <subCommand> [otherArguments]', 'Work with type type
 // console.log(JSON.stringify(commander, (key, value) => {
 //   if (key === 'parent') { return value._name; } return value;
 // }, 2));
-
-commander.parse(process.argv);
-
-// commander.help();
+const result = commander.parse(process.argv);
+// if a proper subcommand is run, then the above returns undefined
+// So, if the user gives an incorrect subcommand, we want to display help
+if (result !== undefined) {
+  // console.log(JSON.stringify(result, (key, value) => {
+  //   if (key === 'parent') { return value._name; } return value;
+  // }, 2));
+  commander.help();
+}
