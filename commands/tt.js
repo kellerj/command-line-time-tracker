@@ -8,7 +8,7 @@ commander.command('list', 'List time entries').alias('ls');
 commander.command('edit', 'Edit Time entries').alias('e');
 commander.command('delete', 'Delete time entries').alias('del');
 commander.command('summary', 'Summarize time entries').alias('s');
-// commander.command('report', 'Generate time entry report').alias('r');
+commander.command('report', 'Generate time entry report').alias('r');
 commander.command('project <subCommand> [otherArguments]', 'Work with project definitions.').alias('p');
 commander.command('timetype <subCommand> [otherArguments]', 'Work with type type definitions.').alias('t');
 
