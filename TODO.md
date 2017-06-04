@@ -26,7 +26,7 @@
     - [x] Waste (bool/checkbox)
     - [x] Dates
     - [x] Time
-- [ ] Time entries
+- [x] Time entries
     - [x] Add
         - [x] Full Command Line
             - [x] Parse parameters
@@ -110,11 +110,11 @@
 
 ### 1.1
 
-- [ ] Reports
-    - [ ] Daily Summary in Markdown format
-        - [ ] Group by project as level 3 headings
-        - [ ] include total time for project
-        - [ ] summary of time types for the day
+- [x] Reports
+    - [x] Daily Summary in Markdown format
+        - [x] Group by project as level 3 headings
+        - [x] include total time for project
+        - [x] summary of time types for the day
 
 ### 1.2
 

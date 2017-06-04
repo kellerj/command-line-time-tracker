@@ -54,4 +54,14 @@ module.exports = {
       entry.minutes,
       entry.project,
       entry.timeType),
+
+  sortOtherLast: (a, b) => {
+    if (a !== 'Other' && b === 'Other') {
+      return -1;
+    } else if (a === 'Other' && b !== 'Other') {
+      return 1;
+    }
+    return a.localeCompare(b);
+  },
+
 };
