@@ -87,12 +87,11 @@ function addProject(newProject) {
 function* run() {
   // pull the lists of projects and time types from MongoDB
   const projects = (yield* db.project.getAll()).map(item => (item.name));
-  projects.push(new inquirer.Separator());
-  projects.push('(New Project)');
-  projects.push(new inquirer.Separator());
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
+
   const lastEntry = yield* db.timeEntry.getMostRecentEntry();
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
+
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = 60;
@@ -101,25 +100,51 @@ function* run() {
   }
 
   // If project option is not a valid project, reject with list of project names
+  let projectDefaulted = false;
   if (projectName) {
-    projectName = projectName.trim();
-    if (projects.findIndex(e => (e === projectName)) === -1) {
-      console.log(chalk.red(`Project ${chalk.yellow(projectName)} does not exist.  Known Projects:`));
+    debug(`Input Project Name: ${projectName}, checking project list.`);
+    // perform a case insensitive match on the name - and use the name
+    // from the official list which matches
+    projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
+    if (projectName === undefined) {
+      console.log(chalk.red(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`));
       console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
         { name: { name: chalk.white.bold('Project Name') } })));
       process.exit(1);
     }
+  } else {
+    // see if we can find a name in the description
+    const tempProjectName = projects.find(p => (entryDescription.match(new RegExp(p, 'i'))));
+    if (tempProjectName !== undefined) {
+      projectName = tempProjectName;
+      projectDefaulted = true;
+    }
   }
   // If time type option is not a valid project, reject with list of type names
+  let timeTypeDefaulted = false;
   if (timeType) {
-    timeType = timeType.trim();
-    if (timeTypes.findIndex(e => (e === timeType)) === -1) {
+    // perform a case insensitive match on the name - and use the name
+    // from the official list which matches
+    timeType = timeTypes.find(t => (t.match(new RegExp(`^${timeType.trim()}$`, 'i'))));
+    if (timeType === undefined) {
       console.log(chalk.red(`Project ${chalk.yellow(timeType)} does not exist.  Known Time Types:`));
       console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
         { name: { name: chalk.white.bold('Time Type') } })));
       process.exit(1);
     }
+  } else {
+    // see if we can find a name in the description
+    const tempTimeType = timeTypes.find(t => (entryDescription.match(new RegExp(t, 'i'))));
+    if (tempTimeType !== undefined) {
+      timeType = tempTimeType;
+      timeTypeDefaulted = true;
+    }
   }
+
+  // Add the new project option to the end of the list
+  projects.push(new inquirer.Separator());
+  projects.push('(New Project)');
+  projects.push(new inquirer.Separator());
 
   // Build the new entry object with command line arguments
   const newEntry = {
@@ -182,7 +207,8 @@ function* run() {
     type: 'list',
     message: 'Project:',
     choices: projects,
-    when: () => (projectName === undefined),
+    default: projectName,
+    when: () => (projectName === undefined || projectDefaulted),
     pageSize: 15,
   });
   prompts.onNext({
@@ -198,7 +224,8 @@ function* run() {
     type: 'list',
     message: 'Type of Type:',
     choices: timeTypes,
-    when: () => (timeType === undefined),
+    default: timeType,
+    when: () => (timeType === undefined || timeTypeDefaulted),
     pageSize: 15,
   });
   prompts.onNext({
