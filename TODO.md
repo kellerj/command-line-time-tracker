@@ -167,6 +167,10 @@
 - [ ] Export Function
     - [ ] JSON
     - [ ] CSV?
+- [ ] Backup/Restore Function
+    - [ ] run standard `mongodump --archive=tt.bson.gz -d tt --gzip`
+    - [ ] Restore: `mongorestore -d tt --gzip --archive=tt.bson.gz`
+    - [ ] checking if database is empty and collections don't exist before importing
 - [ ] Project Maintenance
     - [ ] Rename
         - [ ] Display list of projects for selection
