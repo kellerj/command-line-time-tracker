@@ -6,6 +6,9 @@
 
 - [x] On entry add - check for name of project in description and set as default
 - [x] On entry add - check for name of time type in description and set as default
+- [ ] Bold the sub-heads on the report output detail section
+- [ ] sort and deduplicate the entryDescription in the details section of the report output
+- [ ] add option to report to show the details section only (and alter heading levels accordingly?)
 
 ### 1.3
 
@@ -48,11 +51,16 @@
     - [ ] column on normal list display to indicate existence of note
     - [ ] second row for display of notes?
 
-### Future
+### Future / Undecided
 
+- [ ] Add child documents in projects and time types with aliases to scan for when defaulting those items
+- [ ] 
 - [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Support for an external configuration file (~/.tt-time-tracker?)
+    - [ ] MongoDB location/credentials
+    - [ ] default backup/restore location
+    - [ ] include waste of time flag?
 - [ ] Export Function
     - [ ] JSON
     - [ ] CSV?
@@ -66,7 +74,6 @@
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
 - [ ] Find place to report on "wasted time"
-- [ ] Add explicit support for MongoDB credentials
 
 ## Completed Items
 
