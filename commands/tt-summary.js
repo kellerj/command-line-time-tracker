@@ -39,14 +39,7 @@ co(function* run() {
       acc.push(item.timeType);
     }
     return acc;
-  }, []).sort((a, b) => {
-    if (a !== 'Other' && b === 'Other') {
-      return -1;
-    } else if (a === 'Other' && b !== 'Other') {
-      return 1;
-    }
-    return a.localeCompare(b);
-  });
+  }, []).sort(displayUtils.sortOtherLast);
   let grid = r.reduce((acc, item) => {
     let projectRow = acc.find(i => (i.project === item.project));
     if (!projectRow) {
@@ -59,14 +52,7 @@ co(function* run() {
     projectRow[item.timeType] += item.minutes;
     return acc;
   }, []);
-  grid = grid.sort((a, b) => {
-    if (a.project !== 'Other' && b.project === 'Other') {
-      return -1;
-    } else if (a.project === 'Other' && b.project !== 'Other') {
-      return 1;
-    }
-    return a.project.localeCompare(b.project);
-  });
+  grid = grid.sort(displayUtils.sortOtherLast);
   const t = new Table();
   grid.forEach((item) => {
     t.cell('Project', item.project ? item.project : '');

@@ -23,8 +23,10 @@
 - [ ] Add sort order to time types
     - [ ] Database update
     - [ ] new UI questions
-    - [ ] use of sort flag...how - no DB joins - need to sort in code
+    - [ ] use of sort flag
 - [ ] Make "Other" project special (not in DB) and always sort at end
+    - [x] sort to end - always
+    - [ ] remove from DB collection but keep in lists
 - [ ] support --last option on list
 - [ ] support --last option on summary when no modifier given to display for yesterday
 

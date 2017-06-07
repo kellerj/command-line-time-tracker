@@ -55,13 +55,23 @@ module.exports = {
       entry.project,
       entry.timeType),
 
+  // Utility to sort Other into the last position in an array
+  // Special function to also detect if there is a 'project'
+  // property on the object to allow objects containing that property
+  // to be sorted as well
   sortOtherLast: (a, b) => {
-    if (a !== 'Other' && b === 'Other') {
+    let left = a;
+    let right = b;
+    if (left.project || right.project) {
+      left = left.project;
+      right = right.project;
+    }
+    if (left !== 'Other' && right === 'Other') {
       return -1;
-    } else if (a === 'Other' && b !== 'Other') {
+    } else if (left === 'Other' && right !== 'Other') {
       return 1;
     }
-    return a.localeCompare(b);
+    return left.localeCompare(right);
   },
 
 };
