@@ -4,8 +4,8 @@
 
 ### 1.2
 
-- [ ] On entry add - check for name of project in description and set as default
-- [ ] On entry add - check for name of time type in description and set as default
+- [x] On entry add - check for name of project in description and set as default
+- [x] On entry add - check for name of time type in description and set as default
 
 ### 1.3
 
@@ -50,6 +50,7 @@
 
 - [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
+- [ ] Support for an external configuration file (~/.tt-time-tracker?)
 - [ ] Export Function
     - [ ] JSON
     - [ ] CSV?

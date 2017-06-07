@@ -8,6 +8,7 @@ const db = require('../db');
 const debug = require('debug')('tt:report');
 const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
+const moment = require('moment');
 
 commander
     .version('1.0.0')
@@ -62,13 +63,12 @@ co(function* run() {
   debug(JSON.stringify(r, null, 2));
   let reportOutput = '# Work Log:';
   if (commander.week) {
-    reportOutput = '# Weekly Summary:';
+    reportOutput = `# Weekly Summary: Week starting ${moment(startDate).format('MMMM Do, YYYY')}`;
   } else if (commander.month) {
-    reportOutput = '# Monthly Summary:';
-  }
-  if (startDate.getTime() === endDate.getTime()) {
+    reportOutput = `# Monthly Summary: ${moment(startDate).format('MMMM, YYYY')}`;
+  } else if (startDate.getTime() === endDate.getTime()) {
     reportOutput = `${reportOutput} ${displayUtils.entryDatePrinter(startDate)}`;
-  } else {
+  } else { // arbitrary date range
     reportOutput = `${reportOutput} ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
   }
   reportOutput += '\n\n';
