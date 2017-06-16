@@ -114,19 +114,27 @@ co(function* run() {
     reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
 
     for (let j = 0; j < timeTypeNames.length; j++) {
-      const detailEntries = entries.filter(
-        entry => (entry.project === projectNames[i] && entry.timeType === timeTypeNames[j]));
+      const detailEntries = entries
+        .filter( // get only details for the current project and time type
+          entry => (entry.project === projectNames[i] && entry.timeType === timeTypeNames[j]))
+        .map( // convert to descriptions
+          entry => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
+        .sort()
+        .filter( // eliminate dupes
+          (entry, k, array) => (k === 0 || entry !== array[k - 1]));
+      debug(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
+      debug(detailEntries);
       if (detailEntries.length) {
         reportOutput += `* **${timeTypeNames[j]}**\n`;
         for (let k = 0; k < detailEntries.length; k++) {
-          reportOutput += `\t* ${detailEntries[k].entryDescription}${detailEntries[k].wasteOfTime ? ' 💩' : ''}\n`;
+          reportOutput += `\t* ${detailEntries[k]}\n`;
         }
       }
     }
     reportOutput += '\n';
   }
 
-  debug(reportOutput);
+  // debug(reportOutput);
   console.log(reportOutput);
 }).catch((err) => {
   console.log(chalk.bgRed(err.stack));
