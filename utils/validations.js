@@ -69,8 +69,11 @@ module.exports = {
 
     // if not set, use today.  In either case set to start of day
     if (entryDate || (!startDate && !endDate)) {
-      debug(`Start and end date not set, using entryDate: ${entryDate}`);
       entryDate = validateAndDefaultInputDateString(entryDate);
+      if (input.last) {
+        entryDate.subtract(1, 'day');
+      }
+      debug(`Start and end date not set, using entryDate: ${entryDate}`);
       startDate = entryDate;
       endDate = entryDate;
     } else {

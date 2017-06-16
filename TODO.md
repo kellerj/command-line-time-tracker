@@ -9,6 +9,9 @@
 - [x] Bold the sub-heads on the report output detail section
 - [x] sort and deduplicate the entryDescription in the details section of the report output
 - [ ] add option to report to show the details section only (and alter heading levels accordingly?)
+- [x] support --last option on list
+- [x] support --last option on summary when no modifier given to display for yesterday
+- [x] support --last option on report when no modifier given to display for yesterday
 
 ### 1.3
 
@@ -30,8 +33,6 @@
 - [ ] Make "Other" project special (not in DB) and always sort at end
     - [x] sort to end - always
     - [ ] remove from DB collection but keep in lists
-- [ ] support --last option on list
-- [ ] support --last option on summary when no modifier given to display for yesterday
 
 ### 3.0
 

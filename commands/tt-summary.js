@@ -18,7 +18,7 @@ commander
     .option('-e, --endDate <YYYY-MM-DD>')
     .option('--week', 'Report for the current week (starting Monday).')
     .option('--month', 'Report for the current month.')
-    .option('--last', 'Change the week or month criteria to the prior week or month.')
+    .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
     .parse(process.argv);
 
 const { startDate, endDate } = validations.getStartAndEndDates(commander);
