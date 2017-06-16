@@ -85,7 +85,7 @@ co(function* run() {
   debug(projectNames);
   reportOutput += '## Projects\n\n';
   for (let i = 0; i < projectNames.length; i++) {
-    reportOutput += `* ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]])})\n`;
+    reportOutput += `* ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n`;
   }
   reportOutput += '\n';
 
@@ -102,7 +102,7 @@ co(function* run() {
   debug(timeTypeNames);
   reportOutput += '## Time Types\n\n';
   for (let i = 0; i < timeTypeNames.length; i++) {
-    reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]])})\n`;
+    reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]]).trim()})\n`;
   }
   reportOutput += '\n';
 
@@ -111,13 +111,13 @@ co(function* run() {
   const entries = yield* db.timeEntry.get(startDate, endDate);
   // debug(JSON.stringify(entries, null, 2));
   for (let i = 0; i < projectNames.length; i++) {
-    reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]])})\n\n`;
+    reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
 
     for (let j = 0; j < timeTypeNames.length; j++) {
       const detailEntries = entries.filter(
         entry => (entry.project === projectNames[i] && entry.timeType === timeTypeNames[j]));
       if (detailEntries.length) {
-        reportOutput += `* ${timeTypeNames[j]}\n`;
+        reportOutput += `* **${timeTypeNames[j]}**\n`;
         for (let k = 0; k < detailEntries.length; k++) {
           reportOutput += `\t* ${detailEntries[k].entryDescription}${detailEntries[k].wasteOfTime ? ' 💩' : ''}\n`;
         }

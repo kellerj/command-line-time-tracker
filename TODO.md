@@ -6,7 +6,7 @@
 
 - [x] On entry add - check for name of project in description and set as default
 - [x] On entry add - check for name of time type in description and set as default
-- [ ] Bold the sub-heads on the report output detail section
+- [x] Bold the sub-heads on the report output detail section
 - [ ] sort and deduplicate the entryDescription in the details section of the report output
 - [ ] add option to report to show the details section only (and alter heading levels accordingly?)
 
