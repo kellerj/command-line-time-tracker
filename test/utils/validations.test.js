@@ -52,16 +52,143 @@ describe('validations', () => {
   describe('validateAndDefaultInputDateString', () => {
     it('returns today when no date passed', () => {
       const today = moment().startOf('day');
+      expect(typeof validations.validateAndDefaultInputDateString()).to.equal('object');
       expect(validations.validateAndDefaultInputDateString().format()).to.equal(today.format());
     });
     it('Strips off time component of a given date.', () => {
       const today = moment().startOf('day');
+      expect(typeof validations.validateAndDefaultInputDateString(moment().format()))
+        .to.equal('object');
       expect(validations.validateAndDefaultInputDateString(moment().format()).format())
         .to.equal(today.format());
     });
     it('returns error message when the date is invalid', () => {
       expect(typeof validations.validateAndDefaultInputDateString('skajhdsjkahdjkas'))
         .to.equal('string');
+    });
+  });
+
+  describe('getStartAndEndDates', () => {
+    describe('--week is set', () => {
+      describe('--last is not set', () => {
+        it('returns mon-sun of the current week when no date set', () => {
+          const input = {
+            week: true,
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(moment().startOf('isoWeek').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(moment().endOf('isoWeek').startOf('day').format());
+        });
+
+        it('returns mon-sun of the given week when date set', () => {
+          const input = {
+            week: true,
+            date: '2017-05-01',
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').startOf('isoWeek').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').endOf('isoWeek').startOf('day').format());
+        });
+      });
+      describe('--last is set', () => {
+        it('returns mon-sun of the previous week when no date set', () => {
+          const input = {
+            week: true,
+            last: true,
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(
+            moment().subtract(1, 'week').startOf('isoWeek').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(
+            moment().subtract(1, 'week').endOf('isoWeek').startOf('day').format());
+        });
+
+        it('returns mon-sun of the week before the given week when date set', () => {
+          const input = {
+            week: true,
+            last: true,
+            date: '2017-05-01',
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(
+            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'week').startOf('isoWeek').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(
+            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'week').endOf('isoWeek').startOf('day').format());
+        });
+      });
+    });
+
+    describe('--month is set', () => {
+      describe('--last is not set', () => {
+        it('returns 1st to last day of the current month when no date set', () => {
+          const input = {
+            month: true,
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(moment().startOf('month').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(moment().endOf('month').startOf('day').format());
+        });
+
+        it('returns 1st to last day of the given month when date set', () => {
+          const input = {
+            month: true,
+            date: '2017-05-15',
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').startOf('month').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').endOf('month').startOf('day').format());
+        });
+      });
+      describe('--last is set', () => {
+        it('returns 1st to last day of the previous month when no date set', () => {
+          const input = {
+            month: true,
+            last: true,
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(
+            moment().subtract(1, 'month').startOf('month').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(
+            moment().subtract(1, 'month').endOf('month').startOf('day').format());
+        });
+
+        it('returns 1st to last day of the month before the given month when date set', () => {
+          const input = {
+            month: true,
+            last: true,
+            date: '2017-05-15',
+          };
+          const result = validations.getStartAndEndDates(input);
+          // console.log(JSON.stringify(result));
+          expect(result).to.have.ownPropertyDescriptor('startDate');
+          expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(moment(result.startDate).format()).to.equal(
+            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'month').startOf('month').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(
+            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'month').endOf('month').startOf('day').format());
+        });
+      });
     });
   });
 });

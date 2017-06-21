@@ -48,7 +48,7 @@ module.exports = {
     const errorMessage = '';
 
     if (input.week || input.month) {
-      const reportDate = moment();
+      const reportDate = validateAndDefaultInputDateString(entryDate);
       if (input.week) {
         if (input.last) {
           reportDate.subtract(1, 'week');
