@@ -16,7 +16,7 @@ function validateAndDefaultInputDateString(dateString) {
 module.exports = {
 
   validateMinutes: (val) => {
-    if (Number.isNaN(val)) {
+    if (Number.isNaN(Number.parseInt(val, 10))) {
       return 'Invalid Integer';
     } else if (Number.parseInt(val, 10) < 1) {
       return 'Time must be positive';
