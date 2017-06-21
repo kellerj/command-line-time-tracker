@@ -47,10 +47,14 @@
     "tt-report": "./commands/tt-report.js"
   },
   "devDependencies": {
+    "chai": "^4.0.2",
     "eslint": "3.19.x",
     "eslint-config-airbnb": "14.1.x",
     "eslint-plugin-import": "2.2.x",
     "eslint-plugin-jsx-a11y": "4.0.x",
-    "eslint-plugin-react": "6.10.x"
+    "eslint-plugin-react": "6.10.x",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.4.2",
+    "sinon": "^2.3.5"
   }
 }
