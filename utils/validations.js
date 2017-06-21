@@ -1,5 +1,4 @@
 const moment = require('moment');
-const chalk = require('chalk');
 const debug = require('debug')('tt:validations');
 
 function validateAndDefaultInputDateString(dateString) {
@@ -7,8 +6,7 @@ function validateAndDefaultInputDateString(dateString) {
     return moment().startOf('day');
   }
   if (!moment(dateString, 'YYYY-MM-DD').isValid()) {
-    console.log(chalk.red(`Date ${dateString} is not a valid date.`));
-    process.exit(-1);
+    return `Date ${dateString} is not a valid date.`;
   }
   return moment(dateString).startOf('day');
 }
@@ -47,6 +45,7 @@ module.exports = {
     let entryDate = input.date;
     let startDate = input.startDate;
     let endDate = input.endDate;
+    const errorMessage = '';
 
     if (input.week || input.month) {
       const reportDate = moment();
@@ -70,6 +69,9 @@ module.exports = {
     // if not set, use today.  In either case set to start of day
     if (entryDate || (!startDate && !endDate)) {
       entryDate = validateAndDefaultInputDateString(entryDate);
+      if (typeof entryDate === 'string') {
+        return { startDate: undefined, endDate: undefined, errorMessage: entryDate };
+      }
       if (input.last) {
         entryDate.subtract(1, 'day');
       }
@@ -80,7 +82,13 @@ module.exports = {
       debug(`Using start and end dates: ${startDate} -- ${endDate}`);
       // we have a start date and/or end date
       startDate = validateAndDefaultInputDateString(startDate);
+      if (typeof startDate === 'string') {
+        return { startDate: undefined, endDate: undefined, errorMessage: startDate };
+      }
       endDate = validateAndDefaultInputDateString(endDate);
+      if (typeof endDate === 'string') {
+        return { startDate: undefined, endDate: undefined, errorMessage: endDate };
+      }
       if (startDate.isAfter(endDate)) {
         debug(`${startDate} is after ${endDate}`);
         startDate = endDate;
@@ -90,6 +98,6 @@ module.exports = {
     startDate = startDate.toDate();
     endDate = endDate.toDate();
 
-    return { startDate, endDate };
+    return { startDate, endDate, errorMessage };
   },
 };
