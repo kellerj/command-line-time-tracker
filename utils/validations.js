@@ -64,10 +64,8 @@ module.exports = {
         startDate = moment(reportDate.startOf('month'));
         endDate = moment(reportDate.endOf('month'));
       }
-    }
-
-    // if not set, use today.  In either case set to start of day
-    if (entryDate || (!startDate && !endDate)) {
+      // if not set, use today.  In either case set to start of day
+    } else if (entryDate || (!startDate && !endDate)) {
       entryDate = validateAndDefaultInputDateString(entryDate);
       if (typeof entryDate === 'string') {
         return { startDate: undefined, endDate: undefined, errorMessage: entryDate };
@@ -95,8 +93,8 @@ module.exports = {
       }
     }
     // done with the moment objects - convert to dates for later use
-    startDate = startDate.toDate();
-    endDate = endDate.toDate();
+    startDate = startDate.startOf('day').toDate();
+    endDate = endDate.startOf('day').toDate();
 
     return { startDate, endDate, errorMessage };
   },

@@ -92,8 +92,8 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').startOf('isoWeek').startOf('day').format());
-          expect(moment(result.endDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').endOf('isoWeek').startOf('day').format());
+          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('isoWeek').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').endOf('isoWeek').startOf('day').format());
         });
       });
       describe('--last is set', () => {
@@ -123,9 +123,9 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(moment(result.startDate).format()).to.equal(
-            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'week').startOf('isoWeek').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week').startOf('isoWeek').startOf('day').format());
           expect(moment(result.endDate).format()).to.equal(
-            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'week').endOf('isoWeek').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week').endOf('isoWeek').startOf('day').format());
         });
       });
     });
@@ -153,8 +153,8 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').startOf('month').startOf('day').format());
-          expect(moment(result.endDate).format()).to.equal(moment(input.entryDate, 'YYYY-MM-DD').endOf('month').startOf('day').format());
+          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('month').startOf('day').format());
+          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').endOf('month').startOf('day').format());
         });
       });
       describe('--last is set', () => {
@@ -184,9 +184,9 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(moment(result.startDate).format()).to.equal(
-            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'month').startOf('month').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month').startOf('month').startOf('day').format());
           expect(moment(result.endDate).format()).to.equal(
-            moment(input.entryDate, 'YYYY-MM-DD').subtract(1, 'month').endOf('month').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month').endOf('month').startOf('day').format());
         });
       });
     });
