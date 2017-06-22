@@ -107,9 +107,13 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(moment(result.startDate).format()).to.equal(
-            moment().subtract(1, 'week').startOf('isoWeek').startOf('day').format());
+            moment().subtract(1, 'week')
+            .startOf('isoWeek').startOf('day')
+            .format());
           expect(moment(result.endDate).format()).to.equal(
-            moment().subtract(1, 'week').endOf('isoWeek').startOf('day').format());
+            moment().subtract(1, 'week')
+            .endOf('isoWeek').startOf('day')
+            .format());
         });
 
         it('returns mon-sun of the week before the given week when date set', () => {
@@ -123,9 +127,13 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(moment(result.startDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week').startOf('isoWeek').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
+            .startOf('isoWeek').startOf('day')
+            .format());
           expect(moment(result.endDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week').endOf('isoWeek').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
+            .endOf('isoWeek').startOf('day')
+            .format());
         });
       });
     });
@@ -168,9 +176,13 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(moment(result.startDate).format()).to.equal(
-            moment().subtract(1, 'month').startOf('month').startOf('day').format());
+            moment().subtract(1, 'month')
+            .startOf('month').startOf('day')
+            .format());
           expect(moment(result.endDate).format()).to.equal(
-            moment().subtract(1, 'month').endOf('month').startOf('day').format());
+            moment().subtract(1, 'month')
+            .endOf('month').startOf('day')
+            .format());
         });
 
         it('returns 1st to last day of the month before the given month when date set', () => {
@@ -184,9 +196,13 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(moment(result.startDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month').startOf('month').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
+            .startOf('month').startOf('day')
+            .format());
           expect(moment(result.endDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month').endOf('month').startOf('day').format());
+            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
+            .endOf('month').startOf('day')
+            .format());
         });
       });
     });

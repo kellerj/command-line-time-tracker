@@ -4,9 +4,10 @@
   "description": "Time Tracker Command Line Tool",
   "main": "commands/tt.js",
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha --reporter spec test/**/*.test.js",
+    "test": "nyc mocha --reporter spec test/**/*.test.js",
     "test:watch": "mocha --reporter spec test/**/*.test.js --watch",
-    "eslint": "eslint"
+    "eslint": "eslint",
+    "nyc": "nyc"
   },
   "author": {
     "name": "Jonathan Keller",
@@ -58,5 +59,27 @@
     "mocha": "^3.4.2",
     "nyc": "^11.0.2",
     "sinon": "^2.3.5"
+  },
+  "nyc": {
+    "check-coverage": true,
+    "lines": 90,
+    "statements": 90,
+    "functions": 100,
+    "branches": 75,
+    "reporter": [
+      "lcov",
+      "text-summary",
+      "text",
+      "html"
+    ],
+    "watermarks": {
+      "lines": [75, 90],
+      "functions": [90, 100],
+      "branches": [50, 75],
+      "statements": [75, 90]
+    },
+    "cache": true,
+    "all": true,
+    "report-dir": "./coverage"
   }
 }
