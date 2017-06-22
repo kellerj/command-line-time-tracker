@@ -1,6 +1,6 @@
 const validations = require('../../utils/validations');
 const expect = require('chai').expect;
-// const assert = require('chai').assert;
+const assert = require('chai').assert;
 const moment = require('moment');
 
 describe('validations', () => {
@@ -204,6 +204,18 @@ describe('validations', () => {
             .endOf('month').startOf('day')
             .format());
         });
+      });
+    });
+
+    describe('neither --week or --month are set', () => {
+      it('returns the given date as the start and end date', () => {
+        assert.fail('unimplemented test');
+      });
+      it('returns the given start date as the start and end date when no end date given', () => {
+        assert.fail('unimplemented test');
+      });
+      it('returns the given start and end dates as the start and end dates when both given', () => {
+        assert.fail('unimplemented test');
       });
     });
   });

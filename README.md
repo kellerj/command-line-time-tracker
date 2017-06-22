@@ -1,5 +1,7 @@
 # Command Line Time Tracker
 
+[![Build Status](https://travis-ci.org/kellerj/command-line-time-tracker.svg?branch=master)](https://travis-ci.org/kellerj/command-line-time-tracker) [![Coverage Status](https://coveralls.io/repos/github/kellerj/command-line-time-tracker/badge.svg?branch=master)](https://coveralls.io/github/kellerj/command-line-time-tracker?branch=master)
+
 This tool is a utility I created for my own purposes to keep track of how my time was being spent at work.  The use of Node and MongoDB is mainly due to current interest rather than being the appropriate technology for this type of application.
 
 It's intended to provide you a way to log your time throughout the day along with the project being worked on during that time and the type of time (meeting, development, email).  It then provides methods for summarizing the data to see how productive (or wasted) your day/week/month has been.
