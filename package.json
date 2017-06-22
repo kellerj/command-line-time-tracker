@@ -5,6 +5,7 @@
   "main": "commands/tt.js",
   "scripts": {
     "test": "nyc mocha --reporter spec test/**/*.test.js",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test:watch": "mocha --reporter spec test/**/*.test.js --watch",
     "eslint": "eslint",
     "nyc": "nyc"
@@ -23,6 +24,7 @@
     "chalk": "1.1.x",
     "co": "4.6.x",
     "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
+    "coveralls": "^2.13.1",
     "debug": "2.6.x",
     "easy-table": "1.1.x",
     "inquirer": "3.0.x",
@@ -73,10 +75,22 @@
       "html"
     ],
     "watermarks": {
-      "lines": [75, 90],
-      "functions": [90, 100],
-      "branches": [50, 75],
-      "statements": [75, 90]
+      "lines": [
+        75,
+        90
+      ],
+      "functions": [
+        90,
+        100
+      ],
+      "branches": [
+        50,
+        75
+      ],
+      "statements": [
+        75,
+        90
+      ]
     },
     "cache": true,
     "all": true,
