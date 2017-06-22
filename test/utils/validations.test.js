@@ -208,14 +208,35 @@ describe('validations', () => {
     });
 
     describe('neither --week or --month are set', () => {
+      it('returns today as the start and end date when no date input', () => {
+        assert.fail('', '', 'unimplemented test');
+      });
+      it('when --last, returns yesterday as the start and end date when no date input', () => {
+        assert.fail('', '', 'unimplemented test');
+      });
       it('returns the given date as the start and end date', () => {
-        assert.fail('unimplemented test');
+        assert.fail('', '', 'unimplemented test');
+      });
+      it('when --last, returns the day before given date as the start and end date', () => {
+        assert.fail('', '', 'unimplemented test');
       });
       it('returns the given start date as the start and end date when no end date given', () => {
-        assert.fail('unimplemented test');
+        assert.fail('', '', 'unimplemented test');
       });
       it('returns the given start and end dates as the start and end dates when both given', () => {
-        assert.fail('unimplemented test');
+        assert.fail('', '', 'unimplemented test');
+      });
+      it('returns an error message when end date before start date', () => {
+        assert.fail('', '', 'unimplemented test');
+      });
+      it('returns an error message when given an invalid date', () => {
+        assert.fail('', '', 'unimplemented test');
+      });
+      it('returns an error message when given an invalid start date', () => {
+        assert.fail('', '', 'unimplemented test');
+      });
+      it('returns an error message when given an invalid start date', () => {
+        assert.fail('', '', 'unimplemented test');
       });
     });
   });
