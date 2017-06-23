@@ -1,6 +1,6 @@
 const validations = require('../../utils/validations');
 const expect = require('chai').expect;
-const assert = require('chai').assert;
+// const assert = require('chai').assert;
 const moment = require('moment');
 
 describe('validations', () => {
@@ -212,36 +212,90 @@ describe('validations', () => {
         const input = {
         };
         const result = validations.getStartAndEndDates(input);
-        expect(result).to.have.ownPropertyDescriptor('startDate');
-        expect(result).to.have.ownPropertyDescriptor('endDate');
         expect(moment(result.startDate).format()).to.equal(moment().startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
       it('when --last, returns yesterday as the start and end date when no date input', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          last: true,
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(
+          moment().subtract(1, 'day').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
       it('returns the given date as the start and end date', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          date: '2017-05-15',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
       it('when --last, returns the day before given date as the start and end date', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          date: '2017-05-15',
+          last: true,
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'day').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
-      it('returns the given start date as the start and end date when no end date given', () => {
-        assert.fail('', '', 'unimplemented test');
+      it('returns the given start date as the start and today as the end date when no end date given', () => {
+        const input = {
+          startDate: '2017-05-15',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment().startOf('day').format());
       });
       it('returns the given start and end dates as the start and end dates when both given', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          startDate: '2017-05-15',
+          endDate: '2017-05-16',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
       });
-      it('returns an error message when end date before start date', () => {
-        assert.fail('', '', 'unimplemented test');
+      it('returns the given start and end dates as the start and end dates when both given', () => {
+        const input = {
+          startDate: '2017-05-15',
+          endDate: '2017-05-15',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
+      });
+      it('sets the start date to the end date when end date before start date', () => {
+        const input = {
+          startDate: '2017-05-16',
+          endDate: '2017-05-15',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(moment(result.startDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
       });
       it('returns an error message when given an invalid date', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          date: 'NOT_A_DATE',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(result.errorMessage).to.not.equal('');
       });
       it('returns an error message when given an invalid start date', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          startDate: 'NOT_A_DATE',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(result.errorMessage).to.not.equal('');
       });
       it('returns an error message when given an invalid start date', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+          endDate: 'NOT_A_DATE',
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(result.errorMessage).to.not.equal('');
       });
     });
   });

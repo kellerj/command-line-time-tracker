@@ -56,7 +56,7 @@ module.exports = {
         debug(`Setting to week containing: ${reportDate}`);
         startDate = moment(reportDate.startOf('isoWeek'));
         endDate = moment(reportDate.endOf('isoWeek'));
-      } else if (input.month) {
+      } else { // input.month == true
         if (input.last) {
           reportDate.subtract(1, 'month');
         }
