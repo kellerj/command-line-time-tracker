@@ -6,7 +6,9 @@
   "scripts": {
     "test": "nyc mocha --reporter spec test/**/*.test.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "test:mocha": "mocha --reporter spec test/**/*.test.js",
     "test:watch": "mocha --reporter spec test/**/*.test.js --watch",
+    "mocha": "mocha",
     "eslint": "eslint",
     "nyc": "nyc"
   },
