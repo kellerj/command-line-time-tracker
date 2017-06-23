@@ -12,6 +12,7 @@
 - [x] support --last option on list
 - [x] support --last option on summary when no modifier given to display for yesterday
 - [x] support --last option on report when no modifier given to display for yesterday
+- [ ] Add header suppression to the summary output
 
 ### 1.3
 

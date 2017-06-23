@@ -21,7 +21,11 @@ commander
     .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
     .parse(process.argv);
 
-const { startDate, endDate } = validations.getStartAndEndDates(commander);
+const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+if (errorMessage) {
+  console.log(chalk.red(errorMessage));
+  process.exit(-1);
+}
 
 co(function* run() {
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
