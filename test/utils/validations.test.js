@@ -209,7 +209,12 @@ describe('validations', () => {
 
     describe('neither --week or --month are set', () => {
       it('returns today as the start and end date when no date input', () => {
-        assert.fail('', '', 'unimplemented test');
+        const input = {
+        };
+        const result = validations.getStartAndEndDates(input);
+        expect(result).to.have.ownPropertyDescriptor('startDate');
+        expect(result).to.have.ownPropertyDescriptor('endDate');
+        expect(moment(result.startDate).format()).to.equal(moment().startOf('day').format());
       });
       it('when --last, returns yesterday as the start and end date when no date input', () => {
         assert.fail('', '', 'unimplemented test');
