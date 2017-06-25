@@ -4,10 +4,10 @@
   "description": "Time Tracker Command Line Tool",
   "main": "commands/tt.js",
   "scripts": {
-    "test": "nyc mocha --reporter spec test/**/*.test.js",
+    "test": "nyc mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "test:mocha": "mocha --reporter spec test/**/*.test.js",
-    "test:watch": "mocha --reporter spec test/**/*.test.js --watch",
+    "test:mocha": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
+    "test:watch": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js --watch",
     "mocha": "mocha --compilers js:babel-core/register",
     "eslint": "eslint",
     "nyc": "nyc"
