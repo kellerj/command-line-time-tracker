@@ -44,13 +44,25 @@ describe('db/project', () => {
     // it('returns a list of all project names returned from MongoDB', () => {
     //   co(project.getAll());
     // });
-    it('opens and closes the database connection', () => {
-      co(project.getAll()).then((result) => {
-        console.log(`Called: ${db.close.called}`);
-        assert(closeSpy.called, 'db.close was not called');
-        assert.fail('', '', 'unimplemented test');
-      });
+    // ES7 Version
+    it('opens and closes the database connection', async () => {
+      await co(project.getAll());
+      console.log(`Called: ${db.close.called}`);
+      assert(closeSpy.called, 'db.close was not called');
     });
+    // ES6 version of above function
+    // it('opens and closes the database connection', () => {
+    //   // co(project.getAll()).then(() => {
+    //   //   try {
+    //   //     console.log(`Called: ${db.close.called}`);
+    //   //     assert(!closeSpy.called, 'db.close was not called');
+    //   //     done();
+    //   //   } catch (err) {
+    //   //     done(err);
+    //   //   }
+    //   //   // assert.fail('', '', 'unimplemented test');
+    //   // });
+    // });
     // it('sorts the projects by name', () => {
     //   assert.fail('', '', 'unimplemented test');
     // });

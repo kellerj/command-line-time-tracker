@@ -8,7 +8,7 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test:mocha": "mocha --reporter spec test/**/*.test.js",
     "test:watch": "mocha --reporter spec test/**/*.test.js --watch",
-    "mocha": "mocha",
+    "mocha": "mocha --compilers js:babel-core/register",
     "eslint": "eslint",
     "nyc": "nyc"
   },
@@ -53,6 +53,9 @@
     "tt-report": "./commands/tt-report.js"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-register": "^6.24.1",
     "chai": "^4.0.2",
     "eslint": "3.19.x",
     "eslint-config-airbnb": "14.1.x",
