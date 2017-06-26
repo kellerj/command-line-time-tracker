@@ -19,6 +19,7 @@ commander
     .option('--week', 'Report for the current week (starting Monday).')
     .option('--month', 'Report for the current month.')
     .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
+    .option('--noHeader', 'Don\'t print the header with the dates above the summary')
     .parse(process.argv);
 
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
@@ -28,6 +29,18 @@ if (errorMessage) {
 }
 
 co(function* run() {
+  let reportHeader = '';
+  if (!commander.noHeader) {
+    if (startDate.getTime() === endDate.getTime()) {
+      reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)}`;
+    } else {
+      reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
+    }
+    console.log(chalk.yellow('-'.repeat(reportHeader.length)));
+    console.log(chalk.yellow(reportHeader));
+    console.log(chalk.yellow('-'.repeat(reportHeader.length)));
+  }
+
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
     console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
@@ -77,16 +90,6 @@ co(function* run() {
   t.total('Totals', {
     printer: displayUtils.timePrinter,
   });
-
-  let reportHeader = '';
-  if (startDate.getTime() === endDate.getTime()) {
-    reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)}`;
-  } else {
-    reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
-  }
-  console.log(chalk.yellow('-'.repeat(reportHeader.length)));
-  console.log(chalk.yellow(reportHeader));
-  console.log(chalk.yellow('-'.repeat(reportHeader.length)));
 
   console.log(t.toString());
 }).catch((err) => {
