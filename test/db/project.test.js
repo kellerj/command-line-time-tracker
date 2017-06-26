@@ -81,7 +81,7 @@ describe('db/project', () => {
     //   // });
     // });
   });
-  describe('getAll', () => {
+  describe('insert', () => {
     it('calls MongoDB to insert the project', async () => {
       const result = await co(project.insert('A New Project'));
       expect(collection.insertOne.called).to.equal(true, 'did not call insertOne on the collection');
