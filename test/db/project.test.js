@@ -24,8 +24,11 @@ const collection = {
   * findOne(queryObj) { return null; },
   // eslint-disable-next-line no-unused-vars,require-yield
   * insertOne(obj) { return { insertedCount: 1 }; },
+  // eslint-disable-next-line no-unused-vars,require-yield
+  * findAndRemove(queryObj) { return { ok: 1, value: {} }; },
 };
 
+spy(collection, 'findAndRemove');
 spy(collection, 'insertOne');
 // spy(collection, 'findOne');
 spy(collection, 'find');
@@ -82,6 +85,11 @@ describe('db/project', () => {
     // });
   });
   describe('insert', () => {
+    it('opens and closes the database connection', async () => {
+      await co(project.insert('A New Project'));
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
     it('calls MongoDB to insert the project', async () => {
       const result = await co(project.insert('A New Project'));
       expect(collection.insertOne.called).to.equal(true, 'did not call insertOne on the collection');
@@ -93,9 +101,10 @@ describe('db/project', () => {
       const result = await co(project.insert('A New Project'));
       collection.findOne.restore();
       expect(result).to.equal(false, 'Should have returned false since record exists.');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
     });
 
-    it('throws an AeertionError when mongo reports an insert failure', async () => {
+    it('throws an AssertionError when mongo reports an insert failure', async () => {
       collection.insertOne.restore();
       stub(collection, 'insertOne').callsFake(() => ({ insertedCount: 0 }));
       await co(project.insert('A New Project')).then(() => {
@@ -106,7 +115,29 @@ describe('db/project', () => {
       });
       collection.insertOne.restore();
       spy(collection, 'insertOne');
-      // expect(result).to.throw();
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
+  });
+
+  describe('remove', () => {
+    it('opens and closes the database connection', async () => {
+      await co(project.remove('Project 1'));
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
+    it('calls MongoDB to remove the project', async () => {
+      const result = await co(project.remove('Project 1'));
+      expect(collection.findAndRemove.called).to.equal(true, 'did not call findAndRemove on the collection');
+
+      expect(result).to.equal(true, 'Should have returned true after removing record');
+    });
+    it('returns false when the project doesn\'t exist', async () => {
+      collection.findAndRemove.restore();
+      stub(collection, 'findAndRemove').callsFake(() => ({ r: 0 }));
+      const result = await co(project.remove('Project 1'));
+      collection.findAndRemove.restore();
+      expect(result).to.equal(false, 'Should have returned false since record does not exist.');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
     });
   });
 });
