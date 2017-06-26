@@ -6,6 +6,7 @@ const chalk = require('chalk');
 const Table = require('easy-table');
 const moment = require('moment');
 const db = require('../db');
+const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
 const debug = require('debug')('tt:ls');
 
@@ -14,25 +15,22 @@ commander
     .description('List time entries in a tabular format.')
     //.option('--csv', 'Output in a CSV format instead of ASCII table.')
     .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
+    .option('-s, --startDate <YYYY-MM-DD>')
+    .option('-e, --endDate <YYYY-MM-DD>')
     .option('--nodate', 'Suppress the date in the first column')
+    .option('--last', 'When no date is specified, use yesterday\'s date')
     .parse(process.argv);
 
-let entryDate = commander.date;
 const noDateOutput = commander.nodate;
 
-// if not set, use today.  In either case set to start of day
-if (!entryDate) {
-  entryDate = moment().startOf('day').toDate();
-} else {
-  if (!moment(entryDate, 'YYYY-MM-DD').isValid()) {
-    console.log(chalk.red(`Date ${entryDate} is not a valid date.`));
-    process.exit(-1);
-  }
-  entryDate = moment(entryDate).startOf('day').toDate();
+const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+if (errorMessage) {
+  console.log(chalk.red(errorMessage));
+  process.exit(-1);
 }
 
 co(function* run() {
-  const r = yield* db.timeEntry.get(entryDate);
+  const r = yield* db.timeEntry.get(startDate, endDate);
 
   if (r && r.length) {
     debug(JSON.stringify(r, null, 2));
@@ -54,7 +52,7 @@ co(function* run() {
     });
     console.log(t.toString());
   } else {
-    console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+    console.log(chalk.yellow(`No Time Entries Defined for ${moment(startDate).format('YYYY-MM-DD')}`));
   }
 }).catch((err) => {
   console.log(chalk.bgRed(err.stack));

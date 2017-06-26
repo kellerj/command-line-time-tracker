@@ -18,12 +18,29 @@ commander
     .option('-e, --endDate <YYYY-MM-DD>')
     .option('--week', 'Report for the current week (starting Monday).')
     .option('--month', 'Report for the current month.')
-    .option('--last', 'Change the week or month criteria to the prior week or month.')
+    .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
+    .option('--noHeader', 'Don\'t print the header with the dates above the summary')
     .parse(process.argv);
 
-const { startDate, endDate } = validations.getStartAndEndDates(commander);
+const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+if (errorMessage) {
+  console.log(chalk.red(errorMessage));
+  process.exit(-1);
+}
 
 co(function* run() {
+  let reportHeader = '';
+  if (!commander.noHeader) {
+    if (startDate.getTime() === endDate.getTime()) {
+      reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)}`;
+    } else {
+      reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
+    }
+    console.log(chalk.yellow('-'.repeat(reportHeader.length)));
+    console.log(chalk.yellow(reportHeader));
+    console.log(chalk.yellow('-'.repeat(reportHeader.length)));
+  }
+
   const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
     console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
@@ -39,14 +56,7 @@ co(function* run() {
       acc.push(item.timeType);
     }
     return acc;
-  }, []).sort((a, b) => {
-    if (a !== 'Other' && b === 'Other') {
-      return -1;
-    } else if (a === 'Other' && b !== 'Other') {
-      return 1;
-    }
-    return a.localeCompare(b);
-  });
+  }, []).sort(displayUtils.sortOtherLast);
   let grid = r.reduce((acc, item) => {
     let projectRow = acc.find(i => (i.project === item.project));
     if (!projectRow) {
@@ -59,14 +69,7 @@ co(function* run() {
     projectRow[item.timeType] += item.minutes;
     return acc;
   }, []);
-  grid = grid.sort((a, b) => {
-    if (a.project !== 'Other' && b.project === 'Other') {
-      return -1;
-    } else if (a.project === 'Other' && b.project !== 'Other') {
-      return 1;
-    }
-    return a.project.localeCompare(b.project);
-  });
+  grid = grid.sort(displayUtils.sortOtherLast);
   const t = new Table();
   grid.forEach((item) => {
     t.cell('Project', item.project ? item.project : '');
@@ -87,16 +90,6 @@ co(function* run() {
   t.total('Totals', {
     printer: displayUtils.timePrinter,
   });
-
-  let reportHeader = '';
-  if (startDate.getTime() === endDate.getTime()) {
-    reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)}`;
-  } else {
-    reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
-  }
-  console.log(chalk.yellow('-'.repeat(reportHeader.length)));
-  console.log(chalk.yellow(reportHeader));
-  console.log(chalk.yellow('-'.repeat(reportHeader.length)));
 
   console.log(t.toString());
 }).catch((err) => {

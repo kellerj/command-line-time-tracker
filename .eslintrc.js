@@ -6,5 +6,9 @@ module.exports = {
     "no-underscore-dangle": "off",
     "no-param-reassign": ["error", { "props": false }],
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+  },
+  env: {
+    node: true,
+    mocha: true,
   }
 }

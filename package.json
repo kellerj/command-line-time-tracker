@@ -1,11 +1,16 @@
 {
   "name": "command-line-time-tracker",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Time Tracker Command Line Tool",
   "main": "commands/tt.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "eslint": "eslint"
+    "test": "nyc mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "test:mocha": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
+    "test:watch": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js --watch",
+    "mocha": "mocha --compilers js:babel-core/register",
+    "eslint": "eslint",
+    "nyc": "nyc"
   },
   "author": {
     "name": "Jonathan Keller",
@@ -17,10 +22,10 @@
     "url": "https://github.com/kellerj/command-line-time-tracker.git"
   },
   "dependencies": {
-    "assert": "1.4.x",
     "chalk": "1.1.x",
     "co": "4.6.x",
     "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
+    "coveralls": "^2.13.1",
     "debug": "2.6.x",
     "easy-table": "1.1.x",
     "inquirer": "3.0.x",
@@ -47,10 +52,52 @@
     "tt-report": "./commands/tt-report.js"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "chai": "^4.0.2",
     "eslint": "3.19.x",
     "eslint-config-airbnb": "14.1.x",
     "eslint-plugin-import": "2.2.x",
     "eslint-plugin-jsx-a11y": "4.0.x",
-    "eslint-plugin-react": "6.10.x"
+    "eslint-plugin-react": "6.10.x",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.4.2",
+    "nyc": "^11.0.2",
+    "sinon": "^2.3.5"
+  },
+  "nyc": {
+    "check-coverage": false,
+    "lines": 90,
+    "statements": 90,
+    "functions": 100,
+    "branches": 75,
+    "reporter": [
+      "lcov",
+      "text-summary",
+      "text",
+      "html"
+    ],
+    "watermarks": {
+      "lines": [
+        75,
+        90
+      ],
+      "functions": [
+        90,
+        100
+      ],
+      "branches": [
+        50,
+        75
+      ],
+      "statements": [
+        75,
+        90
+      ]
+    },
+    "cache": true,
+    "all": true,
+    "report-dir": "./coverage"
   }
 }
