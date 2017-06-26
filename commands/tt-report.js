@@ -20,8 +20,11 @@ commander
     .option('--week', 'Report for the current week (starting Monday).')
     .option('--month', 'Report for the current month.')
     .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
+    .option('-ns, --noSummary', 'Suppress the summary section of the report.')
+    .option('-bd, --noDetails', 'Suppress the details section of the report.')
     .parse(process.argv);
 
+debug(JSON.stringify(commander, null, 2));
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
 if (errorMessage) {
   console.log(chalk.red(errorMessage));
@@ -84,14 +87,10 @@ co(function* run() {
     p[item.project] += item.minutes;
     return p;
   }, {});
+
   const projectNames = Object.getOwnPropertyNames(projects).sort(displayUtils.sortOtherLast);
   debug(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
   debug(projectNames);
-  reportOutput += '## Projects\n\n';
-  for (let i = 0; i < projectNames.length; i++) {
-    reportOutput += `* ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n`;
-  }
-  reportOutput += '\n';
 
   // list of time type totals
   const timeTypes = r.reduce((p, item) => {
@@ -101,41 +100,55 @@ co(function* run() {
     p[item.timeType] += item.minutes;
     return p;
   }, {});
+  debug(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
   const timeTypeNames = Object.getOwnPropertyNames(timeTypes).sort(displayUtils.sortOtherLast);
-  debug(`Project Summary: ${JSON.stringify(timeTypes, null, 2)}`);
+
   debug(timeTypeNames);
-  reportOutput += '## Time Types\n\n';
-  for (let i = 0; i < timeTypeNames.length; i++) {
-    reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]]).trim()})\n`;
-  }
-  reportOutput += '\n';
 
-  reportOutput += '## Details\n\n';
-
-  const entries = yield* db.timeEntry.get(startDate, endDate);
-  // debug(JSON.stringify(entries, null, 2));
-  for (let i = 0; i < projectNames.length; i++) {
-    reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
-
-    for (let j = 0; j < timeTypeNames.length; j++) {
-      const detailEntries = entries
-        .filter( // get only details for the current project and time type
-          entry => (entry.project === projectNames[i] && entry.timeType === timeTypeNames[j]))
-        .map( // convert to descriptions
-          entry => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
-        .sort()
-        .filter( // eliminate dupes
-          (entry, k, array) => (k === 0 || entry !== array[k - 1]));
-      debug(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
-      debug(detailEntries);
-      if (detailEntries.length) {
-        reportOutput += `* **${timeTypeNames[j]}**\n`;
-        for (let k = 0; k < detailEntries.length; k++) {
-          reportOutput += `\t* ${detailEntries[k]}\n`;
-        }
-      }
+  if (!commander.noSummary) {
+    reportOutput += '## Projects\n\n';
+    for (let i = 0; i < projectNames.length; i++) {
+      reportOutput += `* ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n`;
     }
     reportOutput += '\n';
+
+    reportOutput += '## Time Types\n\n';
+    for (let i = 0; i < timeTypeNames.length; i++) {
+      reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]]).trim()})\n`;
+    }
+    reportOutput += '\n';
+  }
+
+  if (!commander.noDetails) {
+    if (!commander.noSummary) {
+      reportOutput += '## Details\n\n';
+    }
+
+    const entries = yield* db.timeEntry.get(startDate, endDate);
+    // debug(JSON.stringify(entries, null, 2));
+    for (let i = 0; i < projectNames.length; i++) {
+      reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
+
+      for (let j = 0; j < timeTypeNames.length; j++) {
+        const detailEntries = entries
+          .filter( // get only details for the current project and time type
+            entry => (entry.project === projectNames[i] && entry.timeType === timeTypeNames[j]))
+          .map( // convert to descriptions
+            entry => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
+          .sort()
+          .filter( // eliminate dupes
+            (entry, k, array) => (k === 0 || entry !== array[k - 1]));
+        debug(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
+        debug(detailEntries);
+        if (detailEntries.length) {
+          reportOutput += `* **${timeTypeNames[j]}**\n`;
+          for (let k = 0; k < detailEntries.length; k++) {
+            reportOutput += `\t* ${detailEntries[k]}\n`;
+          }
+        }
+      }
+      reportOutput += '\n';
+    }
   }
 
   // debug(reportOutput);

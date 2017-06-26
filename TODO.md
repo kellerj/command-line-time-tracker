@@ -2,18 +2,6 @@
 
 ## Roadmap
 
-### 1.2
-
-- [x] On entry add - check for name of project in description and set as default
-- [x] On entry add - check for name of time type in description and set as default
-- [x] Bold the sub-heads on the report output detail section
-- [x] sort and deduplicate the entryDescription in the details section of the report output
-- [ ] add option to report to show the details section only (and alter heading levels accordingly?)
-- [x] support --last option on list
-- [x] support --last option on summary when no modifier given to display for yesterday
-- [x] support --last option on report when no modifier given to display for yesterday
-- [ ] Add header suppression to the summary output
-
 ### 1.3
 
 - [ ] Add CL option to back-date the insert time entry on add
@@ -56,7 +44,7 @@
 ### Future / Undecided
 
 - [ ] Add child documents in projects and time types with aliases to scan for when defaulting those items
-- [ ] 
+- [ ]
 - [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Support for an external configuration file (~/.tt-time-tracker?)
@@ -78,6 +66,18 @@
 - [ ] Find place to report on "wasted time"
 
 ## Completed Items
+
+### 1.2
+
+- [x] On entry add - check for name of project in description and set as default
+- [x] On entry add - check for name of time type in description and set as default
+- [x] Bold the sub-heads on the report output detail section
+- [x] sort and deduplicate the entryDescription in the details section of the report output
+- [x] add option to report to show the details section only (and alter heading levels accordingly?)
+- [x] support --last option on list
+- [x] support --last option on summary when no modifier given to display for yesterday
+- [x] support --last option on report when no modifier given to display for yesterday
+- [x] Add header suppression to the summary output
 
 ### 1.1
 
