@@ -1,5 +1,5 @@
 const assert = require('assert');
-const chalk = require('chalk');
+const debug = require('debug')('db:project');
 
 const collectionName = 'projects';
 
@@ -34,7 +34,7 @@ module.exports = getConnection => ({
     }
     r = yield collection.insertOne({ name });
     db.close();
-    assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the project.'));
+    assert.equal(1, r.insertedCount, 'Unable to insert the project.');
 
     return true;
   },
@@ -44,15 +44,16 @@ module.exports = getConnection => ({
     const collection = db.collection(collectionName);
 
     const r = yield collection.findAndRemove({ name });
-    // console.log(JSON.stringify(r));
-    if (r && r.ok === 1 && r.value !== null) {
+    debug(JSON.stringify(r, null, 2));
+    try {
+      assert.ok(r, 'Empty Result from Mongo findAndRemove command');
+      assert.ok(r.ok === 1 && r.value !== null, `Unexpected result from MongoDB: ${JSON.stringify(r)}`);
+    } catch (err) {
       db.close();
-      return true;
-    } else if (r && r.ok !== 1) {
-      console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(r)}`));
+      debug(`Remove Failed: ${JSON.stringify(err, null, 2)}`);
+      return false;
     }
-
     db.close();
-    return false;
+    return true;
   },
 });

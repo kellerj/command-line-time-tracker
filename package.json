@@ -22,7 +22,6 @@
     "url": "https://github.com/kellerj/command-line-time-tracker.git"
   },
   "dependencies": {
-    "assert": "1.4.x",
     "chalk": "1.1.x",
     "co": "4.6.x",
     "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
