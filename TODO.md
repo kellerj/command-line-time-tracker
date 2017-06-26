@@ -12,7 +12,7 @@
 - [x] support --last option on list
 - [x] support --last option on summary when no modifier given to display for yesterday
 - [x] support --last option on report when no modifier given to display for yesterday
-- [ ] Add header suppression to the summary output
+- [x] Add header suppression to the summary output
 
 ### 1.3
 
@@ -56,7 +56,7 @@
 ### Future / Undecided
 
 - [ ] Add child documents in projects and time types with aliases to scan for when defaulting those items
-- [ ] 
+- [ ]
 - [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Support for an external configuration file (~/.tt-time-tracker?)
