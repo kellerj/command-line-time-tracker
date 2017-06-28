@@ -29,7 +29,6 @@ module.exports = getConnection => ({
       timeEntry.entryDate = moment().startOf('day').format(ENTRY_DATE_FORMAT);
       debug(`Defaulting entry date to ${timeEntry.entryDate}`);
     }
-    timeEntry.insertTime = new Date();
 
     debug(`Inserting ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
 

@@ -4,8 +4,13 @@
 
 ### 1.3
 
-- [ ] Add CL option to back-date the insert time entry on add
+- [x] Add CL option to back-date the insert time entry on add
 - [ ] Add ability to edit the logged time on an entry
+- [ ] Add percentages after the hours in the summary section of the report
+- [ ] Make "Other" project special (not in DB) and always sort at end
+    - [x] sort to end - always
+    - [ ] remove from DB collection but keep in lists
+- [ ] Switch all use of process.exit to try/catch (make unit testing possible)
 
 ### 2.0
 
@@ -15,13 +20,11 @@
     - [ ] project criteria option
     - [ ] max description length option
     - [ ] Eliminate extra column when no wasted time entries on a day
+    - [ ] Searching option accepting a regex
 - [ ] Add sort order to time types
     - [ ] Database update
     - [ ] new UI questions
     - [ ] use of sort flag
-- [ ] Make "Other" project special (not in DB) and always sort at end
-    - [x] sort to end - always
-    - [ ] remove from DB collection but keep in lists
 
 ### 3.0
 
@@ -44,7 +47,8 @@
 ### Future / Undecided
 
 - [ ] Add child documents in projects and time types with aliases to scan for when defaulting those items
-- [ ]
+- [ ] Alternating background colors on the summary output
+    - [ ] option for nocolor?
 - [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Support for an external configuration file (~/.tt-time-tracker?)
