@@ -218,7 +218,8 @@ function* run() {
 
 try {
   if (commander.backTime) {
-    const validationMessage = validations.validateMinutes(Number.parseInt(commander.backTime, 10));
+    const validationMessage = validations.validateMinutes(
+      Number.parseInt(commander.backTime, 10), -1);
     debug(validationMessage);
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);

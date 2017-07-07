@@ -13,13 +13,13 @@ function validateAndDefaultInputDateString(dateString) {
 
 module.exports = {
 
-  validateMinutes: (val) => {
+  validateMinutes: (val, maxMinutes = 480) => {
     if (Number.isNaN(Number.parseInt(val, 10))) {
       return 'Invalid Integer';
     } else if (Number.parseInt(val, 10) < 1) {
       return 'Time must be positive';
-    } else if (Number.parseInt(val, 10) > 8 * 60) {
-      return 'Time must be <= 8 hours';
+    } else if (maxMinutes !== -1 && Number.parseInt(val, 10) > maxMinutes) {
+      return `Time must be <= ${maxMinutes / 60} hours`;
     }
     return true;
   },
