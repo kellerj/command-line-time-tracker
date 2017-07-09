@@ -11,9 +11,16 @@
     - [x] sort to end - always
     - [ ] remove from DB collection but keep in lists
 - [ ] Switch all use of process.exit to try/catch (make unit testing possible)
+    - [ ] list
+    - [ ] report
+    - [ ] summary
+- [ ] Backdating improvements
+    - [ ] subtract backdate time from minutes since last entry/default minutes
+    - [ ] display the effective logging time when using backdating (always?)
 
 ### 2.0
 
+- [ ] Repackaging of commands as modules
 - [ ] Entry List
     - [ ] Date Range Support
     - [ ] CSV format option
