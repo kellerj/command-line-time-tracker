@@ -11,12 +11,12 @@
     - [x] sort to end - always
     - [ ] remove from DB collection but keep in lists
 - [ ] Switch all use of process.exit to try/catch (make unit testing possible)
-    - [ ] list
+    - [x] list
     - [ ] report
     - [ ] summary
-- [ ] Backdating improvements
-    - [ ] subtract backdate time from minutes since last entry/default minutes
-    - [ ] display the effective logging time when using backdating (always?)
+- [x] Backdating improvements
+    - [x] subtract backdate time from minutes since last entry/default minutes
+    - [x] display the effective logging time when using backdating (always?)
 
 ### 2.0
 

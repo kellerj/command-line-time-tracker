@@ -21,6 +21,7 @@ commander
     .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
     .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
     .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
+    .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
     .parse(process.argv);
 
 const entryDescription = commander.args.join(' ').trim();
@@ -28,7 +29,7 @@ let projectName = commander.project;
 let timeType = commander.type;
 let minutes = commander.time;
 let entryDate = commander.date;
-let insertTime = new Date();
+let insertTime = moment();
 
 function performUpdate(timeEntry) {
   co(function* runUpdate() {
@@ -63,21 +64,73 @@ function addProject(newProject) {
 }
 
 function* run() {
-    // pull the lists of projects and time types from MongoDB
+  if (entryDate) {
+    const temp = moment(entryDate, 'YYYY-MM-DD');
+    if (!temp.isValid()) {
+      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+    }
+    entryDate = temp;
+  } else {
+    entryDate = moment();
+  }
+
+  // debug(JSON.stringify(commander, null, 2));
+  debug(`Input Project Name: ${projectName}`);
+  debug(`Input Time Type: ${timeType}`);
+  debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
+
+  if (minutes) {
+    minutes = Number.parseInt(minutes, 10);
+    const validationMessage = validations.validateMinutes(minutes);
+    debug(validationMessage);
+    if (validationMessage !== true) {
+      throw new Error(`-t, --time: "${commander.time}" ${validationMessage}`);
+    }
+  }
+
+  // pull the lists of projects and time types from MongoDB
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
   const lastEntry = yield* db.timeEntry.getMostRecentEntry();
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
-    // use the minutes since the last entry was added as the default time
-    // default to 60 in the case there is no entry yet today
+  // use the minutes since the last entry was added as the default time
+  // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = 60;
   if (!entryDate && lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
     minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
   }
 
-    // If project option is not a valid project, reject with list of project names
+  if (commander.backTime) {
+    if (commander.logTime) {
+      throw new Error('You may not set both --backTime and --logTime.');
+    }
+    const validationMessage = validations.validateMinutes(
+      Number.parseInt(commander.backTime, 10), -1);
+    debug(validationMessage);
+    if (validationMessage !== true) {
+      throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);
+    }
+    insertTime = moment().subtract(commander.backTime, 'minute');
+    minutesSinceLastEntry -= commander.backTime;
+    if (minutesSinceLastEntry < 0) {
+      minutesSinceLastEntry = 0;
+    }
+  }
+
+  if (commander.logTime) {
+    // attempt to parse the time as 12-hour format then 24 hour
+    insertTime = moment(commander.logTime, 'h:mm a');
+    if (!insertTime.isValid()) {
+      throw new Error(`-l, --logTime: ${commander.logTime} is not a valid time, must be in h:mm am format.`);
+    }
+    // now, ensure the date matches the entry date since it's assumed the time should be on that day
+    insertTime.year(entryDate.year());
+    insertTime.month(entryDate.month());
+    insertTime.date(entryDate.date());
+  }
+  // If project option is not a valid project, reject with list of project names
   let projectDefaulted = false;
   if (projectName) {
     debug(`Input Project Name: ${projectName}, checking project list.`);
@@ -129,8 +182,8 @@ function* run() {
     entryDescription,
     timeType,
     minutes,
-    entryDate,
-    insertTime,
+    insertTime: insertTime.toDate(),
+    entryDate: entryDate.format('YYYY-MM-DD'),
     project: projectName,
     wasteOfTime: false,
   };
@@ -213,42 +266,11 @@ function* run() {
     message: 'Waste of Time?',
     default: false,
   });
-  ui.log.write(chalk.black.bgWhite(`${minutesSinceLastEntry} minutes since last entry logged`));
+  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', insertTime.format('h:mm a'))));
+  ui.log.write(chalk.black.bgWhite(sprintf('Minutes Since Last Entry: %-8s', minutesSinceLastEntry)));
 }
 
 try {
-  if (commander.backTime) {
-    const validationMessage = validations.validateMinutes(
-      Number.parseInt(commander.backTime, 10), -1);
-    debug(validationMessage);
-    if (validationMessage !== true) {
-      throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);
-    }
-    insertTime = moment().subtract(commander.backTime, 'minute').toDate();
-  }
-
-  if (entryDate) {
-    const temp = moment(entryDate, 'YYYY-MM-DD');
-    if (!temp.isValid()) {
-      throw new Error('-d, --date: Invalid Time');
-    }
-    entryDate = temp.format('YYYY-MM-DD');
-  }
-
-// debug(JSON.stringify(commander, null, 2));
-  debug(`Input Project Name: ${projectName}`);
-  debug(`Input Time Type: ${timeType}`);
-  debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
-
-  if (minutes) {
-    minutes = Number.parseInt(minutes, 10);
-    const validationMessage = validations.validateMinutes(minutes);
-    debug(validationMessage);
-    if (validationMessage !== true) {
-      throw new Error(`-t, --time: "${commander.time}" ${validationMessage}`);
-    }
-  }
-
   co(run).catch((err) => {
     console.log(chalk.red(err.message));
     debug(err);
