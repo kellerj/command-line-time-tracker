@@ -98,7 +98,7 @@ function* run() {
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = 60;
-  if (!entryDate && lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
+  if (lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
     minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
   }
 
