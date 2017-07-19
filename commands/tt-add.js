@@ -95,13 +95,6 @@ function* run() {
   const lastEntry = yield* db.timeEntry.getMostRecentEntry();
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
-  // use the minutes since the last entry was added as the default time
-  // default to 60 in the case there is no entry yet today
-  let minutesSinceLastEntry = 60;
-  if (lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
-    minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
-  }
-
   if (commander.backTime) {
     if (commander.logTime) {
       throw new Error('You may not set both --backTime and --logTime.');
@@ -111,11 +104,6 @@ function* run() {
     debug(validationMessage);
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);
-    }
-    insertTime = moment().subtract(commander.backTime, 'minute');
-    minutesSinceLastEntry -= commander.backTime;
-    if (minutesSinceLastEntry < 0) {
-      minutesSinceLastEntry = 0;
     }
   }
 
@@ -130,6 +118,19 @@ function* run() {
     insertTime.month(entryDate.month());
     insertTime.date(entryDate.date());
   }
+
+  // use the minutes since the last entry was added as the default time
+  // default to 60 in the case there is no entry yet today
+  let minutesSinceLastEntry = 60;
+  if (lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
+    minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
+    if (minutesSinceLastEntry < 0) {
+      minutesSinceLastEntry = 0;
+    }
+  } else {
+    debug('Skipping minutes calculation since no prior entry found today.');
+  }
+
   // If project option is not a valid project, reject with list of project names
   let projectDefaulted = false;
   if (projectName) {
