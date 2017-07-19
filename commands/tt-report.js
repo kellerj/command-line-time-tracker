@@ -79,6 +79,9 @@ co(function* run() {
     reportOutput = `${reportOutput} ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
   }
   reportOutput += '\n\n';
+  // Get total time for calculating percentages
+  // eslint-disable-next-line no-param-reassign
+  const totalTime = r.reduce((acc, item) => (acc += item.minutes), 0);
   // build list of project totals
   const projects = r.reduce((p, item) => {
     if (!p[item.project]) {
@@ -105,10 +108,24 @@ co(function* run() {
 
   debug(timeTypeNames);
 
+  const lpad = (str, padString, length) => {
+    while (str.length < length) { str = padString + str; }
+    return str;
+  };
+
+  const rpad = (str, padString, length) => {
+    while (str.length < length) { str += padString; }
+    return str;
+  };
+
   if (!commander.noSummary) {
     reportOutput += '## Projects\n\n';
+    const projectNameMaxLength = projectNames
+                               .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
+    reportOutput += `| ${rpad('Project', ' ', projectNameMaxLength)} |    Time | Percent |\n`;
+    reportOutput += `| :${'-'.repeat(projectNameMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < projectNames.length; i++) {
-      reportOutput += `* ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n`;
+      reportOutput += `| ${rpad(projectNames[i], ' ', projectNameMaxLength)} | ${lpad(displayUtils.timePrinter(projects[projectNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (projects[projectNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
     }
     reportOutput += '\n';
 
