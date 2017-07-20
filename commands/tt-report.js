@@ -122,7 +122,7 @@ co(function* run() {
     reportOutput += '## Projects\n\n';
     const projectNameMaxLength = projectNames
                                .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
-    reportOutput += `| ${rpad('Project', ' ', projectNameMaxLength)} |    Time | Percent |\n`;
+    reportOutput += `| ${rpad('Name', ' ', projectNameMaxLength)} |    Time | Percent |\n`;
     reportOutput += `| :${'-'.repeat(projectNameMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < projectNames.length; i++) {
       reportOutput += `| ${rpad(projectNames[i], ' ', projectNameMaxLength)} | ${lpad(displayUtils.timePrinter(projects[projectNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (projects[projectNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
@@ -130,8 +130,14 @@ co(function* run() {
     reportOutput += '\n';
 
     reportOutput += '## Time Types\n\n';
+
+    const timeTypeMaxLength = timeTypeNames
+                               .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
+    reportOutput += `| ${rpad('Name', ' ', timeTypeMaxLength)} |    Time | Percent |\n`;
+    reportOutput += `| :${'-'.repeat(timeTypeMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < timeTypeNames.length; i++) {
-      reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]]).trim()})\n`;
+      // reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]]).trim()})\n`;
+      reportOutput += `| ${rpad(timeTypeNames[i], ' ', timeTypeMaxLength)} | ${lpad(displayUtils.timePrinter(timeTypes[timeTypeNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (timeTypes[timeTypeNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
     }
     reportOutput += '\n';
   }

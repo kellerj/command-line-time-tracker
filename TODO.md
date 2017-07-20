@@ -8,7 +8,7 @@
 - [ ] Add --last to add command to allow adding to the previous day
 - [ ] Change the get most recent to accept an entryDate
 - [ ] Add ability to edit the logged time on an entry
-- [ ] Add percentages after the hours in the summary section of the report
+- [x] Add percentages after the hours in the summary section of the report
 - [ ] Make "Other" project special (not in DB) and always sort at end
     - [x] sort to end - always
     - [ ] remove from DB collection but keep in lists
