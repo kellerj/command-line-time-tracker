@@ -109,11 +109,13 @@ co(function* run() {
   debug(timeTypeNames);
 
   const lpad = (str, padString, length) => {
+    // eslint-disable-next-line no-param-reassign
     while (str.length < length) { str = padString + str; }
     return str;
   };
 
   const rpad = (str, padString, length) => {
+    // eslint-disable-next-line no-param-reassign
     while (str.length < length) { str += padString; }
     return str;
   };
@@ -136,7 +138,6 @@ co(function* run() {
     reportOutput += `| ${rpad('Name', ' ', timeTypeMaxLength)} |    Time | Percent |\n`;
     reportOutput += `| :${'-'.repeat(timeTypeMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < timeTypeNames.length; i++) {
-      // reportOutput += `* ${timeTypeNames[i]} (${displayUtils.timePrinter(timeTypes[timeTypeNames[i]]).trim()})\n`;
       reportOutput += `| ${rpad(timeTypeNames[i], ' ', timeTypeMaxLength)} | ${lpad(displayUtils.timePrinter(timeTypes[timeTypeNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (timeTypes[timeTypeNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
     }
     reportOutput += '\n';
