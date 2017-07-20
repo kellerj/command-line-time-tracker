@@ -6,6 +6,7 @@
 
 - [x] Add CL option to back-date the insert time entry on add
 - [ ] Add --last to add command to allow adding to the previous day
+- [ ] Change the get most recent to accept an entryDate
 - [ ] Add ability to edit the logged time on an entry
 - [ ] Add percentages after the hours in the summary section of the report
 - [ ] Make "Other" project special (not in DB) and always sort at end
