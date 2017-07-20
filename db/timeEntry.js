@@ -105,15 +105,14 @@ module.exports = getConnection => ({
     return false;
   },
 
-  * getMostRecentEntry() {
+  * getMostRecentEntry(entryDate) {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = yield* getConnection();
     const collection = db.collection(collectionName);
 
-    // find .sort -1 .limit 1
-    // check date?
-
-    const r = yield collection.find({}).sort({ insertTime: -1 }).limit(1).toArray();
+    const r = yield collection.find({
+      entryDate: moment(entryDate).format(ENTRY_DATE_FORMAT),
+    }).sort({ insertTime: -1 }).limit(1).toArray();
     db.close();
     if (r.length) {
       return r[0];

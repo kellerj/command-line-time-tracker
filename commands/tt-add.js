@@ -92,7 +92,7 @@ function* run() {
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
-  const lastEntry = yield* db.timeEntry.getMostRecentEntry();
+  const lastEntry = yield* db.timeEntry.getMostRecentEntry(entryDate);
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
   if (commander.backTime) {
