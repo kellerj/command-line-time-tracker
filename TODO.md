@@ -14,7 +14,7 @@
     - [ ] remove from DB collection but keep in lists
 - [ ] Switch all use of process.exit to try/catch (make unit testing possible)
     - [x] list
-    - [ ] report
+    - [x] report
     - [ ] summary
 - [x] Backdating improvements
     - [x] subtract backdate time from minutes since last entry/default minutes
