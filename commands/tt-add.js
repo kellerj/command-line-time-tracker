@@ -105,6 +105,7 @@ function* run() {
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);
     }
+    insertTime = moment().subtract(commander.backTime, 'minute');
   }
 
   if (commander.logTime) {
@@ -280,4 +281,3 @@ try {
   console.log(chalk.red(err.message));
   debug(err);
 }
-
