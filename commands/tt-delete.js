@@ -13,9 +13,10 @@ commander
     .version('1.0.0')
     .option('-d, --date <YYYY-MM-DD>', 'Date from which to remove items.')
     .option('--last', 'Remove the most recent entry.')
+    .option('-y, --yesterday', 'List entries from yesterday to delete.')
     .parse(process.argv);
 
-const entryDate = commander.date;
+let entryDate = commander.date;
 const deleteLast = commander.last;
 debug(JSON.stringify(commander, null, 2));
 
@@ -32,10 +33,22 @@ function* performUpdate(entries) {
 }
 
 co(function* run() {
+  if (entryDate) {
+    const temp = moment(entryDate, 'YYYY-MM-DD');
+    if (!temp.isValid()) {
+      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+    }
+    entryDate = temp;
+  } else if (commander.yesterday) {
+    entryDate = moment().subtract(1, 'day');
+  } else {
+    entryDate = moment();
+  }
+
   let entries = [];
   if (deleteLast) {
     debug('Getting last entry');
-    const entry = yield* db.timeEntry.getMostRecentEntry();
+    const entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
     debug('Got Last Entry');
     console.log(chalk.yellow(displayUtils.formatEntryChoice(entry)));
     entries.push(entry);
@@ -44,11 +57,6 @@ co(function* run() {
   }
 
   if (entries && entries.length) {
-    debug(JSON.stringify(entries, null, 2));
-  } else {
-    console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
-  }
-  if (entries) {
     const answer = yield inquirer.prompt([
       {
         name: 'entries',
@@ -76,6 +84,6 @@ co(function* run() {
       yield* performUpdate(answer.entries);
     }
   } else {
-    console.log(chalk.yellow(`No Time Entries Entered for ${entryDate}`));
+    console.log(chalk.yellow(`No Time Entries Entered for ${moment(entryDate).format('YYYY-MM-DD')}`));
   }
 });

@@ -5,7 +5,7 @@
 ### 1.3
 
 - [x] Add CL option to back-date the insert time entry on add
-- [ ] Add --last to add command to allow adding to the previous day
+- [x] Add -y, --yesterday to add command to allow adding to the previous day
 - [x] Change the get most recent to accept an entryDate
 - [ ] Add ability to edit the logged time on an entry
 - [x] Add percentages after the hours in the summary section of the report

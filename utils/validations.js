@@ -70,7 +70,7 @@ module.exports = {
       if (typeof entryDate === 'string') {
         return { startDate: undefined, endDate: undefined, errorMessage: entryDate };
       }
-      if (input.last) {
+      if (input.last || input.yesterday) {
         entryDate.subtract(1, 'day');
       }
       debug(`Start and end date not set, using entryDate: ${entryDate}`);

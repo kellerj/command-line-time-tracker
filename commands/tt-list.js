@@ -20,6 +20,7 @@ try {
     .option('-e, --endDate <YYYY-MM-DD>')
     .option('--nodate', 'Suppress the date in the first column')
     .option('--last', 'When no date is specified, use yesterday\'s date')
+    .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
     .parse(process.argv);
 
   const noDateOutput = commander.nodate;

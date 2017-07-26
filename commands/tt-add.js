@@ -17,11 +17,12 @@ commander
     .description('Record a time entry')
     .usage('[options] [entryDescription]')
     .option('-t, --time <minutes>', 'Minutes spent on the activity.')
-    .option('-y, --type <timeType>', 'Name of the time type - must be existing.')
+    .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
     .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
     .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
     .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
     .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
+    .option('-y, --yesterday', 'Set the logging date to yesterday.')
     .parse(process.argv);
 
 const entryDescription = commander.args.join(' ').trim();
@@ -70,6 +71,8 @@ function* run() {
       throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
     }
     entryDate = temp;
+  } else if (commander.yesterday) {
+    entryDate = moment().subtract(1, 'day');
   } else {
     entryDate = moment();
   }

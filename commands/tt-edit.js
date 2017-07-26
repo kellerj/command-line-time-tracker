@@ -14,10 +14,11 @@ const displayUtils = require('../utils/display-utils');
 commander
     .version('1.0.0')
     .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
+    .option('-y, --yesterday', 'List entries from yesterday to delete.')
     .option('--last', 'Edit the last entry added without displaying a list first.')
     .parse(process.argv);
 
-const entryDate = commander.date;
+let entryDate = commander.date;
 const editLast = commander.last;
 debug(JSON.stringify(commander, null, 2));
 
@@ -35,13 +36,13 @@ function* performUpdate(entry) {
   }
 }
 
-function* getEntryToEdit() {
-  const r = yield* db.timeEntry.get(entryDate);
+function* getEntryToEdit(date) {
+  const r = yield* db.timeEntry.get(date);
 
   if (r && r.length) {
     debug(JSON.stringify(r, null, 2));
   } else {
-    console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+    console.log(chalk.yellow(`No Time Entries Defined for ${moment(date).format('YYYY-MM-DD')}`));
   }
   if (r) {
     debug(JSON.stringify(r, null, 2));
@@ -58,7 +59,7 @@ function* getEntryToEdit() {
     ]);
     return r.find(e => (e._id === answer.entry));
   }
-  console.log(chalk.yellow(`No Time Entries Entered for ${entryDate}`));
+  console.log(chalk.yellow(`No Time Entries Entered for ${moment(date).format('YYYY-MM-DD')}`));
   return null;
 }
 
@@ -115,12 +116,23 @@ function* handleEntryChanges(entry) {
   });
 }
 
-co(function* run() {
+co(function* main() {
   let entry = null;
-  if (!editLast) {
-    entry = yield* getEntryToEdit();
+  if (entryDate) {
+    const temp = moment(entryDate, 'YYYY-MM-DD');
+    if (!temp.isValid()) {
+      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+    }
+    entryDate = temp;
+  } else if (commander.yesterday) {
+    entryDate = moment().subtract(1, 'day');
   } else {
-    entry = yield* db.timeEntry.getMostRecentEntry();
+    entryDate = moment();
+  }
+  if (!editLast) {
+    entry = yield* getEntryToEdit(entryDate);
+  } else {
+    entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
   }
   debug(`Entry Selected: ${JSON.stringify(entry)}`);
 
