@@ -19,6 +19,7 @@ commander
     .option('--week', 'Report for the current week (starting Monday).')
     .option('--month', 'Report for the current month.')
     .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
+    .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
     .option('--noHeader', 'Don\'t print the header with the dates above the summary')
     .parse(process.argv);
 
