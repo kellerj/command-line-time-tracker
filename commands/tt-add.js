@@ -112,11 +112,13 @@ function* run() {
   }
 
   if (commander.logTime) {
-    // attempt to parse the time as 12-hour format then 24 hour
-    insertTime = moment(commander.logTime, 'h:mm a');
-    if (!insertTime.isValid()) {
-      throw new Error(`-l, --logTime: ${commander.logTime} is not a valid time, must be in h:mm am format.`);
+    debug(`Processing LogTime: ${commander.logTime}`);
+    const validationMessage = validations.validateTime(commander.logTime);
+    if (validationMessage !== true) {
+      throw new Error(`-l, --logTime: "${commander.logTime}" ${validationMessage}`);
     }
+    insertTime = moment(commander.logTime, 'h:mm a');
+
     // now, ensure the date matches the entry date since it's assumed the time should be on that day
     insertTime.year(entryDate.year());
     insertTime.month(entryDate.month());

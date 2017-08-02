@@ -64,7 +64,7 @@ function* getEntryToEdit(date) {
 }
 
 function* handleEntryChanges(entry) {
-  debug(`Starting Edit for Entry: ${JSON.stringify(entry)}`);
+  debug(`Starting Edit for Entry: ${JSON.stringify(entry, null, 2)}`);
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
@@ -84,6 +84,14 @@ function* handleEntryChanges(entry) {
       default: entry.minutes,
       validate: validations.validateMinutes,
       filter: val => (Number.parseInt(val, 10)),
+    },
+    {
+      name: 'insertTime',
+      type: 'input',
+      message: 'Entry Time:',
+      default: moment(entry.insertTime).format('h:mm a'),
+      filter: input => (moment(input, 'h:mm a')),
+      validate: validations.validateTime,
     },
     {
       name: 'project',
@@ -110,7 +118,12 @@ function* handleEntryChanges(entry) {
   ]).then((answer) => {
     answer._id = entry._id;
     answer.entryDate = entry.entryDate;
-    answer.insertTime = entry.insertTime;
+    // reset the date on the record and convert back to a date
+    const entryMoment = moment(answer.entryDate);
+    answer.insertTime.year(entryMoment.year());
+    answer.insertTime.month(entryMoment.month());
+    answer.insertTime.date(entryMoment.date());
+    answer.insertTime = answer.insertTime.toDate();
     debug(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
     return answer;
   });

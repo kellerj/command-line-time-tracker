@@ -38,6 +38,15 @@ module.exports = {
     return true;
   },
 
+  validateTime: (input) => {
+    // attempt to parse the time as 12-hour format then 24 hour
+    const parsedTime = moment(input, 'h:mm a');
+    if (!parsedTime.isValid()) {
+      return `${input} is not a valid time, must be in h:mm am format.`;
+    }
+    return true;
+  },
+
   validateAndDefaultInputDateString,
 
   getStartAndEndDates: (input) => {
