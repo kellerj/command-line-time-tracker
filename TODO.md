@@ -9,9 +9,8 @@
 - [x] Change the get most recent to accept an entryDate
 - [x] Add ability to edit the logged time on an entry
 - [x] Add percentages after the hours in the summary section of the report
-- [ ] Make "Other" project special (not in DB) and always sort at end
-    - [x] sort to end - always
-    - [ ] remove from DB collection but keep in lists
+- [ ] Addition of inquirer-autocomplete-prompt for the project and time type lists
+    - [ ] Use https://github.com/dumbmatter/inquirer-autocomplete-prompt for the defaulting function
 - [ ] Switch all use of process.exit to try/catch (make unit testing possible)
     - [x] list
     - [x] report
@@ -34,6 +33,9 @@
     - [ ] Database update
     - [ ] new UI questions
     - [ ] use of sort flag
+- [ ] Make "Other" project special (not in DB) and always sort at end
+    - [x] sort to end - always
+    - [ ] remove from DB collection but keep in lists
 
 ### 3.0
 
