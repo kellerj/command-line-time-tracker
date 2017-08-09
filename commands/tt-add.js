@@ -2,6 +2,7 @@
 
 const commander = require('commander');
 const inquirer = require('inquirer');
+const inquirerAutoCompletePrompt = require('inquirer-autocomplete-prompt');
 const co = require('co');
 const db = require('../db');
 const chalk = require('chalk');
@@ -198,6 +199,7 @@ function* run() {
   const ui = new inquirer.ui.BottomBar();
   const prompts = new Rx.Subject();
 
+  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   inquirer.prompt(prompts).ui.process.subscribe(
       // handle each answer
       (lastAnswer) => {
@@ -243,12 +245,22 @@ function* run() {
   });
   prompts.onNext({
     name: 'project',
-    type: 'list',
+    type: 'autocomplete',
     message: 'Project:',
-    choices: projects,
-    default: projectName,
+    source: (answers, input) => new Promise((resolve) => {
+      let searchString = input;
+      // if we have detected that we have a project name, either from defaulting or command line
+      // and the user has not entered any input yet, use that as the search string
+      // to make it the only option
+      if (projectName && (!searchString || !searchString.trim())) {
+        searchString = projectName;
+      }
+      resolve(projects.filter(
+        p => !searchString || (typeof p === 'string' && p.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
+    }),
+    // default: projectName,
     when: () => (projectName === undefined || projectDefaulted),
-    pageSize: 15,
+    pageSize: 10,
   });
   prompts.onNext({
     name: 'newProject',
