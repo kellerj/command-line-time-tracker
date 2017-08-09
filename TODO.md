@@ -10,7 +10,7 @@
 - [x] Add ability to edit the logged time on an entry
 - [x] Add percentages after the hours in the summary section of the report
 - [ ] Addition of inquirer-autocomplete-prompt for the project and time type lists
-    - [ ] add
+    - [x] add
     - [ ] edit
 - [ ] Switch all use of process.exit to try/catch (make unit testing possible)
     - [x] list

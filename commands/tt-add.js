@@ -11,6 +11,7 @@ const Table = require('easy-table');
 const moment = require('moment');
 const sprintf = require('sprintf-js').sprintf;
 const validations = require('../utils/validations');
+const displayUtils = require('../utils/display-utils');
 const Rx = require('rx');
 
 commander
@@ -247,18 +248,7 @@ function* run() {
     name: 'project',
     type: 'autocomplete',
     message: 'Project:',
-    source: (answers, input) => new Promise((resolve) => {
-      let searchString = input;
-      // if we have detected that we have a project name, either from defaulting or command line
-      // and the user has not entered any input yet, use that as the search string
-      // to make it the only option
-      if (projectName && (!searchString || !searchString.trim())) {
-        searchString = projectName;
-      }
-      resolve(projects.filter(
-        p => !searchString || (typeof p === 'string' && p.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
-    }),
-    // default: projectName,
+    source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, projectName)),
     when: () => (projectName === undefined || projectDefaulted),
     pageSize: 10,
   });
@@ -272,12 +262,11 @@ function* run() {
   });
   prompts.onNext({
     name: 'timeType',
-    type: 'list',
+    type: 'autocomplete',
     message: 'Type of Type:',
-    choices: timeTypes,
-    default: timeType,
+    source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, timeType)),
     when: () => (timeType === undefined || timeTypeDefaulted),
-    pageSize: 15,
+    pageSize: 10,
   });
   prompts.onNext({
     name: 'wasteOfTime',
