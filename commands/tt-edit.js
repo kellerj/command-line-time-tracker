@@ -12,11 +12,10 @@ const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
 
 commander
-    .version('1.0.0')
-    .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
-    .option('-y, --yesterday', 'List entries from yesterday to delete.')
-    .option('--last', 'Edit the last entry added without displaying a list first.')
-    .parse(process.argv);
+  .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
+  .option('-y, --yesterday', 'List entries from yesterday to delete.')
+  .option('--last', 'Edit the last entry added without displaying a list first.')
+  .parse(process.argv);
 
 let entryDate = commander.date;
 const editLast = commander.last;

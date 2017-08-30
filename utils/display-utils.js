@@ -49,11 +49,11 @@ module.exports = {
   },
 
   formatEntryChoice: entry => sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
-      moment(entry.insertTime).format('h:mm a'),
-      entry.entryDescription,
-      entry.minutes,
-      entry.project,
-      entry.timeType),
+    moment(entry.insertTime).format('h:mm a'),
+    entry.entryDescription,
+    entry.minutes,
+    entry.project,
+    entry.timeType),
 
   // Utility to sort Other into the last position in an array
   // Special function to also detect if there is a 'project'
@@ -76,14 +76,14 @@ module.exports = {
 
   autocompleteListSearch: (list, input, defaultValue) => new Promise((resolve) => {
     let searchString = input;
-      // if we have detected that we have a project name, either from defaulting or command line
-      // and the user has not entered any input yet, use that as the search string
-      // to make it the only option
+    // if we have detected that we have a project name, either from defaulting or command line
+    // and the user has not entered any input yet, use that as the search string
+    // to make it the only option
     if (defaultValue && (!searchString || !searchString.trim())) {
       searchString = defaultValue;
     }
     resolve(list.filter(
-        e => !searchString || (typeof e === 'string' && e.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
+      e => !searchString || (typeof e === 'string' && e.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
   }),
 
 };

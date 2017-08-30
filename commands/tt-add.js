@@ -15,17 +15,16 @@ const displayUtils = require('../utils/display-utils');
 const Rx = require('rx');
 
 commander
-    .version('1.0.0')
-    .description('Record a time entry')
-    .usage('[options] [entryDescription]')
-    .option('-t, --time <minutes>', 'Minutes spent on the activity.')
-    .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
-    .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
-    .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
-    .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
-    .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
-    .option('-y, --yesterday', 'Set the logging date to yesterday.')
-    .parse(process.argv);
+  .description('Record a time entry')
+  .usage('[options] [entryDescription]')
+  .option('-t, --time <minutes>', 'Minutes spent on the activity.')
+  .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
+  .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
+  .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
+  .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
+  .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
+  .option('-y, --yesterday', 'Set the logging date to yesterday.')
+  .parse(process.argv);
 
 const entryDescription = commander.args.join(' ').trim();
 let projectName = commander.project;
@@ -40,9 +39,9 @@ function performUpdate(timeEntry) {
     const insertSuceeded = yield* db.timeEntry.insert(timeEntry);
     if (insertSuceeded) {
       const timeEntrySummary = sprintf('%s : %s : %s',
-          timeEntry.entryDescription,
-          timeEntry.project,
-          timeEntry.timeType);
+        timeEntry.entryDescription,
+        timeEntry.project,
+        timeEntry.timeType);
       console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} added`));
     } else {
       console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
@@ -143,37 +142,37 @@ function* run() {
   let projectDefaulted = false;
   if (projectName) {
     debug(`Input Project Name: ${projectName}, checking project list.`);
-      // perform a case insensitive match on the name - and use the name
-      // from the official list which matches
+    // perform a case insensitive match on the name - and use the name
+    // from the official list which matches
     projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
     if (projectName === undefined) {
       console.log(chalk.red(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`));
       console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
-          { name: { name: chalk.white.bold('Project Name') } })));
+        { name: { name: chalk.white.bold('Project Name') } })));
       throw new Error();
     }
   } else {
-      // see if we can find a name in the description
+    // see if we can find a name in the description
     const tempProjectName = projects.find(p => (entryDescription.match(new RegExp(p, 'i'))));
     if (tempProjectName !== undefined) {
       projectName = tempProjectName;
       projectDefaulted = true;
     }
   }
-    // If time type option is not a valid project, reject with list of type names
+  // If time type option is not a valid project, reject with list of type names
   let timeTypeDefaulted = false;
   if (timeType) {
-      // perform a case insensitive match on the name - and use the name
-      // from the official list which matches
+    // perform a case insensitive match on the name - and use the name
+    // from the official list which matches
     timeType = timeTypes.find(t => (t.match(new RegExp(`^${timeType.trim()}$`, 'i'))));
     if (timeType === undefined) {
       console.log(chalk.red(`Project ${chalk.yellow(timeType)} does not exist.  Known Time Types:`));
       console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
-          { name: { name: chalk.white.bold('Time Type') } })));
+        { name: { name: chalk.white.bold('Time Type') } })));
       throw new Error();
     }
   } else {
-      // see if we can find a name in the description
+    // see if we can find a name in the description
     const tempTimeType = timeTypes.find(t => (entryDescription.match(new RegExp(t, 'i'))));
     if (tempTimeType !== undefined) {
       timeType = tempTimeType;
@@ -181,12 +180,12 @@ function* run() {
     }
   }
 
-    // Add the new project option to the end of the list
+  // Add the new project option to the end of the list
   projects.push(new inquirer.Separator());
   projects.push('(New Project)');
   projects.push(new inquirer.Separator());
 
-    // Build the new entry object with command line arguments
+  // Build the new entry object with command line arguments
   const newEntry = {
     entryDescription,
     timeType,
@@ -202,31 +201,31 @@ function* run() {
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   inquirer.prompt(prompts).ui.process.subscribe(
-      // handle each answer
-      (lastAnswer) => {
-        debug(JSON.stringify(lastAnswer));
-        // for each answer, update the newEntry object
-        newEntry[lastAnswer.name] = lastAnswer.answer;
-        if (lastAnswer.name === 'wasteOfTime') {
-          prompts.onCompleted();
-        }
-      },
-      (err) => {
-        console.log(chalk.bgRed(JSON.stringify(err)));
-      },
-      () => {
-        debug(JSON.stringify(newEntry, null, 2));
-        // if they answered the newProject question, create that project first
-        if (newEntry.newProject) {
-          addProject(newEntry.newProject);
-          newEntry.project = newEntry.newProject;
-          delete newEntry.newProject;
-        }
-        // write the time entry to the database
-        performUpdate(newEntry);
-      });
+    // handle each answer
+    (lastAnswer) => {
+      debug(JSON.stringify(lastAnswer));
+      // for each answer, update the newEntry object
+      newEntry[lastAnswer.name] = lastAnswer.answer;
+      if (lastAnswer.name === 'wasteOfTime') {
+        prompts.onCompleted();
+      }
+    },
+    (err) => {
+      console.log(chalk.bgRed(JSON.stringify(err)));
+    },
+    () => {
+      debug(JSON.stringify(newEntry, null, 2));
+      // if they answered the newProject question, create that project first
+      if (newEntry.newProject) {
+        addProject(newEntry.newProject);
+        newEntry.project = newEntry.newProject;
+        delete newEntry.newProject;
+      }
+      // write the time entry to the database
+      performUpdate(newEntry);
+    });
 
-    // Initialize all the prompts
+  // Initialize all the prompts
   prompts.onNext({
     name: 'entryDescription',
     type: 'input',

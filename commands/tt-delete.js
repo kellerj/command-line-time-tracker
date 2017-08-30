@@ -10,11 +10,10 @@ const debug = require('debug')('tt:delete');
 const displayUtils = require('../utils/display-utils');
 
 commander
-    .version('1.0.0')
-    .option('-d, --date <YYYY-MM-DD>', 'Date from which to remove items.')
-    .option('--last', 'Remove the most recent entry.')
-    .option('-y, --yesterday', 'List entries from yesterday to delete.')
-    .parse(process.argv);
+  .option('-d, --date <YYYY-MM-DD>', 'Date from which to remove items.')
+  .option('--last', 'Remove the most recent entry.')
+  .option('-y, --yesterday', 'List entries from yesterday to delete.')
+  .parse(process.argv);
 
 let entryDate = commander.date;
 const deleteLast = commander.last;

@@ -7,10 +7,9 @@ const db = require('../db');
 const chalk = require('chalk');
 
 commander
-    .version('1.0.0')
-    .description('Add a time type to the database')
-    .arguments('<timeType>')
-    .parse(process.argv);
+  .description('Add a time type to the database')
+  .arguments('<timeType>')
+  .parse(process.argv);
 
 const inputName = commander.args.join(' ');
 

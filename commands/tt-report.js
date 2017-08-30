@@ -11,19 +11,18 @@ const displayUtils = require('../utils/display-utils');
 const moment = require('moment');
 
 commander
-    .version('1.0.0')
-    .description('Generate report of time entries')
-    //.option('--csv', 'Output in a CSV format instead of ASCII table.')
-    .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
-    .option('-s, --startDate <YYYY-MM-DD>')
-    .option('-e, --endDate <YYYY-MM-DD>')
-    .option('--week', 'Report for the current week (starting Monday).')
-    .option('--month', 'Report for the current month.')
-    .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
-    .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
-    .option('-ns, --noSummary', 'Suppress the summary section of the report.')
-    .option('-bd, --noDetails', 'Suppress the details section of the report.')
-    .parse(process.argv);
+  .description('Generate report of time entries')
+//.option('--csv', 'Output in a CSV format instead of ASCII table.')
+  .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
+  .option('-s, --startDate <YYYY-MM-DD>')
+  .option('-e, --endDate <YYYY-MM-DD>')
+  .option('--week', 'Report for the current week (starting Monday).')
+  .option('--month', 'Report for the current month.')
+  .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
+  .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
+  .option('-ns, --noSummary', 'Suppress the summary section of the report.')
+  .option('-bd, --noDetails', 'Suppress the details section of the report.')
+  .parse(process.argv);
 
 debug(JSON.stringify(commander, null, 2));
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
@@ -82,7 +81,7 @@ co(function* run() {
   reportOutput += '\n\n';
   // Get total time for calculating percentages
   // eslint-disable-next-line no-param-reassign
-  const totalTime = r.reduce((acc, item) => (acc += item.minutes), 0);
+  const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
   // build list of project totals
   const projects = r.reduce((p, item) => {
     if (!p[item.project]) {
@@ -124,7 +123,7 @@ co(function* run() {
   if (!commander.noSummary) {
     reportOutput += '## Projects\n\n';
     const projectNameMaxLength = projectNames
-                               .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
+      .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
     reportOutput += `| ${rpad('Name', ' ', projectNameMaxLength)} |    Time | Percent |\n`;
     reportOutput += `| :${'-'.repeat(projectNameMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < projectNames.length; i++) {
@@ -135,7 +134,7 @@ co(function* run() {
     reportOutput += '## Time Types\n\n';
 
     const timeTypeMaxLength = timeTypeNames
-                               .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
+      .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
     reportOutput += `| ${rpad('Name', ' ', timeTypeMaxLength)} |    Time | Percent |\n`;
     reportOutput += `| :${'-'.repeat(timeTypeMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < timeTypeNames.length; i++) {

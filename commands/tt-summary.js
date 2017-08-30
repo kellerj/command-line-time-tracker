@@ -10,18 +10,17 @@ const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
 
 commander
-    .version('1.0.0')
-    .description('Summarize time entry data in various formats.')
-    //.option('--csv', 'Output in a CSV format instead of ASCII table.')
-    .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
-    .option('-s, --startDate <YYYY-MM-DD>')
-    .option('-e, --endDate <YYYY-MM-DD>')
-    .option('--week', 'Report for the current week (starting Monday).')
-    .option('--month', 'Report for the current month.')
-    .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
-    .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
-    .option('--noHeader', 'Don\'t print the header with the dates above the summary')
-    .parse(process.argv);
+  .description('Summarize time entry data in various formats.')
+//.option('--csv', 'Output in a CSV format instead of ASCII table.')
+  .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
+  .option('-s, --startDate <YYYY-MM-DD>')
+  .option('-e, --endDate <YYYY-MM-DD>')
+  .option('--week', 'Report for the current week (starting Monday).')
+  .option('--month', 'Report for the current month.')
+  .option('--last', 'Change the day, week, or month criteria to the prior week or month.')
+  .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
+  .option('--noHeader', 'Don\'t print the header with the dates above the summary')
+  .parse(process.argv);
 
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
 if (errorMessage) {
@@ -49,7 +48,7 @@ co(function* run() {
   }
   debug(JSON.stringify(r, null, 2));
   // eslint-disable-next-line no-param-reassign
-  const totalTime = r.reduce((acc, item) => (acc += item.minutes), 0);
+  const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
   // need to transform the structure into a new grid format - group by project
   // and build a record with keys for each time type
   const headings = r.reduce((acc, item) => {

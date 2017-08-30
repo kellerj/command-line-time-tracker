@@ -1,9 +1,10 @@
 {
   "name": "command-line-time-tracker",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Time Tracker Command Line Tool",
   "main": "commands/tt.js",
   "scripts": {
+    "lint": "eslint commands utils db --ext .js",
     "test": "nyc mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test:mocha": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
@@ -14,26 +15,12 @@
   },
   "author": {
     "name": "Jonathan Keller",
-    "email": "<keller.jonathan@gmail.com>"
+    "email": "keller.jonathan@gmail.com"
   },
   "license": "GPL-3.0+",
   "repository": {
     "type": "git",
     "url": "https://github.com/kellerj/command-line-time-tracker.git"
-  },
-  "dependencies": {
-    "chalk": "1.1.x",
-    "co": "4.6.x",
-    "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
-    "coveralls": "^2.13.1",
-    "debug": "2.6.x",
-    "easy-table": "1.1.x",
-    "inquirer": "3.0.x",
-    "inquirer-autocomplete-prompt": "^0.11.0",
-    "moment": "2.18.x",
-    "mongodb": "2.2.x",
-    "rx": "4.1.x",
-    "sprintf-js": "1.1.x"
   },
   "bin": {
     "tt": "./commands/tt.js",
@@ -52,20 +39,34 @@
     "tt-summary": "./commands/tt-summary.js",
     "tt-report": "./commands/tt-report.js"
   },
+  "dependencies": {
+    "chalk": "2.1.x",
+    "co": "4.6.x",
+    "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
+    "coveralls": "2.13.x",
+    "debug": "3.0.x",
+    "easy-table": "1.1.x",
+    "inquirer": "3.2.x",
+    "inquirer-autocomplete-prompt": "0.11.x",
+    "moment": "2.18.x",
+    "mongodb": "^2.2.31",
+    "rx": "4.1.x",
+    "sprintf-js": "1.1.x"
+  },
   "devDependencies": {
-    "babel-cli": "^6.24.1",
+    "babel-cli": "^6.26.0",
     "babel-preset-es2017": "^6.24.1",
-    "babel-register": "^6.24.1",
-    "chai": "^4.0.2",
-    "eslint": "3.19.x",
-    "eslint-config-airbnb": "14.1.x",
-    "eslint-plugin-import": "2.2.x",
-    "eslint-plugin-jsx-a11y": "4.0.x",
-    "eslint-plugin-react": "6.10.x",
+    "babel-register": "^6.26.0",
+    "chai": "^4.1.1",
+    "eslint": "^4.5.x",
+    "eslint-config-airbnb": "^15.1.x",
+    "eslint-plugin-import": "^2.7.x",
+    "eslint-plugin-jsx-a11y": "5.1.1",
+    "eslint-plugin-react": "^7.3.x",
     "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
-    "nyc": "^11.0.2",
-    "sinon": "^2.3.5"
+    "mocha": "^3.5.0",
+    "nyc": "^11.1.0",
+    "sinon": "^3.2.1"
   },
   "nyc": {
     "check-coverage": false,

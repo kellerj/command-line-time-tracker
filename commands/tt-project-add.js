@@ -8,10 +8,9 @@ const chalk = require('chalk');
 const debug = require('debug')('tt:project:add');
 
 commander
-    .version('1.0.0')
-    .description('Add a time tracking project to the database')
-    .arguments('<projectName>')
-    .parse(process.argv);
+  .description('Add a time tracking project to the database')
+  .arguments('<projectName>')
+  .parse(process.argv);
 
 const inputProjectName = commander.args.join(' ');
 
