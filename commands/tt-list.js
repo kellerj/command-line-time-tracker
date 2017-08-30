@@ -8,24 +8,21 @@ const moment = require('moment');
 const db = require('../db');
 const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
-const debug = require('debug')('tt:ls');
+const debug = require('debug')('tt:list');
 
 try {
   commander
-    .version('1.0.0')
     .description('List time entries in a tabular format.')
     //.option('--csv', 'Output in a CSV format instead of ASCII table.')
     .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
     .option('-s, --startDate <YYYY-MM-DD>')
     .option('-e, --endDate <YYYY-MM-DD>')
-    .option('--nodate', 'Suppress the date in the first column')
     .option('--last', 'When no date is specified, use yesterday\'s date')
     .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
     .parse(process.argv);
 
-  const noDateOutput = commander.nodate;
-
   const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+  debug(`Running for Dates: ${startDate} through ${endDate}`);
   if (errorMessage) {
     throw new Error(errorMessage);
   }
@@ -37,7 +34,7 @@ try {
       debug(JSON.stringify(r, null, 2));
       const t = new Table();
       r.forEach((item) => {
-        if (!noDateOutput) {
+        if (startDate.getTime() !== endDate.getTime()) {
           t.cell('Date', item.entryDate, displayUtils.entryDatePrinter);
         }
         t.cell('Logged', item.insertTime, displayUtils.insertTimePrinter);
