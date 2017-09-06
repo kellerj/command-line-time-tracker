@@ -24,8 +24,7 @@ commander
 
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
 if (errorMessage) {
-  console.log(chalk.red(errorMessage));
-  process.exit(-1);
+  throw new Error(errorMessage);
 }
 
 co(function* run() {

@@ -12,10 +12,10 @@
 - [ ] Addition of inquirer-autocomplete-prompt for the project and time type lists
     - [x] add
     - [ ] edit
-- [ ] Switch all use of process.exit to try/catch (make unit testing possible)
+- [x] Switch all use of process.exit to try/catch (make unit testing possible)
     - [x] list
     - [x] report
-    - [ ] summary
+    - [x] summary
 - [x] Backdating improvements
     - [x] subtract backdate time from minutes since last entry/default minutes
     - [x] display the effective logging time when using backdating (always?)
