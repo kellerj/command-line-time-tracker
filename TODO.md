@@ -9,9 +9,9 @@
 - [x] Change the get most recent to accept an entryDate
 - [x] Add ability to edit the logged time on an entry
 - [x] Add percentages after the hours in the summary section of the report
-- [ ] Addition of inquirer-autocomplete-prompt for the project and time type lists
+- [x] Addition of inquirer-autocomplete-prompt for the project and time type lists
     - [x] add
-    - [ ] edit
+    - [x] edit
 - [x] Switch all use of process.exit to try/catch (make unit testing possible)
     - [x] list
     - [x] report
@@ -19,7 +19,7 @@
 - [x] Backdating improvements
     - [x] subtract backdate time from minutes since last entry/default minutes
     - [x] display the effective logging time when using backdating (always?)
-- [ ] Fix bug with edit where errors out when using --last on a day with no entries
+- [x] Fix bug with edit where errors out when using --last on a day with no entries
 
 
 ### 2.0

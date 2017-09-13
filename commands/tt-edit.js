@@ -133,27 +133,36 @@ function* handleEntryChanges(entry) {
 }
 
 co(function* main() {
-  let entry = null;
-  if (entryDate) {
-    const temp = moment(entryDate, 'YYYY-MM-DD');
-    if (!temp.isValid()) {
-      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+  try {
+    let entry = null;
+    if (entryDate) {
+      const temp = moment(entryDate, 'YYYY-MM-DD');
+      if (!temp.isValid()) {
+        throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+      }
+      entryDate = temp;
+    } else if (commander.yesterday) {
+      entryDate = moment().subtract(1, 'day');
+    } else {
+      entryDate = moment();
     }
-    entryDate = temp;
-  } else if (commander.yesterday) {
-    entryDate = moment().subtract(1, 'day');
-  } else {
-    entryDate = moment();
-  }
-  if (!editLast) {
-    entry = yield* getEntryToEdit(entryDate);
-  } else {
-    entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
-  }
-  debug(`Entry Selected: ${JSON.stringify(entry)}`);
+    if (!editLast) {
+      entry = yield* getEntryToEdit(entryDate);
+    } else {
+      entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
+      if (!entry) {
+        throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+      }
+    }
+    debug(`Entry Selected: ${JSON.stringify(entry)}`);
 
-  // implement the edit UI
-  entry = yield* handleEntryChanges(entry);
-  // TODO: Update the record in the database - new db API method
-  yield* performUpdate(entry);
+    // implement the edit UI
+    entry = yield* handleEntryChanges(entry);
+    // TODO: Update the record in the database - new db API method
+    yield* performUpdate(entry);
+  } catch (err) {
+    // do nothing - just suppress the error trace
+    console.log(chalk.red(err.message));
+    debug(err);
+  }
 });
