@@ -19,6 +19,8 @@
 - [x] Backdating improvements
     - [x] subtract backdate time from minutes since last entry/default minutes
     - [x] display the effective logging time when using backdating (always?)
+- [ ] Fix bug with edit where errors out when using --last on a day with no entries
+
 
 ### 2.0
 

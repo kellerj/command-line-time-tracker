@@ -2,6 +2,7 @@
 
 const commander = require('commander');
 const inquirer = require('inquirer');
+const inquirerAutoCompletePrompt = require('inquirer-autocomplete-prompt');
 const co = require('co');
 const db = require('../db');
 const chalk = require('chalk');
@@ -12,6 +13,8 @@ const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
 
 commander
+  .description('Edit an existing time entry from the current day.')
+  .usage('[options]')
   .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
   .option('-y, --yesterday', 'List entries from yesterday to delete.')
   .option('--last', 'Edit the last entry added without displaying a list first.')
@@ -67,6 +70,7 @@ function* handleEntryChanges(entry) {
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
+  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   return yield inquirer.prompt([
     {
       name: 'entryDescription',
@@ -94,19 +98,19 @@ function* handleEntryChanges(entry) {
     },
     {
       name: 'project',
-      type: 'list',
+      type: 'autocomplete',
       message: 'Project:',
-      choices: projects,
-      default: entry.project,
-      pageSize: 15,
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(projects, input, entry.project)),
+      pageSize: 10,
     },
     {
       name: 'timeType',
-      type: 'list',
+      type: 'autocomplete',
       message: 'Type of Type:',
-      choices: timeTypes,
-      default: entry.timeType,
-      pageSize: 15,
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType)),
+      pageSize: 10,
     },
     {
       name: 'wasteOfTime',
