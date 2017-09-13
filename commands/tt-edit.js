@@ -2,6 +2,7 @@
 
 const commander = require('commander');
 const inquirer = require('inquirer');
+const inquirerAutoCompletePrompt = require('inquirer-autocomplete-prompt');
 const co = require('co');
 const db = require('../db');
 const chalk = require('chalk');
@@ -12,12 +13,14 @@ const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
 
 commander
-    .version('1.0.0')
-    .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
-    .option('--last', 'Edit the last entry added without displaying a list first.')
-    .parse(process.argv);
+  .description('Edit an existing time entry from the current day.')
+  .usage('[options]')
+  .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
+  .option('-y, --yesterday', 'List entries from yesterday to delete.')
+  .option('--last', 'Edit the last entry added without displaying a list first.')
+  .parse(process.argv);
 
-const entryDate = commander.date;
+let entryDate = commander.date;
 const editLast = commander.last;
 debug(JSON.stringify(commander, null, 2));
 
@@ -35,13 +38,13 @@ function* performUpdate(entry) {
   }
 }
 
-function* getEntryToEdit() {
-  const r = yield* db.timeEntry.get(entryDate);
+function* getEntryToEdit(date) {
+  const r = yield* db.timeEntry.get(date);
 
   if (r && r.length) {
     debug(JSON.stringify(r, null, 2));
   } else {
-    console.log(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+    console.log(chalk.yellow(`No Time Entries Defined for ${moment(date).format('YYYY-MM-DD')}`));
   }
   if (r) {
     debug(JSON.stringify(r, null, 2));
@@ -58,15 +61,16 @@ function* getEntryToEdit() {
     ]);
     return r.find(e => (e._id === answer.entry));
   }
-  console.log(chalk.yellow(`No Time Entries Entered for ${entryDate}`));
+  console.log(chalk.yellow(`No Time Entries Entered for ${moment(date).format('YYYY-MM-DD')}`));
   return null;
 }
 
 function* handleEntryChanges(entry) {
-  debug(`Starting Edit for Entry: ${JSON.stringify(entry)}`);
+  debug(`Starting Edit for Entry: ${JSON.stringify(entry, null, 2)}`);
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
+  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   return yield inquirer.prompt([
     {
       name: 'entryDescription',
@@ -85,20 +89,28 @@ function* handleEntryChanges(entry) {
       filter: val => (Number.parseInt(val, 10)),
     },
     {
+      name: 'insertTime',
+      type: 'input',
+      message: 'Entry Time:',
+      default: moment(entry.insertTime).format('h:mm a'),
+      filter: input => (moment(input, 'h:mm a')),
+      validate: validations.validateTime,
+    },
+    {
       name: 'project',
-      type: 'list',
+      type: 'autocomplete',
       message: 'Project:',
-      choices: projects,
-      default: entry.project,
-      pageSize: 15,
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(projects, input, entry.project)),
+      pageSize: 10,
     },
     {
       name: 'timeType',
-      type: 'list',
+      type: 'autocomplete',
       message: 'Type of Type:',
-      choices: timeTypes,
-      default: entry.timeType,
-      pageSize: 15,
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType)),
+      pageSize: 10,
     },
     {
       name: 'wasteOfTime',
@@ -109,23 +121,48 @@ function* handleEntryChanges(entry) {
   ]).then((answer) => {
     answer._id = entry._id;
     answer.entryDate = entry.entryDate;
-    answer.insertTime = entry.insertTime;
+    // reset the date on the record and convert back to a date
+    const entryMoment = moment(answer.entryDate);
+    answer.insertTime.year(entryMoment.year());
+    answer.insertTime.month(entryMoment.month());
+    answer.insertTime.date(entryMoment.date());
+    answer.insertTime = answer.insertTime.toDate();
     debug(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
     return answer;
   });
 }
 
-co(function* run() {
-  let entry = null;
-  if (!editLast) {
-    entry = yield* getEntryToEdit();
-  } else {
-    entry = yield* db.timeEntry.getMostRecentEntry();
-  }
-  debug(`Entry Selected: ${JSON.stringify(entry)}`);
+co(function* main() {
+  try {
+    let entry = null;
+    if (entryDate) {
+      const temp = moment(entryDate, 'YYYY-MM-DD');
+      if (!temp.isValid()) {
+        throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+      }
+      entryDate = temp;
+    } else if (commander.yesterday) {
+      entryDate = moment().subtract(1, 'day');
+    } else {
+      entryDate = moment();
+    }
+    if (!editLast) {
+      entry = yield* getEntryToEdit(entryDate);
+    } else {
+      entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
+      if (!entry) {
+        throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+      }
+    }
+    debug(`Entry Selected: ${JSON.stringify(entry)}`);
 
-  // implement the edit UI
-  entry = yield* handleEntryChanges(entry);
-  // TODO: Update the record in the database - new db API method
-  yield* performUpdate(entry);
+    // implement the edit UI
+    entry = yield* handleEntryChanges(entry);
+    // TODO: Update the record in the database - new db API method
+    yield* performUpdate(entry);
+  } catch (err) {
+    // do nothing - just suppress the error trace
+    console.log(chalk.red(err.message));
+    debug(err);
+  }
 });

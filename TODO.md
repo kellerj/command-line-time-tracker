@@ -4,17 +4,34 @@
 
 ### 1.3
 
-- [ ] Add CL option to back-date the insert time entry on add
-- [ ] Add ability to edit the logged time on an entry
+- [x] Add CL option to back-date the insert time entry on add
+- [x] Add -y, --yesterday to add command to allow adding to the previous day
+- [x] Change the get most recent to accept an entryDate
+- [x] Add ability to edit the logged time on an entry
+- [x] Add percentages after the hours in the summary section of the report
+- [x] Addition of inquirer-autocomplete-prompt for the project and time type lists
+    - [x] add
+    - [x] edit
+- [x] Switch all use of process.exit to try/catch (make unit testing possible)
+    - [x] list
+    - [x] report
+    - [x] summary
+- [x] Backdating improvements
+    - [x] subtract backdate time from minutes since last entry/default minutes
+    - [x] display the effective logging time when using backdating (always?)
+- [x] Fix bug with edit where errors out when using --last on a day with no entries
+
 
 ### 2.0
 
+- [ ] Repackaging of commands as modules
 - [ ] Entry List
     - [ ] Date Range Support
     - [ ] CSV format option
     - [ ] project criteria option
     - [ ] max description length option
     - [ ] Eliminate extra column when no wasted time entries on a day
+    - [ ] Searching option accepting a regex
 - [ ] Add sort order to time types
     - [ ] Database update
     - [ ] new UI questions
@@ -44,7 +61,8 @@
 ### Future / Undecided
 
 - [ ] Add child documents in projects and time types with aliases to scan for when defaulting those items
-- [ ]
+- [ ] Alternating background colors on the summary output
+    - [ ] option for nocolor?
 - [ ] Switch implementations to the observable pattern??
 - [ ] Additional parameter to change the MongoDB database used for commands
 - [ ] Support for an external configuration file (~/.tt-time-tracker?)

@@ -7,9 +7,8 @@ const Table = require('easy-table');
 const db = require('../db');
 
 commander
-    .version('1.0.0')
-    .description('List all current time types in alphabetical order.')
-    .parse(process.argv);
+  .description('List all current time types in alphabetical order.')
+  .parse(process.argv);
 
 co(function* run() {
   const r = yield* db.timetype.getAll();

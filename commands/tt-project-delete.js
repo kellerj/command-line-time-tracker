@@ -8,9 +8,8 @@ const chalk = require('chalk');
 const debug = require('debug')('tt:project:delete');
 
 commander
-    .version('1.0.0')
-    .arguments('[projectName]', 'Remove time tracking projects from the database')
-    .parse(process.argv);
+  .arguments('[projectName]', 'Remove time tracking projects from the database')
+  .parse(process.argv);
 
 const inputName = commander.args.join(' ');
 

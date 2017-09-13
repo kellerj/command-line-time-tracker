@@ -8,9 +8,8 @@ const chalk = require('chalk');
 const debug = require('debug')('tt:timetype:delete');
 
 commander
-    .version('1.0.0')
-    .arguments('[timeType]', 'Remove time types from the database')
-    .parse(process.argv);
+  .arguments('[timeType]', 'Remove time types from the database')
+  .parse(process.argv);
 
 const inputName = commander.args.join(' ');
 

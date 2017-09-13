@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 const commander = require('commander');
+const { version } = require('../package.json');
 
-commander.version('1.0.0');
+commander.version(version);
 commander.command('add', 'Add a new time entry').alias('a');
 commander.command('list', 'List time entries').alias('ls');
 commander.command('edit', 'Edit Time entries').alias('e');

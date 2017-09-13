@@ -13,13 +13,13 @@ function validateAndDefaultInputDateString(dateString) {
 
 module.exports = {
 
-  validateMinutes: (val) => {
+  validateMinutes: (val, maxMinutes = 480) => {
     if (Number.isNaN(Number.parseInt(val, 10))) {
       return 'Invalid Integer';
     } else if (Number.parseInt(val, 10) < 1) {
       return 'Time must be positive';
-    } else if (Number.parseInt(val, 10) > 8 * 60) {
-      return 'Time must be <= 8 hours';
+    } else if (maxMinutes !== -1 && Number.parseInt(val, 10) > maxMinutes) {
+      return `Time must be <= ${maxMinutes / 60} hours`;
     }
     return true;
   },
@@ -34,6 +34,15 @@ module.exports = {
   validateProjectName: (input) => {
     if (!input) {
       return 'project name is required';
+    }
+    return true;
+  },
+
+  validateTime: (input) => {
+    // attempt to parse the time as 12-hour format then 24 hour
+    const parsedTime = moment(input, 'h:mm a');
+    if (!parsedTime.isValid()) {
+      return `${input} is not a valid time, must be in h:mm am format.`;
     }
     return true;
   },
@@ -70,7 +79,7 @@ module.exports = {
       if (typeof entryDate === 'string') {
         return { startDate: undefined, endDate: undefined, errorMessage: entryDate };
       }
-      if (input.last) {
+      if (input.last || input.yesterday) {
         entryDate.subtract(1, 'day');
       }
       debug(`Start and end date not set, using entryDate: ${entryDate}`);

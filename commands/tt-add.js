@@ -2,6 +2,7 @@
 
 const commander = require('commander');
 const inquirer = require('inquirer');
+const inquirerAutoCompletePrompt = require('inquirer-autocomplete-prompt');
 const co = require('co');
 const db = require('../db');
 const chalk = require('chalk');
@@ -10,47 +11,27 @@ const Table = require('easy-table');
 const moment = require('moment');
 const sprintf = require('sprintf-js').sprintf;
 const validations = require('../utils/validations');
+const displayUtils = require('../utils/display-utils');
 const Rx = require('rx');
 
 commander
-    .version('1.0.0')
-    .description('Record a time entry')
-    .usage('[options] [entryDescription]')
-    .option('-t, --time <minutes>', 'Minutes spent on the activity.')
-    .option('-y, --type <timeType>', 'Name of the time type - must be existing.')
-    .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
-    .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
-    .parse(process.argv);
+  .description('Record a time entry')
+  .usage('[options] [entryDescription]')
+  .option('-t, --time <minutes>', 'Minutes spent on the activity.')
+  .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
+  .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
+  .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
+  .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
+  .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
+  .option('-y, --yesterday', 'Set the logging date to yesterday.')
+  .parse(process.argv);
 
 const entryDescription = commander.args.join(' ').trim();
 let projectName = commander.project;
 let timeType = commander.type;
 let minutes = commander.time;
 let entryDate = commander.date;
-
-if (entryDate) {
-  const temp = moment(entryDate, 'YYYY-MM-DD');
-  if (!temp.isValid()) {
-    console.log(chalk.red('-d, --date: Invalid Time'));
-    process.exit(1);
-  }
-  entryDate = temp.format('YYYY-MM-DD');
-}
-
-// debug(JSON.stringify(commander, null, 2));
-debug(`Input Project Name: ${projectName}`);
-debug(`Input Time Type: ${timeType}`);
-debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
-
-if (minutes) {
-  minutes = Number.parseInt(minutes, 10);
-  const validationMessage = validations.validateMinutes(minutes);
-  debug(validationMessage);
-  if (validationMessage !== true) {
-    console.log(chalk.red(`-t, --time: ${validationMessage}`));
-    process.exit(1);
-  }
-}
+let insertTime = moment();
 
 function performUpdate(timeEntry) {
   co(function* runUpdate() {
@@ -85,18 +66,76 @@ function addProject(newProject) {
 }
 
 function* run() {
+  if (entryDate) {
+    const temp = moment(entryDate, 'YYYY-MM-DD');
+    if (!temp.isValid()) {
+      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
+    }
+    entryDate = temp;
+  } else if (commander.yesterday) {
+    entryDate = moment().subtract(1, 'day');
+  } else {
+    entryDate = moment();
+  }
+
+  // debug(JSON.stringify(commander, null, 2));
+  debug(`Input Project Name: ${projectName}`);
+  debug(`Input Time Type: ${timeType}`);
+  debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
+
+  if (minutes) {
+    minutes = Number.parseInt(minutes, 10);
+    const validationMessage = validations.validateMinutes(minutes);
+    debug(validationMessage);
+    if (validationMessage !== true) {
+      throw new Error(`-t, --time: "${commander.time}" ${validationMessage}`);
+    }
+  }
+
   // pull the lists of projects and time types from MongoDB
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
-  const lastEntry = yield* db.timeEntry.getMostRecentEntry();
+  const lastEntry = yield* db.timeEntry.getMostRecentEntry(entryDate);
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
+
+  if (commander.backTime) {
+    if (commander.logTime) {
+      throw new Error('You may not set both --backTime and --logTime.');
+    }
+    const validationMessage = validations.validateMinutes(
+      Number.parseInt(commander.backTime, 10), -1);
+    debug(validationMessage);
+    if (validationMessage !== true) {
+      throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);
+    }
+    insertTime = moment().subtract(commander.backTime, 'minute');
+  }
+
+  if (commander.logTime) {
+    debug(`Processing LogTime: ${commander.logTime}`);
+    const validationMessage = validations.validateTime(commander.logTime);
+    if (validationMessage !== true) {
+      throw new Error(`-l, --logTime: "${commander.logTime}" ${validationMessage}`);
+    }
+    insertTime = moment(commander.logTime, 'h:mm a');
+
+    // now, ensure the date matches the entry date since it's assumed the time should be on that day
+    insertTime.year(entryDate.year());
+    insertTime.month(entryDate.month());
+    insertTime.date(entryDate.date());
+  }
 
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = 60;
-  if (!entryDate && lastEntry && moment(lastEntry.insertTime).isSame(moment(), 'day')) {
-    minutesSinceLastEntry = moment().diff(lastEntry.insertTime, 'minutes');
+  if (lastEntry && moment(lastEntry.insertTime).isSame(insertTime, 'day')) {
+    minutesSinceLastEntry = insertTime.diff(lastEntry.insertTime, 'minutes');
+    if (minutesSinceLastEntry < 0) {
+      minutesSinceLastEntry = 0;
+    }
+  } else {
+    debug('Skipping minutes calculation since no prior entry found today.');
   }
 
   // If project option is not a valid project, reject with list of project names
@@ -110,7 +149,7 @@ function* run() {
       console.log(chalk.red(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`));
       console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
         { name: { name: chalk.white.bold('Project Name') } })));
-      process.exit(1);
+      throw new Error();
     }
   } else {
     // see if we can find a name in the description
@@ -130,7 +169,7 @@ function* run() {
       console.log(chalk.red(`Project ${chalk.yellow(timeType)} does not exist.  Known Time Types:`));
       console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
         { name: { name: chalk.white.bold('Time Type') } })));
-      process.exit(1);
+      throw new Error();
     }
   } else {
     // see if we can find a name in the description
@@ -149,16 +188,18 @@ function* run() {
   // Build the new entry object with command line arguments
   const newEntry = {
     entryDescription,
-    project: projectName,
     timeType,
     minutes,
-    entryDate,
+    insertTime: insertTime.toDate(),
+    entryDate: entryDate.format('YYYY-MM-DD'),
+    project: projectName,
     wasteOfTime: false,
   };
 
   const ui = new inquirer.ui.BottomBar();
   const prompts = new Rx.Subject();
 
+  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   inquirer.prompt(prompts).ui.process.subscribe(
     // handle each answer
     (lastAnswer) => {
@@ -204,12 +245,11 @@ function* run() {
   });
   prompts.onNext({
     name: 'project',
-    type: 'list',
+    type: 'autocomplete',
     message: 'Project:',
-    choices: projects,
-    default: projectName,
+    source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, projectName)),
     when: () => (projectName === undefined || projectDefaulted),
-    pageSize: 15,
+    pageSize: 10,
   });
   prompts.onNext({
     name: 'newProject',
@@ -221,12 +261,11 @@ function* run() {
   });
   prompts.onNext({
     name: 'timeType',
-    type: 'list',
+    type: 'autocomplete',
     message: 'Type of Type:',
-    choices: timeTypes,
-    default: timeType,
+    source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, timeType)),
     when: () => (timeType === undefined || timeTypeDefaulted),
-    pageSize: 15,
+    pageSize: 10,
   });
   prompts.onNext({
     name: 'wasteOfTime',
@@ -234,7 +273,16 @@ function* run() {
     message: 'Waste of Time?',
     default: false,
   });
-  ui.log.write(chalk.black.bgWhite(`${minutesSinceLastEntry} minutes since last entry logged`));
+  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', insertTime.format('h:mm a'))));
+  ui.log.write(chalk.black.bgWhite(sprintf('Minutes Since Last Entry: %-8s', minutesSinceLastEntry)));
 }
 
-co(run);
+try {
+  co(run).catch((err) => {
+    console.log(chalk.red(err.message));
+    debug(err);
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  debug(err);
+}
