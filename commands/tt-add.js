@@ -29,69 +29,39 @@ commander
   .option('-y, --yesterday', 'Set the logging date to yesterday.')
   .parse(process.argv);
 
-const entryDescription = commander.args.join(' ').trim();
-let projectName = commander.project;
-let timeType = commander.type;
-let minutes = commander.time;
-let entryDate = commander.date;
-let insertTime = moment();
+// Build the new entry object with command line arguments
+const newEntry = {
+  entryDescription: commander.args.join(' ').trim(),
+  project: commander.projectName,
+  timeType: commander.type,
+  minutes: commander.time,
+  insertTime: moment().toDate(),
+  entryDate: commander.date,
+  wasteOfTime: false,
+};
 
 // debug(JSON.stringify(commander, null, 2));
-debug(`Input Project Name: ${projectName}`);
-debug(`Input Time Type: ${timeType}`);
-debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
+debug(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
+
+newEntry.entryDate = te.getEntryDate(commander);
+newEntry.minutes = te.getEntryMinutes(commander);
+
 
 function* run() {
-  entryDate = te.getEntryDate(commander);
-
-  if (minutes) {
-    minutes = Number.parseInt(minutes, 10);
-    const validationMessage = validations.validateMinutes(minutes);
-    debug(validationMessage);
-    if (validationMessage !== true) {
-      throw new Error(`-t, --time: "${commander.time}" ${validationMessage}`);
-    }
-  }
-
   // pull the lists of projects and time types from MongoDB
   const projects = (yield* db.project.getAll()).map(item => (item.name));
   const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
 
-  const lastEntry = yield* db.timeEntry.getMostRecentEntry(entryDate);
+  const lastEntry = yield* db.timeEntry.getMostRecentEntry(newEntry.entryDate);
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
-  if (commander.backTime) {
-    if (commander.logTime) {
-      throw new Error('You may not set both --backTime and --logTime.');
-    }
-    const validationMessage = validations.validateMinutes(
-      Number.parseInt(commander.backTime, 10), -1);
-    debug(validationMessage);
-    if (validationMessage !== true) {
-      throw new Error(`-b, --backTime: "${commander.backTime}" ${validationMessage}`);
-    }
-    insertTime = moment().subtract(commander.backTime, 'minute');
-  }
-
-  if (commander.logTime) {
-    debug(`Processing LogTime: ${commander.logTime}`);
-    const validationMessage = validations.validateTime(commander.logTime);
-    if (validationMessage !== true) {
-      throw new Error(`-l, --logTime: "${commander.logTime}" ${validationMessage}`);
-    }
-    insertTime = moment(commander.logTime, 'h:mm a');
-
-    // now, ensure the date matches the entry date since it's assumed the time should be on that day
-    insertTime.year(entryDate.year());
-    insertTime.month(entryDate.month());
-    insertTime.date(entryDate.date());
-  }
+  newEntry.insertTime = te.getInsertTime(commander, lastEntry, newEntry);
 
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = 60;
-  if (lastEntry && moment(lastEntry.insertTime).isSame(insertTime, 'day')) {
-    minutesSinceLastEntry = insertTime.diff(lastEntry.insertTime, 'minutes');
+  if (lastEntry && moment(lastEntry.insertTime).isSame(newEntry.insertTime, 'day')) {
+    minutesSinceLastEntry = moment(newEntry.insertTime).diff(lastEntry.insertTime, 'minutes');
     if (minutesSinceLastEntry < 0) {
       minutesSinceLastEntry = 0;
     }
@@ -99,44 +69,26 @@ function* run() {
     debug('Skipping minutes calculation since no prior entry found today.');
   }
 
-  // If project option is not a valid project, reject with list of project names
-  let projectDefaulted = false;
-  if (projectName) {
-    debug(`Input Project Name: ${projectName}, checking project list.`);
-    // perform a case insensitive match on the name - and use the name
-    // from the official list which matches
-    projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
-    if (projectName === undefined) {
-      console.log(chalk.red(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`));
-      console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
-        { name: { name: chalk.white.bold('Project Name') } })));
-      throw new Error();
-    }
-  } else {
-    // see if we can find a name in the description
-    const tempProjectName = projects.find(p => (entryDescription.match(new RegExp(p, 'i'))));
-    if (tempProjectName !== undefined) {
-      projectName = tempProjectName;
-      projectDefaulted = true;
-    }
-  }
+  newEntry.project = te.getProjectName(newEntry, projects);
+  const projectDefaulted = newEntry.projectName !== commander.project;
+
   // If time type option is not a valid project, reject with list of type names
   let timeTypeDefaulted = false;
-  if (timeType) {
+  if (newEntry.timeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    timeType = timeTypes.find(t => (t.match(new RegExp(`^${timeType.trim()}$`, 'i'))));
-    if (timeType === undefined) {
-      console.log(chalk.red(`Project ${chalk.yellow(timeType)} does not exist.  Known Time Types:`));
+    newEntry.timeType = timeTypes.find(t => (t.match(new RegExp(`^${newEntry.timeType.trim()}$`, 'i'))));
+    if (newEntry.timeType === undefined) {
+      console.log(chalk.red(`Project ${chalk.yellow(newEntry.timeType)} does not exist.  Known Time Types:`));
       console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
         { name: { name: chalk.white.bold('Time Type') } })));
       throw new Error();
     }
   } else {
     // see if we can find a name in the description
-    const tempTimeType = timeTypes.find(t => (entryDescription.match(new RegExp(t, 'i'))));
+    const tempTimeType = timeTypes.find(t => (newEntry.entryDescription.match(new RegExp(t, 'i'))));
     if (tempTimeType !== undefined) {
-      timeType = tempTimeType;
+      newEntry.timeType = tempTimeType;
       timeTypeDefaulted = true;
     }
   }
@@ -145,17 +97,6 @@ function* run() {
   projects.push(new inquirer.Separator());
   projects.push('(New Project)');
   projects.push(new inquirer.Separator());
-
-  // Build the new entry object with command line arguments
-  const newEntry = {
-    entryDescription,
-    timeType,
-    minutes,
-    insertTime: insertTime.toDate(),
-    entryDate: entryDate.format('YYYY-MM-DD'),
-    project: projectName,
-    wasteOfTime: false,
-  };
 
   const ui = new inquirer.ui.BottomBar();
   const prompts = new Rx.Subject();
@@ -194,7 +135,7 @@ function* run() {
     message: 'Entry Description:',
     filter: input => (input.trim()),
     validate: validations.validateEntryDescription,
-    when: () => (entryDescription === ''),
+    when: () => (newEntry.entryDescription === ''),
   });
   prompts.onNext({
     name: 'minutes',
@@ -203,14 +144,14 @@ function* run() {
     default: minutesSinceLastEntry,
     validate: validations.validateMinutes,
     filter: val => (Number.parseInt(val, 10)),
-    when: () => (minutes === undefined || minutes === null),
+    when: () => (newEntry.minutes === undefined || newEntry.minutes === null),
   });
   prompts.onNext({
     name: 'project',
     type: 'autocomplete',
     message: 'Project:',
-    source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, projectName)),
-    when: () => (projectName === undefined || projectDefaulted),
+    source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, newEntry.projectName)),
+    when: () => (newEntry.projectName === undefined || projectDefaulted),
     pageSize: 10,
   });
   prompts.onNext({
@@ -225,8 +166,8 @@ function* run() {
     name: 'timeType',
     type: 'autocomplete',
     message: 'Type of Type:',
-    source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, timeType)),
-    when: () => (timeType === undefined || timeTypeDefaulted),
+    source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
+    when: () => (newEntry.timeType === undefined || timeTypeDefaulted),
     pageSize: 10,
   });
   prompts.onNext({
@@ -235,7 +176,7 @@ function* run() {
     message: 'Waste of Time?',
     default: false,
   });
-  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', insertTime.format('h:mm a'))));
+  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', moment(newEntry.insertTime).format('h:mm a'))));
   ui.log.write(chalk.black.bgWhite(sprintf('Minutes Since Last Entry: %-8s', minutesSinceLastEntry)));
 }
 
