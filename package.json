@@ -1,6 +1,6 @@
 {
   "name": "command-line-time-tracker",
-  "version": "1.3.0",
+  "version": "2.0.0-0",
   "description": "Time Tracker Command Line Tool",
   "main": "commands/tt.js",
   "scripts": {
