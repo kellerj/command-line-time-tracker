@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 
 const commander = require('commander');
 const { version } = require('../package.json');

@@ -1,18 +1,21 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 
-const commander = require('commander');
-const inquirer = require('inquirer');
-const inquirerAutoCompletePrompt = require('inquirer-autocomplete-prompt');
-const co = require('co');
-const db = require('../db');
-const chalk = require('chalk');
+import commander from 'commander';
+import inquirer from 'inquirer';
+import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
+import co from 'co';
+import chalk from 'chalk';
+import Table from 'easy-table';
+import moment from 'moment';
+import { sprintf } from 'sprintf-js';
+import Rx from 'rx';
+
+import validations from '../utils/validations';
+import displayUtils from '../utils/display-utils';
+import db from '../db';
+import te from '../src/timeEntry';
+
 const debug = require('debug')('tt:add');
-const Table = require('easy-table');
-const moment = require('moment');
-const sprintf = require('sprintf-js').sprintf;
-const validations = require('../utils/validations');
-const displayUtils = require('../utils/display-utils');
-const Rx = require('rx');
 
 commander
   .description('Record a time entry')
@@ -33,55 +36,13 @@ let minutes = commander.time;
 let entryDate = commander.date;
 let insertTime = moment();
 
-function performUpdate(timeEntry) {
-  co(function* runUpdate() {
-    debug(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
-    const insertSuceeded = yield* db.timeEntry.insert(timeEntry);
-    if (insertSuceeded) {
-      const timeEntrySummary = sprintf('%s : %s : %s',
-        timeEntry.entryDescription,
-        timeEntry.project,
-        timeEntry.timeType);
-      console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} added`));
-    } else {
-      console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
-    }
-  }).catch((err) => {
-    console.log(chalk.bgRed(err.stack));
-  });
-}
-
-function addProject(newProject) {
-  co(function* runProjectAdd() {
-    debug(`Request to add project "${newProject}"`);
-    const insertSuceeded = yield* db.project.insert(newProject);
-    if (insertSuceeded) {
-      console.log(chalk.green(`Project ${chalk.white.bold(newProject)} added`));
-    } else {
-      console.log(chalk.bgRed(`Project ${chalk.yellow.bold(newProject)} already exists.`));
-    }
-  }).catch((err) => {
-    console.log(chalk.bgRed(err.stack));
-  });
-}
+// debug(JSON.stringify(commander, null, 2));
+debug(`Input Project Name: ${projectName}`);
+debug(`Input Time Type: ${timeType}`);
+debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
 
 function* run() {
-  if (entryDate) {
-    const temp = moment(entryDate, 'YYYY-MM-DD');
-    if (!temp.isValid()) {
-      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
-    }
-    entryDate = temp;
-  } else if (commander.yesterday) {
-    entryDate = moment().subtract(1, 'day');
-  } else {
-    entryDate = moment();
-  }
-
-  // debug(JSON.stringify(commander, null, 2));
-  debug(`Input Project Name: ${projectName}`);
-  debug(`Input Time Type: ${timeType}`);
-  debug(`Input Minutes: ${minutes} : ${Number.isInteger(minutes)}`);
+  entryDate = te.getEntryDate(commander);
 
   if (minutes) {
     minutes = Number.parseInt(minutes, 10);
@@ -214,15 +175,16 @@ function* run() {
       console.log(chalk.bgRed(JSON.stringify(err)));
     },
     () => {
-      debug(JSON.stringify(newEntry, null, 2));
+      debug(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
       // if they answered the newProject question, create that project first
       if (newEntry.newProject) {
-        addProject(newEntry.newProject);
+        te.addProject(newEntry.newProject);
         newEntry.project = newEntry.newProject;
         delete newEntry.newProject;
       }
       // write the time entry to the database
-      performUpdate(newEntry);
+      te.performUpdate(newEntry);
+      debug('TimeEntry added');
     });
 
   // Initialize all the prompts
