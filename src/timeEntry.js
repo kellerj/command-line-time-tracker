@@ -69,27 +69,66 @@ export function getInsertTime(inputParameters, lastEntry, newEntry) {
   return insertTime.toDate();
 }
 
-export function getProjectName(newEntry, projects) {
-  // If project option is not a valid project, reject with list of project names
-  if (newEntry.project) {
-    debug(`Input Project Name: ${newEntry.project}, checking project list.`);
+export function getTimeType(newEntry, timeTypes) {
+  // If time type option is not a valid project, reject with list of type names
+  let timeType = newEntry.timeType;
+  if (timeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    const savedProjectName = newEntry.project;
-    newEntry.projectName = projects.find(p => (p.match(new RegExp(`^${newEntry.project.trim()}$`, 'i'))));
-    if (newEntry.project === undefined) {
-      console.log(chalk.red(`Project ${chalk.yellow(savedProjectName)} does not exist.  Known Projects:`));
+    timeType = timeTypes.find(t => (t.match(new RegExp(`^${timeType.trim()}$`, 'i'))));
+    if (newEntry.timeType === undefined) {
+      console.log(chalk.red(`Project ${chalk.yellow(newEntry.timeType)} does not exist.  Known Time Types:`));
+      console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
+        { name: { name: chalk.white.bold('Time Type') } })));
+      throw new Error();
+    }
+  } else {
+    // see if we can find a name in the description
+    timeType = timeTypes.find(t => (newEntry.entryDescription.match(new RegExp(t, 'i'))));
+    if (timeType === undefined) {
+      timeType = newEntry.timeType;
+    }
+  }
+  return timeType;
+}
+
+export function getProjectName(newEntry, projects) {
+  // If project option is not a valid project, reject with list of project names
+  let projectName = newEntry.project;
+  if (projectName) {
+    debug(`Input Project Name: ${projectName}, checking project list.`);
+    // perform a case insensitive match on the name - and use the name
+    // from the official list which matches
+    projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
+    if (projectName === undefined) {
+      console.log(chalk.red(`Project ${chalk.yellow(newEntry.project)} does not exist.  Known Projects:`));
       console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
         { name: { name: chalk.white.bold('Project Name') } })));
       throw new Error();
     }
   } else {
     // see if we can find a name in the description
-    const tempProjectName = projects.find(p => (newEntry.entryDescription.match(new RegExp(p, 'i'))));
-    if (tempProjectName !== undefined) {
-      newEntry.project = tempProjectName;
+    projectName = projects.find(p => (newEntry.entryDescription.match(new RegExp(p, 'i'))));
+    if (projectName === undefined) {
+      projectName = newEntry.project;
     }
   }
+  return projectName;
+}
+
+export function getMinutesSinceLastEntry(newEntry, lastEntry) {
+  // use the minutes since the last entry was added as the default time
+  // default to 60 in the case there is no entry yet today
+  let minutesSinceLastEntry = 60;
+  if (lastEntry && moment(lastEntry.insertTime).isSame(newEntry.insertTime, 'day')) {
+    minutesSinceLastEntry = moment(newEntry.insertTime).diff(lastEntry.insertTime, 'minutes');
+    if (minutesSinceLastEntry < 0) {
+      minutesSinceLastEntry = 0;
+    }
+  } else {
+    debug('Skipping minutes calculation since no prior entry found today.');
+  }
+  return minutesSinceLastEntry;
 }
 
 export function performUpdate(timeEntry) {
@@ -131,4 +170,6 @@ export default {
   getInsertTime,
   getProjectName,
   getEntryMinutes,
+  getTimeType,
+  getMinutesSinceLastEntry,
 };

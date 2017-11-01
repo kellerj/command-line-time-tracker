@@ -5,7 +5,6 @@ import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import co from 'co';
 import chalk from 'chalk';
-import Table from 'easy-table';
 import moment from 'moment';
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
@@ -56,42 +55,13 @@ function* run() {
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
   newEntry.insertTime = te.getInsertTime(commander, lastEntry, newEntry);
-
-  // use the minutes since the last entry was added as the default time
-  // default to 60 in the case there is no entry yet today
-  let minutesSinceLastEntry = 60;
-  if (lastEntry && moment(lastEntry.insertTime).isSame(newEntry.insertTime, 'day')) {
-    minutesSinceLastEntry = moment(newEntry.insertTime).diff(lastEntry.insertTime, 'minutes');
-    if (minutesSinceLastEntry < 0) {
-      minutesSinceLastEntry = 0;
-    }
-  } else {
-    debug('Skipping minutes calculation since no prior entry found today.');
-  }
+  const minutesSinceLastEntry = te.getMinutesSinceLastEntry(newEntry, lastEntry);
 
   newEntry.project = te.getProjectName(newEntry, projects);
   const projectDefaulted = newEntry.projectName !== commander.project;
 
-  // If time type option is not a valid project, reject with list of type names
-  let timeTypeDefaulted = false;
-  if (newEntry.timeType) {
-    // perform a case insensitive match on the name - and use the name
-    // from the official list which matches
-    newEntry.timeType = timeTypes.find(t => (t.match(new RegExp(`^${newEntry.timeType.trim()}$`, 'i'))));
-    if (newEntry.timeType === undefined) {
-      console.log(chalk.red(`Project ${chalk.yellow(newEntry.timeType)} does not exist.  Known Time Types:`));
-      console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
-        { name: { name: chalk.white.bold('Time Type') } })));
-      throw new Error();
-    }
-  } else {
-    // see if we can find a name in the description
-    const tempTimeType = timeTypes.find(t => (newEntry.entryDescription.match(new RegExp(t, 'i'))));
-    if (tempTimeType !== undefined) {
-      newEntry.timeType = tempTimeType;
-      timeTypeDefaulted = true;
-    }
-  }
+  newEntry.timeType = te.getTimeType(newEntry, timeTypes);
+  const timeTypeDefaulted = newEntry.timeType !== commander.timeType;
 
   // Add the new project option to the end of the list
   projects.push(new inquirer.Separator());
@@ -150,7 +120,8 @@ function* run() {
     name: 'project',
     type: 'autocomplete',
     message: 'Project:',
-    source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, newEntry.projectName)),
+    source: (answers, input) =>
+      (displayUtils.autocompleteListSearch(projects, input, newEntry.projectName)),
     when: () => (newEntry.projectName === undefined || projectDefaulted),
     pageSize: 10,
   });
@@ -166,7 +137,8 @@ function* run() {
     name: 'timeType',
     type: 'autocomplete',
     message: 'Type of Type:',
-    source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
+    source: (answers, input) =>
+      (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
     when: () => (newEntry.timeType === undefined || timeTypeDefaulted),
     pageSize: 10,
   });
