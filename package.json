@@ -4,7 +4,7 @@
   "description": "Time Tracker Command Line Tool",
   "main": "commands/tt.js",
   "scripts": {
-    "lint": "eslint commands utils db --ext .js",
+    "lint": "eslint commands utils db src --ext .js",
     "test": "nyc mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test:mocha": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
@@ -43,6 +43,7 @@
     "tt-report": "./commands/tt-report.js"
   },
   "dependencies": {
+    "babel-preset-env": "^1.6.1",
     "chalk": "2.1.x",
     "co": "4.6.x",
     "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
