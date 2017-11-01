@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 
-const commander = require('commander');
-const inquirer = require('inquirer');
-const co = require('co');
-const db = require('../db');
-const chalk = require('chalk');
+import commander from 'commander';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+
+import db from '../db';
 
 commander
   .description('Add a time type to the database')
@@ -13,18 +13,14 @@ commander
 
 const inputName = commander.args.join(' ');
 
-function performUpdate(timeTypeName) {
-  co(function* run() {
-    // console.log(`Request to add timeType "${timeTypeName}"`)
-    const insertSuceeded = yield* db.timetype.insert(timeTypeName);
-    if (insertSuceeded) {
-      console.log(chalk.green(`Time Type ${chalk.white.bold(timeTypeName)} added`));
-    } else {
-      console.log(chalk.bgRed(`Time Type ${chalk.yellow.bold(timeTypeName)} already exists.`));
-    }
-  }).catch((err) => {
-    console.log(chalk.bgRed(err.stack));
-  });
+async function performUpdate(timeTypeName) {
+  // console.log(`Request to add timeType "${timeTypeName}"`)
+  const insertSuceeded = await db.timetype.insert(timeTypeName);
+  if (insertSuceeded) {
+    console.log(chalk.green(`Time Type ${chalk.white.bold(timeTypeName)} added`));
+  } else {
+    console.log(chalk.bgRed(`Time Type ${chalk.yellow.bold(timeTypeName)} already exists.`));
+  }
 }
 
 if (inputName) {

@@ -3,7 +3,6 @@
 import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
-import co from 'co';
 import chalk from 'chalk';
 import moment from 'moment';
 import { sprintf } from 'sprintf-js';
@@ -46,12 +45,12 @@ newEntry.entryDate = te.getEntryDate(commander);
 newEntry.minutes = te.getEntryMinutes(commander);
 
 
-function* run() {
+async function run() {
   // pull the lists of projects and time types from MongoDB
-  const projects = (yield* db.project.getAll()).map(item => (item.name));
-  const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
+  const projects = (await db.project.getAll()).map(item => (item.name));
+  const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
-  const lastEntry = yield* db.timeEntry.getMostRecentEntry(newEntry.entryDate);
+  const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate);
   debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
   newEntry.insertTime = te.getInsertTime(commander, lastEntry, newEntry);
@@ -85,16 +84,16 @@ function* run() {
     (err) => {
       console.log(chalk.bgRed(JSON.stringify(err)));
     },
-    () => {
+    async () => {
       debug(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
       // if they answered the newProject question, create that project first
       if (newEntry.newProject) {
-        te.addProject(newEntry.newProject);
+        await te.addProject(newEntry.newProject);
         newEntry.project = newEntry.newProject;
         delete newEntry.newProject;
       }
       // write the time entry to the database
-      te.performUpdate(newEntry);
+      await te.performUpdate(newEntry);
       debug('TimeEntry added');
     });
 
@@ -153,7 +152,7 @@ function* run() {
 }
 
 try {
-  co(run).catch((err) => {
+  run().catch((err) => {
     console.log(chalk.red(err.message));
     debug(err);
   });

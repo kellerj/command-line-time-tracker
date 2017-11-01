@@ -5,17 +5,17 @@ const debug = require('debug')('db:timeEntry');
 
 const collectionName = 'timeEntry';
 
-//    * Generator function - must be used with co module or next().value.
+//    async Generator function - must be used with co module or next().value.
 
 const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
 
 module.exports = getConnection => ({
   /**
-   * Insert the given project into the database.  Return false if the project
-   * aready exists.  Comparison is case-insensitive.
+   async Insert the given project into the database.  Return false if the project
+   async aready exists.  Comparison is case-insensitive.
    */
-  * insert(timeEntry) {
-    const db = yield* getConnection();
+  insert: async function insert(timeEntry) {
+    const db = await getConnection();
     const collection = db.collection(collectionName);
 
     if (debug.enabled) {
@@ -32,7 +32,7 @@ module.exports = getConnection => ({
 
     debug(`Inserting ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
 
-    const r = yield collection.insertOne(timeEntry);
+    const r = await collection.insertOne(timeEntry);
     db.close();
     debug(`Result: ${JSON.stringify(r)}`);
     assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the timeEntry.'));
@@ -40,8 +40,8 @@ module.exports = getConnection => ({
     return true;
   },
 
-  * update(timeEntry) {
-    const db = yield* getConnection();
+  async update(timeEntry) {
+    const db = await getConnection();
     const collection = db.collection(collectionName);
 
     if (debug.enabled) {
@@ -50,7 +50,7 @@ module.exports = getConnection => ({
     }
     debug(`Updating ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
 
-    const r = yield collection.updateOne({ _id: timeEntry._id }, timeEntry);
+    const r = await collection.updateOne({ _id: timeEntry._id }, timeEntry);
     db.close();
     debug(`Result: ${JSON.stringify(r.result)}`);
     assert.equal(1, r.result.nModified, chalk.bgRed(`Unable to update the timeEntry: ${JSON.stringify(r.result)}`));
@@ -58,9 +58,9 @@ module.exports = getConnection => ({
     return true;
   },
 
-  * get(startDate, endDate) {
+  async get(startDate, endDate) {
     debug(`Get Time Entries: ${startDate} -- ${endDate}`);
-    const db = yield* getConnection();
+    const db = await getConnection();
     const collection = db.collection(collectionName);
 
     if (!endDate) {
@@ -73,7 +73,7 @@ module.exports = getConnection => ({
       require('mongodb').Logger.setLevel('debug');
     }
 
-    const r = yield collection.find({
+    const r = await collection.find({
       entryDate: {
         $gte: moment(startDate).format(ENTRY_DATE_FORMAT),
         $lte: moment(endDate).format(ENTRY_DATE_FORMAT),
@@ -83,8 +83,8 @@ module.exports = getConnection => ({
     return r;
   },
 
-  * remove(entryId) {
-    const db = yield* getConnection();
+  async remove(entryId) {
+    const db = await getConnection();
     const collection = db.collection(collectionName);
 
     if (debug.enabled) {
@@ -92,7 +92,7 @@ module.exports = getConnection => ({
       require('mongodb').Logger.setLevel('debug');
     }
 
-    const r = yield collection.findAndRemove({ _id: entryId });
+    const r = await collection.findAndRemove({ _id: entryId });
     debug(JSON.stringify(r, null, 2));
     if (r && r.ok === 1 && r.value !== null) {
       db.close();
@@ -105,12 +105,12 @@ module.exports = getConnection => ({
     return false;
   },
 
-  * getMostRecentEntry(entryDate) {
+  getMostRecentEntry: async function getMostRecentEntry(entryDate) {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
-    const db = yield* getConnection();
+    const db = await getConnection();
     const collection = db.collection(collectionName);
 
-    const r = yield collection.find({
+    const r = await collection.find({
       entryDate: moment(entryDate).format(ENTRY_DATE_FORMAT),
     }).sort({ insertTime: -1 }).limit(1).toArray();
     db.close();
@@ -120,9 +120,9 @@ module.exports = getConnection => ({
     return null;
   },
 
-  * summarizeByProjectAndTimeType(startDate, endDate) {
+  async summarizeByProjectAndTimeType(startDate, endDate) {
     debug(`Summarize Time Entries: ${startDate} -- ${endDate}`);
-    const db = yield* getConnection();
+    const db = await getConnection();
     const collection = db.collection(collectionName);
 
     if (!endDate) {
@@ -150,7 +150,7 @@ module.exports = getConnection => ({
         { $project: { project: '$_id.project', timeType: '$_id.timeType', minutes: '$minutes', _id: 0 } },
         { $sort: { project: 1, timeType: 1 } },
       ]);
-    const r = yield cursor.toArray();
+    const r = await cursor.toArray();
     db.close();
     debug(`Summary Data: ${JSON.stringify(r, null, 2)}`);
     return r;
