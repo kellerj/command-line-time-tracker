@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
-const inquirer = require('inquirer');
-const co = require('co');
-const db = require('../db');
-const chalk = require('chalk');
-const debug = require('debug')('tt:project:delete');
+import commander from 'commander';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import debug from 'debug';
+
+import db from '../db';
+
+const LOG = debug('tt:project:delete');
 
 commander
   .arguments('[projectName]', 'Remove time tracking projects from the database')
@@ -14,9 +16,9 @@ commander
 const inputName = commander.args.join(' ');
 
 function* performUpdate(names) {
-  debug(JSON.stringify(names, null, 2));
+  LOG(JSON.stringify(names, null, 2));
   for (let i = 0; i < names.length; i += 1) {
-    debug(`Deleting ${names[i]}`);
+    LOG(`Deleting ${names[i]}`);
     const wasDeleted = yield db.project.remove(names[i]);
     if (wasDeleted) {
       console.log(chalk.green(`Project ${chalk.white(names[i])} Removed`));
@@ -29,7 +31,7 @@ function* performUpdate(names) {
 co(function* run() {
   const r = yield db.project.getAll();
   if (r) {
-    debug(JSON.stringify(r, null, 2));
+    LOG(JSON.stringify(r, null, 2));
     const answer = yield inquirer.prompt([
       {
         name: 'names',

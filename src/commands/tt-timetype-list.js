@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
-const co = require('co');
-const chalk = require('chalk');
-const Table = require('easy-table');
-const db = require('../db');
+import commander from 'commander';
+import chalk from 'chalk';
+import Table from 'easy-table';
+
+import db from '../db';
 
 commander
   .description('List all current time types in alphabetical order.')

@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 /*eslint-env es6*/
 
-const commander = require('commander');
-const co = require('co');
-const chalk = require('chalk');
-const db = require('../db');
-const debug = require('debug')('tt:report');
-const validations = require('../utils/validations');
-const displayUtils = require('../utils/display-utils');
-const moment = require('moment');
+import commander from 'commander';
+import chalk from 'chalk';
+import debug from 'debug';
+import moment from 'moment'; // TODO: Convert to use date-fns
+
+import db from '../db';
+import validations from '../utils/validations';
+import displayUtils from '../utils/display-utils';
+
+const LOG = debug('tt:report');
 
 commander
   .description('Generate report of time entries')
@@ -24,7 +26,7 @@ commander
   .option('-bd, --noDetails', 'Suppress the details section of the report.')
   .parse(process.argv);
 
-debug(JSON.stringify(commander, null, 2));
+LOG(JSON.stringify(commander, null, 2));
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
 if (errorMessage) {
   throw new Error(errorMessage);
@@ -66,7 +68,7 @@ co(function* run() {
     return;
   }
 
-  debug(JSON.stringify(r, null, 2));
+  LOG(JSON.stringify(r, null, 2));
   let reportOutput = '# Work Log:';
   if (commander.week) {
     reportOutput = `# Weekly Summary: Week starting ${moment(startDate).format('MMMM Do, YYYY')}`;
@@ -91,8 +93,8 @@ co(function* run() {
   }, {});
 
   const projectNames = Object.getOwnPropertyNames(projects).sort(displayUtils.sortOtherLast);
-  debug(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
-  debug(projectNames);
+  LOG(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
+  LOG(projectNames);
 
   // list of time type totals
   const timeTypes = r.reduce((p, item) => {
@@ -102,10 +104,10 @@ co(function* run() {
     p[item.timeType] += item.minutes;
     return p;
   }, {});
-  debug(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
+  LOG(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
   const timeTypeNames = Object.getOwnPropertyNames(timeTypes).sort(displayUtils.sortOtherLast);
 
-  debug(timeTypeNames);
+  LOG(timeTypeNames);
 
   const lpad = (str, padString, length) => {
     // eslint-disable-next-line no-param-reassign
@@ -148,7 +150,7 @@ co(function* run() {
     }
 
     const entries = yield* db.timeEntry.get(startDate, endDate);
-    // debug(JSON.stringify(entries, null, 2));
+    // LOG(JSON.stringify(entries, null, 2));
     for (let i = 0; i < projectNames.length; i++) {
       reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
 
@@ -161,8 +163,8 @@ co(function* run() {
           .sort()
           .filter( // eliminate dupes
             (entry, k, array) => (k === 0 || entry !== array[k - 1]));
-        debug(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
-        debug(detailEntries);
+        LOG(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
+        LOG(detailEntries);
         if (detailEntries.length) {
           reportOutput += `* **${timeTypeNames[j]}**\n`;
           for (let k = 0; k < detailEntries.length; k++) {
@@ -174,7 +176,7 @@ co(function* run() {
     }
   }
 
-  // debug(reportOutput);
+  // LOG(reportOutput);
   console.log(reportOutput);
 }).catch((err) => {
   console.log(chalk.bgRed(err.stack));

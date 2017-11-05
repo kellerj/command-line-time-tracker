@@ -1,8 +1,7 @@
 #!/usr/bin/env node -r babel-register
 
 import commander from 'commander';
-
-import { version } from '../../package.json';
+const { version } = require('../package.json');
 
 commander.version(version);
 commander.command('add', 'Add a new time entry').alias('a');

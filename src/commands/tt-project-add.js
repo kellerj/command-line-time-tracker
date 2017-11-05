@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
-const inquirer = require('inquirer');
-const co = require('co');
-const db = require('../db');
-const chalk = require('chalk');
-const debug = require('debug')('tt:project:add');
+import commander from 'commander';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import debug from 'debug';
+
+import db from '../db';
+
+const LOG = debug('tt:project:add');
 
 commander
   .description('Add a time tracking project to the database')
@@ -16,7 +18,7 @@ const inputProjectName = commander.args.join(' ');
 
 function performProjectUpdate(projectName) {
   co(function* run() {
-    debug(`Request to add project "${projectName}"`);
+    LOG(`Request to add project "${projectName}"`);
     const insertSuceeded = yield* db.project.insert(projectName);
     if (insertSuceeded) {
       console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
@@ -38,7 +40,7 @@ if (inputProjectName) {
       message: 'Please enter the new project name:',
     },
   ]).then((answer) => {
-    debug(JSON.stringify(answer, null, 2));
+    LOG(JSON.stringify(answer, null, 2));
     performProjectUpdate(answer.projectName);
   });
 }

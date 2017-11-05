@@ -1,9 +1,9 @@
 const host = 'localhost';
 const port = 27017;
-const database = 'tt-dev';
-const debug = require('debug')('db:config');
+const database = 'tt';
+const LOG = require('debug')('db:config');
 
-debug(`Using ${database} on ${host}:${port}`);
+LOG(`Using ${database} on ${host}:${port}`);
 
 module.exports = {
   db: {

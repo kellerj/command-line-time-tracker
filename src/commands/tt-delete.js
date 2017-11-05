@@ -4,7 +4,7 @@ import commander from 'commander';
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import moment from 'moment';
+import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
 
 import db from '../db';

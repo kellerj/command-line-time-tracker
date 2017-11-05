@@ -4,16 +4,17 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import moment from 'moment';
+import moment from 'moment'; // TODO: Convert to use date-fns
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
+import debug from 'debug';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import * as db from '../db';
 import * as te from '../lib/timeEntry';
 
-const debug = require('debug')('tt:add');
+const LOG = debug('tt:add');
 
 commander
   .description('Record a time entry')
@@ -38,8 +39,8 @@ const newEntry = {
   wasteOfTime: false,
 };
 
-// debug(JSON.stringify(commander, null, 2));
-debug(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
+// LOG(JSON.stringify(commander, null, 2));
+LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
 newEntry.entryDate = te.getEntryDate(commander);
 newEntry.minutes = te.getEntryMinutes(commander);
@@ -51,7 +52,7 @@ async function run() {
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate);
-  debug(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
+  LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
   newEntry.insertTime = te.getInsertTime(commander, lastEntry, newEntry);
   const minutesSinceLastEntry = te.getMinutesSinceLastEntry(newEntry, lastEntry);
@@ -74,7 +75,7 @@ async function run() {
   inquirer.prompt(prompts).ui.process.subscribe(
     // handle each answer
     (lastAnswer) => {
-      debug(JSON.stringify(lastAnswer));
+      LOG(JSON.stringify(lastAnswer));
       // for each answer, update the newEntry object
       newEntry[lastAnswer.name] = lastAnswer.answer;
       if (lastAnswer.name === 'wasteOfTime') {
@@ -85,7 +86,7 @@ async function run() {
       console.log(chalk.bgRed(JSON.stringify(err)));
     },
     async () => {
-      debug(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
+      LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
       // if they answered the newProject question, create that project first
       if (newEntry.newProject) {
         await te.addProject(newEntry.newProject);
@@ -94,7 +95,7 @@ async function run() {
       }
       // write the time entry to the database
       await te.performUpdate(newEntry);
-      debug('TimeEntry added');
+      LOG('TimeEntry added');
     },
   );
 
@@ -155,9 +156,9 @@ async function run() {
 try {
   run().catch((err) => {
     console.log(chalk.red(err.message));
-    debug(err);
+    LOG(err);
   });
 } catch (err) {
   console.log(chalk.red(err.message));
-  debug(err);
+  LOG(err);
 }

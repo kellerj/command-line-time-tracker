@@ -1,5 +1,5 @@
-const Table = require('easy-table');
-const moment = require('moment');
+import Table from 'easy-table';
+import moment from 'moment'; // TODO: Convert to use date-fns
 const sprintf = require('sprintf-js').sprintf;
 
 module.exports = {

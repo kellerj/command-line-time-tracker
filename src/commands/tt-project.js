@@ -1,6 +1,6 @@
 #!/usr/bin/env node --harmony
 
-const commander = require('commander');
+import commander from 'commander';
 
 commander
   .description('Manage current projects for time tracking.')

@@ -1,4 +1,5 @@
-const moment = require('moment');
+import moment from 'moment';
+// TODO: Convert to use date-fns
 const debug = require('debug')('tt:validations');
 
 function validateAndDefaultInputDateString(dateString) {
@@ -62,14 +63,14 @@ module.exports = {
         if (input.last) {
           reportDate.subtract(1, 'week');
         }
-        debug(`Setting to week containing: ${reportDate}`);
+        LOG(`Setting to week containing: ${reportDate}`);
         startDate = moment(reportDate.startOf('isoWeek'));
         endDate = moment(reportDate.endOf('isoWeek'));
       } else { // input.month == true
         if (input.last) {
           reportDate.subtract(1, 'month');
         }
-        debug(`Setting to month containing: ${reportDate}`);
+        LOG(`Setting to month containing: ${reportDate}`);
         startDate = moment(reportDate.startOf('month'));
         endDate = moment(reportDate.endOf('month'));
       }
@@ -82,11 +83,11 @@ module.exports = {
       if (input.last || input.yesterday) {
         entryDate.subtract(1, 'day');
       }
-      debug(`Start and end date not set, using entryDate: ${entryDate}`);
+      LOG(`Start and end date not set, using entryDate: ${entryDate}`);
       startDate = entryDate;
       endDate = entryDate;
     } else {
-      debug(`Using start and end dates: ${startDate} -- ${endDate}`);
+      LOG(`Using start and end dates: ${startDate} -- ${endDate}`);
       // we have a start date and/or end date
       startDate = validateAndDefaultInputDateString(startDate);
       if (typeof startDate === 'string') {
@@ -97,7 +98,7 @@ module.exports = {
         return { startDate: undefined, endDate: undefined, errorMessage: endDate };
       }
       if (startDate.isAfter(endDate)) {
-        debug(`${startDate} is after ${endDate}`);
+        LOG(`${startDate} is after ${endDate}`);
         startDate = endDate;
       }
     }

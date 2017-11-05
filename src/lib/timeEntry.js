@@ -1,12 +1,12 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
-import moment from 'moment';
+import moment from 'moment'; // TODO: Convert to use date-fns
 import Table from 'easy-table';
 
 import db from '../db';
 import validations from '../utils/validations';
 
-const debug = require('debug')('timeEntry');
+const LOG = require('debug')('timeEntry');
 
 
 export function getEntryDate(inputParameters) {
@@ -26,7 +26,7 @@ export function getEntryMinutes(inputParameters) {
   if (inputParameters.time) {
     const minutes = Number.parseInt(inputParameters, 10);
     const validationMessage = validations.validateMinutes(minutes);
-    debug(validationMessage);
+    LOG(validationMessage);
     if (validationMessage !== true) {
       throw new Error(`-t, --time: "${inputParameters.time}" ${validationMessage}`);
     }
@@ -43,7 +43,7 @@ export function getInsertTime(inputParameters, lastEntry, newEntry) {
     }
     const validationMessage = validations
       .validateMinutes(Number.parseInt(inputParameters.backTime, 10), -1);
-    debug(`GetInsertTime Error: ${validationMessage}`);
+    LOG(`GetInsertTime Error: ${validationMessage}`);
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${inputParameters.backTime}" ${validationMessage}`);
     }
@@ -51,9 +51,9 @@ export function getInsertTime(inputParameters, lastEntry, newEntry) {
   }
 
   if (inputParameters.logTime) {
-    debug(`Processing LogTime: ${inputParameters.logTime}`);
+    LOG(`Processing LogTime: ${inputParameters.logTime}`);
     const validationMessage = validations.validateTime(inputParameters.logTime);
-    debug(`GetInsertTime Error: ${validationMessage}`);
+    LOG(`GetInsertTime Error: ${validationMessage}`);
     if (validationMessage !== true) {
       throw new Error(`-l, --logTime: "${inputParameters.logTime}" ${validationMessage}`);
     }
@@ -97,7 +97,7 @@ export function getProjectName(newEntry, projects) {
   // If project option is not a valid project, reject with list of project names
   let projectName = newEntry.project;
   if (projectName) {
-    debug(`Input Project Name: ${projectName}, checking project list.`);
+    LOG(`Input Project Name: ${projectName}, checking project list.`);
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
     projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
@@ -129,13 +129,13 @@ export function getMinutesSinceLastEntry(newEntry, lastEntry) {
       minutesSinceLastEntry = 0;
     }
   } else {
-    debug('Skipping minutes calculation since no prior entry found today.');
+    LOG('Skipping minutes calculation since no prior entry found today.');
   }
   return minutesSinceLastEntry;
 }
 
 export async function performUpdate(timeEntry) {
-  debug(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
+  LOG(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
   const insertSuceeded = await db.timeEntry.insert(timeEntry);
   if (insertSuceeded) {
     const timeEntrySummary = sprintf(
@@ -151,7 +151,7 @@ export async function performUpdate(timeEntry) {
 }
 
 export async function addProject(newProject) {
-  debug(`Request to add project "${newProject}"`);
+  LOG(`Request to add project "${newProject}"`);
   const insertSuceeded = await db.project.insert(newProject);
   if (insertSuceeded) {
     console.log(chalk.green(`Project ${chalk.white.bold(newProject)} added`));

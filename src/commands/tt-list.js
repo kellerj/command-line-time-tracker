@@ -3,7 +3,7 @@
 import commander from 'commander';
 import chalk from 'chalk';
 import Table from 'easy-table';
-import moment from 'moment';
+import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
 
 import db from '../db';

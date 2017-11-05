@@ -4,7 +4,7 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
+import moment from 'moment';
 import debug from 'debug';
 import { sprintf } from 'sprintf-js';
 
@@ -12,7 +12,7 @@ import db from '../db';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 
-const LOG = debug('tt:edit');
+const LOG = LOG('tt:edit');
 
 commander
   .description('Edit an existing time entry from the current day.')

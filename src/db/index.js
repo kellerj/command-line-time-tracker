@@ -1,14 +1,14 @@
 const MongoClient = require('mongodb').MongoClient;
-const config = require('./config');
-const debug = require('debug')('db');
+import config from './config';
+const LOG = require('debug')('db');
 
 async function getConnection() {
-  debug(`Connecting to ${config.db.url}`);
+  LOG(`Connecting to ${config.db.url}`);
   const db = await MongoClient.connect(config.db.url, {
     autoReconnect: false,
     poolSize: 1,
   });
-  debug('Connected to MongoDB');
+  LOG('Connected to MongoDB');
   return db;
 }
 

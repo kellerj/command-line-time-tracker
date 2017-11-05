@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
-const co = require('co');
-const chalk = require('chalk');
-const Table = require('easy-table');
-const db = require('../db');
-const debug = require('debug')('tt:summary');
-const validations = require('../utils/validations');
-const displayUtils = require('../utils/display-utils');
+import commander from 'commander';
+import chalk from 'chalk';
+import Table from 'easy-table';
+import debug from 'debug';
+
+import db from '../db';
+const LOG = debug('tt:summary');
+import validations from '../utils/validations';
+import displayUtils from '../utils/display-utils';
 
 commander
   .description('Summarize time entry data in various formats.')
@@ -45,7 +46,7 @@ co(function* run() {
     console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
     return;
   }
-  debug(JSON.stringify(r, null, 2));
+  LOG(JSON.stringify(r, null, 2));
   // eslint-disable-next-line no-param-reassign
   const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
   // need to transform the structure into a new grid format - group by project

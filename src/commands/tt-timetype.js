@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
+import commander from 'commander';
 
 commander
   .description('Manage time types (meeting, email, development) for time tracking.')

@@ -1,6 +1,7 @@
-const assert = require('assert');
-const chalk = require('chalk');
-const moment = require('moment');
+import assert from 'assert';
+import chalk from 'chalk';
+import moment from 'moment'; // TODO: Convert to use date-fns
+
 const debug = require('debug')('db:timeEntry');
 
 const collectionName = 'timeEntry';
@@ -27,14 +28,14 @@ module.exports = getConnection => ({
     if (!timeEntry.entryDate) {
       // it's possible the date may be specified from the command line - if so, don't set
       timeEntry.entryDate = moment().startOf('day').format(ENTRY_DATE_FORMAT);
-      debug(`Defaulting entry date to ${timeEntry.entryDate}`);
+      LOG(`Defaulting entry date to ${timeEntry.entryDate}`);
     }
 
-    debug(`Inserting ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
+    LOG(`Inserting ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
 
     const r = await collection.insertOne(timeEntry);
     db.close();
-    debug(`Result: ${JSON.stringify(r)}`);
+    LOG(`Result: ${JSON.stringify(r)}`);
     assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the timeEntry.'));
 
     return true;
@@ -48,18 +49,18 @@ module.exports = getConnection => ({
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
     }
-    debug(`Updating ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
+    LOG(`Updating ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
 
     const r = await collection.updateOne({ _id: timeEntry._id }, timeEntry);
     db.close();
-    debug(`Result: ${JSON.stringify(r.result)}`);
+    LOG(`Result: ${JSON.stringify(r.result)}`);
     assert.equal(1, r.result.nModified, chalk.bgRed(`Unable to update the timeEntry: ${JSON.stringify(r.result)}`));
 
     return true;
   },
 
   async get(startDate, endDate) {
-    debug(`Get Time Entries: ${startDate} -- ${endDate}`);
+    LOG(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
@@ -93,7 +94,7 @@ module.exports = getConnection => ({
     }
 
     const r = await collection.findAndRemove({ _id: entryId });
-    debug(JSON.stringify(r, null, 2));
+    LOG(JSON.stringify(r, null, 2));
     if (r && r.ok === 1 && r.value !== null) {
       db.close();
       return true;
@@ -121,7 +122,7 @@ module.exports = getConnection => ({
   },
 
   async summarizeByProjectAndTimeType(startDate, endDate) {
-    debug(`Summarize Time Entries: ${startDate} -- ${endDate}`);
+    LOG(`Summarize Time Entries: ${startDate} -- ${endDate}`);
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
@@ -152,7 +153,7 @@ module.exports = getConnection => ({
       ]);
     const r = await cursor.toArray();
     db.close();
-    debug(`Summary Data: ${JSON.stringify(r, null, 2)}`);
+    LOG(`Summary Data: ${JSON.stringify(r, null, 2)}`);
     return r;
   },
 });
