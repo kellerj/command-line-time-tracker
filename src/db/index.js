@@ -1,6 +1,9 @@
-const MongoClient = require('mongodb').MongoClient;
+import { MongoClient } from 'mongodb';
+import debug from 'debug';
+
 import config from './config';
-const LOG = require('debug')('db');
+
+const LOG = debug('db');
 
 async function getConnection() {
   LOG(`Connecting to ${config.db.url}`);

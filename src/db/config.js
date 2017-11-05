@@ -1,7 +1,8 @@
+const LOG = require('debug')('db:config');
+
 const host = 'localhost';
 const port = 27017;
 const database = 'tt';
-const LOG = require('debug')('db:config');
 
 LOG(`Using ${database} on ${host}:${port}`);
 

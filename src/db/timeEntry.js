@@ -1,21 +1,20 @@
 import assert from 'assert';
 import chalk from 'chalk';
 import moment from 'moment'; // TODO: Convert to use date-fns
+import debug from 'debug';
 
-const debug = require('debug')('db:timeEntry');
+const LOG = debug('db:timeEntry');
+const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
 
 const collectionName = 'timeEntry';
 
-//    async Generator function - must be used with co module or next().value.
-
-const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
 
 module.exports = getConnection => ({
   /**
    async Insert the given project into the database.  Return false if the project
    async aready exists.  Comparison is case-insensitive.
    */
-  insert: async function insert(timeEntry) {
+  async insert(timeEntry) {
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
@@ -106,7 +105,7 @@ module.exports = getConnection => ({
     return false;
   },
 
-  getMostRecentEntry: async function getMostRecentEntry(entryDate) {
+  async getMostRecentEntry(entryDate) {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = await getConnection();
     const collection = db.collection(collectionName);
