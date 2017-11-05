@@ -1,7 +1,7 @@
+import { expect } from 'chai';
+import moment from 'moment';
+
 const validations = require('../../utils/validations');
-const expect = require('chai').expect;
-// const assert = require('chai').assert;
-const moment = require('moment');
 
 describe('validations', () => {
   describe('validateMinutes', () => {
@@ -106,12 +106,10 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(
-            moment().subtract(1, 'week')
+          expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'week')
             .startOf('isoWeek').startOf('day')
             .format());
-          expect(moment(result.endDate).format()).to.equal(
-            moment().subtract(1, 'week')
+          expect(moment(result.endDate).format()).to.equal(moment().subtract(1, 'week')
             .endOf('isoWeek').startOf('day')
             .format());
         });
@@ -126,12 +124,10 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
+          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
             .startOf('isoWeek').startOf('day')
             .format());
-          expect(moment(result.endDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
+          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
             .endOf('isoWeek').startOf('day')
             .format());
         });
@@ -175,12 +171,10 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(
-            moment().subtract(1, 'month')
+          expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'month')
             .startOf('month').startOf('day')
             .format());
-          expect(moment(result.endDate).format()).to.equal(
-            moment().subtract(1, 'month')
+          expect(moment(result.endDate).format()).to.equal(moment().subtract(1, 'month')
             .endOf('month').startOf('day')
             .format());
         });
@@ -195,12 +189,10 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
+          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
             .startOf('month').startOf('day')
             .format());
-          expect(moment(result.endDate).format()).to.equal(
-            moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
+          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
             .endOf('month').startOf('day')
             .format());
         });
@@ -220,8 +212,7 @@ describe('validations', () => {
           last: true,
         };
         const result = validations.getStartAndEndDates(input);
-        expect(moment(result.startDate).format()).to.equal(
-          moment().subtract(1, 'day').startOf('day').format());
+        expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'day').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
       it('returns the given date as the start and end date', () => {
