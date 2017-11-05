@@ -25,6 +25,8 @@
 ### 2.0
 
 - [ ] Repackaging of commands as modules
+- [ ] Convert code base to async/await
+- [ ] Re-package source into single directory
 - [ ] Entry List
     - [ ] Date Range Support
     - [ ] CSV format option
