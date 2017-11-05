@@ -16,7 +16,7 @@ async function getConnection() {
 }
 
 /* eslint-disable global-require */
-module.exports = {
+export default {
   project: require('./project')(getConnection),
   timetype: require('./timetype')(getConnection),
   timeEntry: require('./timeEntry')(getConnection),

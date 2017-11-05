@@ -1,6 +1,6 @@
 import moment from 'moment';
 // TODO: Convert to use date-fns
-const debug = require('debug')('tt:validations');
+const LOG = require('debug')('tt:validations');
 
 function validateAndDefaultInputDateString(dateString) {
   if (!dateString) {
@@ -52,9 +52,7 @@ module.exports = {
 
   getStartAndEndDates: (input) => {
     // Initialize to string values: will be converted to date objects later
-    let entryDate = input.date;
-    let startDate = input.startDate;
-    let endDate = input.endDate;
+    let { date: entryDate, startDate, endDate } = input;
     const errorMessage = '';
 
     if (input.week || input.month) {

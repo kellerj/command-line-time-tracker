@@ -11,7 +11,7 @@ import debug from 'debug';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
-import * as db from '../db';
+import db from '../db';
 import * as te from '../lib/timeEntry';
 
 const LOG = debug('tt:add');
@@ -157,8 +157,10 @@ try {
   run().catch((err) => {
     console.log(chalk.red(err.message));
     LOG(err);
+    process.exitCode = 1;
   });
 } catch (err) {
   console.log(chalk.red(err.message));
   LOG(err);
+  process.exitCode = 1;
 }

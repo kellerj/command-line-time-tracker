@@ -59,8 +59,10 @@ try {
   run().catch((err) => {
     console.log(chalk.red(err.message));
     LOG(err);
+    process.exitCode = 1;
   });
 } catch (err) {
   console.log(chalk.red(err.message));
   LOG(err);
+  process.exitCode = 1;
 }

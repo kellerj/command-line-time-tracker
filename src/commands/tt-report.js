@@ -1,5 +1,4 @@
 #!/usr/bin/env node -r babel-register
-/*eslint-env es6*/
 
 import commander from 'commander';
 import chalk from 'chalk';
@@ -14,7 +13,6 @@ const LOG = debug('tt:report');
 
 commander
   .description('Generate report of time entries')
-//.option('--csv', 'Output in a CSV format instead of ASCII table.')
   .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
   .option('-s, --startDate <YYYY-MM-DD>')
   .option('-e, --endDate <YYYY-MM-DD>')
@@ -27,42 +25,14 @@ commander
   .parse(process.argv);
 
 LOG(JSON.stringify(commander, null, 2));
-const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
-if (errorMessage) {
-  throw new Error(errorMessage);
-}
 
-/* Demo Output
+async function run() {
+  const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+  if (errorMessage) {
+    throw new Error(errorMessage);
+  }
 
-# Work Log: Date
-# Weekly Summary: Week Dates
-# Monthly Summary: Month, Year
-
-## Projects
-
-* Project Name (time)
-* Project Name (time)
-* Project Name (time)
-* Project Name (time)
-
-## Time Types
-
-* Time Type (time)
-
-## Details
-
-### **Project Name (time)**
-
-* type
-  * detail
-  * detail
-* type
-  * detail
-  * detail
-*/
-
-co(function* run() {
-  const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
+  const r = await db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
     console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
     return;
@@ -149,7 +119,7 @@ co(function* run() {
       reportOutput += '## Details\n\n';
     }
 
-    const entries = yield* db.timeEntry.get(startDate, endDate);
+    const entries = await db.timeEntry.get(startDate, endDate);
     // LOG(JSON.stringify(entries, null, 2));
     for (let i = 0; i < projectNames.length; i++) {
       reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
@@ -176,8 +146,46 @@ co(function* run() {
     }
   }
 
-  // LOG(reportOutput);
   console.log(reportOutput);
-}).catch((err) => {
-  console.log(chalk.bgRed(err.stack));
-});
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
+    process.exitCode = 1;
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
+  process.exitCode = 1;
+}
+
+/* Demo Output
+
+# Work Log: Date
+# Weekly Summary: Week Dates
+# Monthly Summary: Month, Year
+
+## Projects
+
+* Project Name (time)
+* Project Name (time)
+* Project Name (time)
+* Project Name (time)
+
+## Time Types
+
+* Time Type (time)
+
+## Details
+
+### **Project Name (time)**
+
+* type
+  * detail
+  * detail
+* type
+  * detail
+  * detail
+*/
