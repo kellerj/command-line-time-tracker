@@ -1,20 +1,21 @@
 {
   "name": "command-line-time-tracker",
   "version": "2.0.0-0",
-  "description": "Time Tracker Command Line Tool",
-  "main": "commands/tt.js",
+  "description": "Time Tracker",
+  "main": "./src/commands/tt.js",
   "scripts": {
-    "lint": "eslint commands utils db src --ext .js",
-    "test": "nyc mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
+    "lint": "eslint src --ext .js",
+    "test": "nyc mocha --require babel-register --reporter spec test/**/*.test.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "test:mocha": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js",
-    "test:watch": "mocha --compilers js:babel-core/register --reporter spec test/**/*.test.js --watch",
-    "mocha": "mocha --compilers js:babel-core/register",
+    "test:mocha": "mocha --require babel-register --reporter spec test/**/*.test.js",
+    "test:watch": "mocha --require babel-register --reporter spec test/**/*.test.js --watch",
+    "mocha": "mocha --require babel-register",
     "eslint": "eslint",
     "nyc": "nyc",
     "preversion": "npm run lint && npm test",
-    "version": "git add commands db utils",
-    "postversion": "git push && git push --tags"
+    "version": "git add src",
+    "postversion": "git push && git push --tags",
+    "tt": "DEBUG=*,-babel node -r babel-register src/commands/tt.js"
   },
   "author": {
     "name": "Jonathan Keller",
@@ -26,21 +27,7 @@
     "url": "https://github.com/kellerj/command-line-time-tracker.git"
   },
   "bin": {
-    "tt": "./commands/tt.js",
-    "tt-add": "./commands/tt-add.js",
-    "tt-edit": "./commands/tt-edit.js",
-    "tt-list": "./commands/tt-list.js",
-    "tt-delete": "./commands/tt-delete.js",
-    "tt-project": "./commands/tt-project.js",
-    "tt-project-add": "./commands/tt-project-add.js",
-    "tt-project-list": "./commands/tt-project-list.js",
-    "tt-project-delete": "./commands/tt-project-delete.js",
-    "tt-timetype": "./commands/tt-timetype.js",
-    "tt-timetype-list": "./commands/tt-timetype-list.js",
-    "tt-timetype-add": "./commands/tt-timetype-add.js",
-    "tt-timetype-delete": "./commands/tt-timetype-delete.js",
-    "tt-summary": "./commands/tt-summary.js",
-    "tt-report": "./commands/tt-report.js"
+    "tt": "./src/commands/tt.js"
   },
   "dependencies": {
     "chalk": "2.1.x",
@@ -69,6 +56,11 @@
     "sinon": "^4.0.2"
   },
   "nyc": {
+    "exclude": [
+      "src/commands/**",
+      "coverage/**",
+      "test/**"
+    ],
     "check-coverage": false,
     "lines": 90,
     "statements": 90,

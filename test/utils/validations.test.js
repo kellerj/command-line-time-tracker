@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import moment from 'moment';
 
-const validations = require('../../utils/validations');
+const validations = require('../../src/utils/validations');
 
 describe('validations', () => {
   describe('validateMinutes', () => {

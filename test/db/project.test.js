@@ -48,7 +48,7 @@ async function getConnection() {
   return db;
 }
 
-const project = require('../../db/project')(getConnection);
+const project = require('../../src/db/project')(getConnection);
 
 describe('db/project', () => {
   describe('getAll', () => {
