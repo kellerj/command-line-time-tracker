@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
-const inquirer = require('inquirer');
-const inquirerAutoCompletePrompt = require('inquirer-autocomplete-prompt');
-const co = require('co');
-const db = require('../db');
-const chalk = require('chalk');
-const moment = require('moment');
-const debug = require('debug')('tt:edit');
-const { sprintf } = require('sprintf-js');
-const validations = require('../utils/validations');
-const displayUtils = require('../utils/display-utils');
+import commander from 'commander';
+import inquirer from 'inquirer';
+import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
+import chalk from 'chalk';
+import moment from 'moment';
+import debug from 'debug';
+import { sprintf } from 'sprintf-js';
+
+import db from '../db';
+import validations from '../utils/validations';
+import displayUtils from '../utils/display-utils';
+
+const LOG = debug('tt:edit');
 
 commander
   .description('Edit an existing time entry from the current day.')
@@ -22,11 +24,11 @@ commander
 
 let entryDate = commander.date;
 const editLast = commander.last;
-debug(JSON.stringify(commander, null, 2));
+LOG(JSON.stringify(commander, null, 2));
 
-function* performUpdate(entry) {
-  debug(`Updating ${JSON.stringify(entry, null, 2)}`);
-  const wasUpdated = yield db.timeEntry.update(entry);
+async function performUpdate(entry) {
+  LOG(`Updating ${JSON.stringify(entry, null, 2)}`);
+  const wasUpdated = await db.timeEntry.update(entry);
   if (wasUpdated) {
     const timeEntrySummary = sprintf(
       '%s : %s : %s',
@@ -40,17 +42,17 @@ function* performUpdate(entry) {
   }
 }
 
-function* getEntryToEdit(date) {
-  const r = yield* db.timeEntry.get(date);
+async function getEntryToEdit(date) {
+  const r = await db.timeEntry.get(date);
 
   if (r && r.length) {
-    debug(JSON.stringify(r, null, 2));
+    LOG(JSON.stringify(r, null, 2));
   } else {
     console.log(chalk.yellow(`No Time Entries Defined for ${moment(date).format('YYYY-MM-DD')}`));
   }
   if (r) {
-    debug(JSON.stringify(r, null, 2));
-    const answer = yield inquirer.prompt([
+    LOG(JSON.stringify(r, null, 2));
+    const answer = await inquirer.prompt([
       {
         name: 'entry',
         type: 'list',
@@ -68,13 +70,13 @@ function* getEntryToEdit(date) {
   return null;
 }
 
-function* handleEntryChanges(entry) {
-  debug(`Starting Edit for Entry: ${JSON.stringify(entry, null, 2)}`);
-  const projects = (yield* db.project.getAll()).map(item => (item.name));
-  const timeTypes = (yield* db.timetype.getAll()).map(item => (item.name));
+async function handleEntryChanges(entry) {
+  LOG(`Starting Edit for Entry: ${JSON.stringify(entry, null, 2)}`);
+  const projects = (await db.project.getAll()).map(item => (item.name));
+  const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
-  return yield inquirer.prompt([
+  return inquirer.prompt([
     {
       name: 'entryDescription',
       type: 'input',
@@ -130,12 +132,12 @@ function* handleEntryChanges(entry) {
     answer.insertTime.month(entryMoment.month());
     answer.insertTime.date(entryMoment.date());
     answer.insertTime = answer.insertTime.toDate();
-    debug(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
+    LOG(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
     return answer;
   });
 }
 
-co(function* main() {
+async function run() {
   try {
     let entry = null;
     if (entryDate) {
@@ -150,22 +152,32 @@ co(function* main() {
       entryDate = moment();
     }
     if (!editLast) {
-      entry = yield* getEntryToEdit(entryDate);
+      entry = await getEntryToEdit(entryDate);
     } else {
-      entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
+      entry = await db.timeEntry.getMostRecentEntry(entryDate);
       if (!entry) {
         throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
       }
     }
-    debug(`Entry Selected: ${JSON.stringify(entry)}`);
+    LOG(`Entry Selected: ${JSON.stringify(entry)}`);
 
     // implement the edit UI
-    entry = yield* handleEntryChanges(entry);
+    entry = await handleEntryChanges(entry);
     // TODO: Update the record in the database - new db API method
-    yield* performUpdate(entry);
+    await performUpdate(entry);
   } catch (err) {
     // do nothing - just suppress the error trace
     console.log(chalk.red(err.message));
-    debug(err);
+    LOG(err);
   }
-});
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
+}

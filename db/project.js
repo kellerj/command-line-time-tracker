@@ -1,5 +1,7 @@
-const assert = require('assert');
-const debug = require('debug')('db:project');
+import assert from 'assert';
+import debug from 'debug';
+
+const LOG = debug('db:project');
 
 const collectionName = 'projects';
 
@@ -44,13 +46,13 @@ module.exports = getConnection => ({
     const collection = db.collection(collectionName);
 
     const r = await collection.findAndRemove({ name });
-    debug(JSON.stringify(r, null, 2));
+    LOG(JSON.stringify(r, null, 2));
     try {
       assert.ok(r, 'Empty Result from Mongo findAndRemove command');
       assert.ok(r.ok === 1 && r.value !== null, `Unexpected result from MongoDB: ${JSON.stringify(r)}`);
     } catch (err) {
       db.close();
-      debug(`Remove Failed: ${JSON.stringify(err, null, 2)}`);
+      LOG(`Remove Failed: ${JSON.stringify(err, null, 2)}`);
       return false;
     }
     db.close();
