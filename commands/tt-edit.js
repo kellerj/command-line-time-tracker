@@ -8,7 +8,7 @@ const db = require('../db');
 const chalk = require('chalk');
 const moment = require('moment');
 const debug = require('debug')('tt:edit');
-const sprintf = require('sprintf-js').sprintf;
+const { sprintf } = require('sprintf-js');
 const validations = require('../utils/validations');
 const displayUtils = require('../utils/display-utils');
 
@@ -28,10 +28,12 @@ function* performUpdate(entry) {
   debug(`Updating ${JSON.stringify(entry, null, 2)}`);
   const wasUpdated = yield db.timeEntry.update(entry);
   if (wasUpdated) {
-    const timeEntrySummary = sprintf('%s : %s : %s',
+    const timeEntrySummary = sprintf(
+      '%s : %s : %s',
       entry.entryDescription,
       entry.project,
-      entry.timeType);
+      entry.timeType,
+    );
     console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} Updated`));
   } else {
     console.log(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update`));
@@ -56,7 +58,8 @@ function* getEntryToEdit(date) {
         pageSize: 15,
         choices: r.map(item => ({
           value: item._id,
-          name: displayUtils.formatEntryChoice(item) })),
+          name: displayUtils.formatEntryChoice(item),
+        })),
       },
     ]);
     return r.find(e => (e._id === answer.entry));

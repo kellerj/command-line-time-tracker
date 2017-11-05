@@ -1,13 +1,16 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 
-const commander = require('commander');
-const inquirer = require('inquirer');
-const co = require('co');
-const db = require('../db');
-const chalk = require('chalk');
-const moment = require('moment');
-const debug = require('debug')('tt:delete');
-const displayUtils = require('../utils/display-utils');
+import commander from 'commander';
+
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import moment from 'moment';
+import debug from 'debug';
+
+import db from '../db';
+import displayUtils from '../utils/display-utils';
+
+const LOG = debug('tt:delete');
 
 commander
   .option('-d, --date <YYYY-MM-DD>', 'Date from which to remove items.')
@@ -17,12 +20,13 @@ commander
 
 let entryDate = commander.date;
 const deleteLast = commander.last;
-debug(JSON.stringify(commander, null, 2));
+LOG(JSON.stringify(commander, null, 2));
 
-function* performUpdate(entries) {
+async function performUpdate(entries) {
   for (let i = 0; i < entries.length; i += 1) {
-    debug(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
-    const wasDeleted = yield db.timeEntry.remove(entries[i]);
+    LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
+    // eslint-disable-next-line no-await-in-loop
+    const wasDeleted = await db.timeEntry.remove(entries[i]);
     if (wasDeleted) {
       console.log(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed`));
     } else {
@@ -31,7 +35,7 @@ function* performUpdate(entries) {
   }
 }
 
-co(function* run() {
+async function run() {
   if (entryDate) {
     const temp = moment(entryDate, 'YYYY-MM-DD');
     if (!temp.isValid()) {
@@ -46,17 +50,17 @@ co(function* run() {
 
   let entries = [];
   if (deleteLast) {
-    debug('Getting last entry');
-    const entry = yield* db.timeEntry.getMostRecentEntry(entryDate);
-    debug('Got Last Entry');
+    LOG('Getting last entry');
+    const entry = await db.timeEntry.getMostRecentEntry(entryDate);
+    LOG('Got Last Entry');
     console.log(chalk.yellow(displayUtils.formatEntryChoice(entry)));
     entries.push(entry);
   } else {
-    entries = yield* db.timeEntry.get(entryDate);
+    entries = await db.timeEntry.get(entryDate);
   }
 
   if (entries && entries.length) {
-    const answer = yield inquirer.prompt([
+    const answer = await inquirer.prompt([
       {
         name: 'entries',
         type: 'checkbox',
@@ -80,9 +84,19 @@ co(function* run() {
       if (deleteLast) {
         answer.entries = [entries[0]._id];
       }
-      yield* performUpdate(answer.entries);
+      await performUpdate(answer.entries);
     }
   } else {
     console.log(chalk.yellow(`No Time Entries Entered for ${moment(entryDate).format('YYYY-MM-DD')}`));
   }
-});
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
+}

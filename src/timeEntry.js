@@ -41,8 +41,8 @@ export function getInsertTime(inputParameters, lastEntry, newEntry) {
     if (inputParameters.logTime) {
       throw new Error('You may not set both --backTime and --logTime.');
     }
-    const validationMessage = validations.validateMinutes(
-      Number.parseInt(inputParameters.backTime, 10), -1);
+    const validationMessage = validations
+      .validateMinutes(Number.parseInt(inputParameters.backTime, 10), -1);
     debug(`GetInsertTime Error: ${validationMessage}`);
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${inputParameters.backTime}" ${validationMessage}`);
@@ -70,22 +70,24 @@ export function getInsertTime(inputParameters, lastEntry, newEntry) {
 
 export function getTimeType(newEntry, timeTypes) {
   // If time type option is not a valid project, reject with list of type names
-  let timeType = newEntry.timeType;
+  let { timeType } = newEntry;
   if (timeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
     timeType = timeTypes.find(t => (t.match(new RegExp(`^${timeType.trim()}$`, 'i'))));
     if (newEntry.timeType === undefined) {
       console.log(chalk.red(`Project ${chalk.yellow(newEntry.timeType)} does not exist.  Known Time Types:`));
-      console.log(chalk.yellow(Table.print(timeTypes.map(e => ({ name: e })),
-        { name: { name: chalk.white.bold('Time Type') } })));
+      console.log(chalk.yellow(Table.print(
+        timeTypes.map(e => ({ name: e })),
+        { name: { name: chalk.white.bold('Time Type') } },
+      )));
       throw new Error();
     }
   } else {
     // see if we can find a name in the description
     timeType = timeTypes.find(t => (newEntry.entryDescription.match(new RegExp(t, 'i'))));
     if (timeType === undefined) {
-      timeType = newEntry.timeType;
+      ({ timeType } = newEntry);
     }
   }
   return timeType;
@@ -101,8 +103,10 @@ export function getProjectName(newEntry, projects) {
     projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
     if (projectName === undefined) {
       console.log(chalk.red(`Project ${chalk.yellow(newEntry.project)} does not exist.  Known Projects:`));
-      console.log(chalk.yellow(Table.print(projects.map(e => ({ name: e })),
-        { name: { name: chalk.white.bold('Project Name') } })));
+      console.log(chalk.yellow(Table.print(
+        projects.map(e => ({ name: e })),
+        { name: { name: chalk.white.bold('Project Name') } },
+      )));
       throw new Error();
     }
   } else {
@@ -134,10 +138,12 @@ export async function performUpdate(timeEntry) {
   debug(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
   const insertSuceeded = await db.timeEntry.insert(timeEntry);
   if (insertSuceeded) {
-    const timeEntrySummary = sprintf('%s : %s : %s',
+    const timeEntrySummary = sprintf(
+      '%s : %s : %s',
       timeEntry.entryDescription,
       timeEntry.project,
-      timeEntry.timeType);
+      timeEntry.timeType,
+    );
     console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} added`));
   } else {
     console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
