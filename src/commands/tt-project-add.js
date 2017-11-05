@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 
 import commander from 'commander';
 import inquirer from 'inquirer';
@@ -16,31 +16,37 @@ commander
 
 const inputProjectName = commander.args.join(' ');
 
-function performProjectUpdate(projectName) {
-  co(function* run() {
-    LOG(`Request to add project "${projectName}"`);
-    const insertSuceeded = yield* db.project.insert(projectName);
-    if (insertSuceeded) {
-      console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
-    } else {
-      console.log(chalk.bgRed(`Project ${chalk.yellow.bold(projectName)} already exists.`));
-    }
-  }).catch((err) => {
-    console.log(chalk.bgRed(err.stack));
-  });
+async function performProjectUpdate(projectName) {
+  LOG(`Request to add project "${projectName}"`);
+  const insertSuceeded = await db.project.insert(projectName);
+  if (insertSuceeded) {
+    console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
+  } else {
+    console.log(chalk.bgRed(`Project ${chalk.yellow.bold(projectName)} already exists.`));
+  }
 }
 
-if (inputProjectName) {
-  performProjectUpdate(inputProjectName);
-} else {
-  inquirer.prompt([
-    {
-      name: 'projectName',
-      type: 'input',
-      message: 'Please enter the new project name:',
-    },
-  ]).then((answer) => {
-    LOG(JSON.stringify(answer, null, 2));
+async function run() {
+  if (inputProjectName) {
+    performProjectUpdate(inputProjectName);
+  } else {
+    const answer = await inquirer.prompt([
+      {
+        name: 'projectName',
+        type: 'input',
+        message: 'Please enter the new project name:',
+      },
+    ]);
     performProjectUpdate(answer.projectName);
+  }
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
   });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
 }

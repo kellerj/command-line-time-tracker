@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 /*eslint-env es6*/
 
 import commander from 'commander';

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r babel-register
 
 import commander from 'commander';
 import inquirer from 'inquirer';
@@ -15,11 +15,12 @@ commander
 
 const inputName = commander.args.join(' ');
 
-function* performUpdate(names) {
+async function performUpdate(names) {
   LOG(JSON.stringify(names, null, 2));
   for (let i = 0; i < names.length; i += 1) {
     LOG(`Deleting ${names[i]}`);
-    const wasDeleted = yield db.project.remove(names[i]);
+    // eslint-disable-next-line no-await-in-loop
+    const wasDeleted = await db.project.remove(names[i]);
     if (wasDeleted) {
       console.log(chalk.green(`Project ${chalk.white(names[i])} Removed`));
     } else {
@@ -28,11 +29,11 @@ function* performUpdate(names) {
   }
 }
 
-co(function* run() {
-  const r = yield db.project.getAll();
+async function run() {
+  const r = await db.project.getAll();
   if (r) {
     LOG(JSON.stringify(r, null, 2));
-    const answer = yield inquirer.prompt([
+    const answer = await inquirer.prompt([
       {
         name: 'names',
         type: 'checkbox',
@@ -54,9 +55,19 @@ co(function* run() {
       if (inputName !== '') {
         answer.names = [inputName];
       }
-      yield* performUpdate(answer.names);
+      await performUpdate(answer.names);
     }
   } else {
     console.log(chalk.yellow('No Projects Defined'));
   }
-});
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
+}
