@@ -1,5 +1,5 @@
 module.exports = {
-  extends: "airbnb",
+  extends: "airbnb-base",
   rules: {
     "no-console": "off",
     "spaced-comment": "off",

@@ -10,8 +10,8 @@ import Rx from 'rx';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
-import db from '../db';
-import te from '../src/timeEntry';
+import * as db from '../db';
+import * as te from '../src/timeEntry';
 
 const debug = require('debug')('tt:add');
 
@@ -95,7 +95,8 @@ async function run() {
       // write the time entry to the database
       await te.performUpdate(newEntry);
       debug('TimeEntry added');
-    });
+    },
+  );
 
   // Initialize all the prompts
   prompts.onNext({
