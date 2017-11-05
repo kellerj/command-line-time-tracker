@@ -1,7 +1,7 @@
 #!/usr/bin/env node -r babel-register
 
 const commander = require('commander');
-const { version } = require('../package.json');
+const { version } = require('../../package.json');
 
 commander.version(version);
 commander.command('add', 'Add a new time entry').alias('a');

@@ -11,7 +11,7 @@ import Rx from 'rx';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import * as db from '../db';
-import * as te from '../src/timeEntry';
+import * as te from '../lib/timeEntry';
 
 const debug = require('debug')('tt:add');
 
