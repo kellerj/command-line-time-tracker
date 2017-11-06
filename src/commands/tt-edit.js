@@ -76,7 +76,7 @@ async function handleEntryChanges(entry) {
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
-  return inquirer.prompt([
+  const answer = await inquirer.prompt([
     {
       name: 'entryDescription',
       type: 'input',
@@ -123,53 +123,46 @@ async function handleEntryChanges(entry) {
       message: 'Waste of Time?',
       default: entry.wasteOfTime,
     },
-  ]).then((answer) => {
-    answer._id = entry._id;
-    answer.entryDate = entry.entryDate;
-    // reset the date on the record and convert back to a date
-    const entryMoment = moment(answer.entryDate);
-    answer.insertTime.year(entryMoment.year());
-    answer.insertTime.month(entryMoment.month());
-    answer.insertTime.date(entryMoment.date());
-    answer.insertTime = answer.insertTime.toDate();
-    LOG(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
-    return answer;
-  });
+  ]);
+  answer._id = entry._id;
+  answer.entryDate = entry.entryDate;
+  // reset the date on the record and convert back to a date
+  const entryMoment = moment(answer.entryDate);
+  answer.insertTime.year(entryMoment.year());
+  answer.insertTime.month(entryMoment.month());
+  answer.insertTime.date(entryMoment.date());
+  answer.insertTime = answer.insertTime.toDate();
+  LOG(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
+  return answer;
 }
 
 async function run() {
-  try {
-    let entry = null;
-    if (entryDate) {
-      const temp = moment(entryDate, 'YYYY-MM-DD');
-      if (!temp.isValid()) {
-        throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
-      }
-      entryDate = temp;
-    } else if (commander.yesterday) {
-      entryDate = moment().subtract(1, 'day');
-    } else {
-      entryDate = moment();
+  let entry = null;
+  if (entryDate) {
+    const temp = moment(entryDate, 'YYYY-MM-DD');
+    if (!temp.isValid()) {
+      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
     }
-    if (!editLast) {
-      entry = await getEntryToEdit(entryDate);
-    } else {
-      entry = await db.timeEntry.getMostRecentEntry(entryDate);
-      if (!entry) {
-        throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
-      }
-    }
-    LOG(`Entry Selected: ${JSON.stringify(entry)}`);
-
-    // implement the edit UI
-    entry = await handleEntryChanges(entry);
-    // TODO: Update the record in the database - new db API method
-    await performUpdate(entry);
-  } catch (err) {
-    // do nothing - just suppress the error trace
-    console.log(chalk.red(err.message));
-    LOG(err);
+    entryDate = temp;
+  } else if (commander.yesterday) {
+    entryDate = moment().subtract(1, 'day');
+  } else {
+    entryDate = moment();
   }
+  if (!editLast) {
+    entry = await getEntryToEdit(entryDate);
+  } else {
+    entry = await db.timeEntry.getMostRecentEntry(entryDate);
+    if (!entry) {
+      throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+    }
+  }
+  LOG(`Entry Selected: ${JSON.stringify(entry)}`);
+
+  // implement the edit UI
+  entry = await handleEntryChanges(entry);
+  // TODO: Update the record in the database - new db API method
+  await performUpdate(entry);
 }
 
 try {

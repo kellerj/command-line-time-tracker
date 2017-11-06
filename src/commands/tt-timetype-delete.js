@@ -2,10 +2,11 @@
 
 import commander from 'commander';
 import inquirer from 'inquirer';
+import chalk from 'chalk';
 import debug from 'debug';
 
 import db from '../db';
-import chalk from 'chalk';
+
 const LOG = debug('tt:timetype:delete');
 
 commander
@@ -27,11 +28,11 @@ function* performUpdate(names) {
   }
 }
 
-co(function* run() {
-  const r = yield db.timetype.getAll();
+async function run() {
+  const r = await db.timetype.getAll();
   if (r) {
     LOG(JSON.stringify(r, null, 2));
-    const answer = yield inquirer.prompt([
+    const answer = await inquirer.prompt([
       {
         name: 'names',
         type: 'checkbox',
@@ -53,9 +54,21 @@ co(function* run() {
       if (inputName !== '') {
         answer.names = [inputName];
       }
-      yield* performUpdate(answer.names);
+      await performUpdate(answer.names);
     }
   } else {
     console.log(chalk.yellow('No Time Types Defined'));
   }
-});
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
+    process.exitCode = 1;
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
+  process.exitCode = 1;
+}

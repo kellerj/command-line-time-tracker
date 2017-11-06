@@ -126,13 +126,14 @@ async function run() {
 
       for (let j = 0; j < timeTypeNames.length; j++) {
         const detailEntries = entries
-          .filter( // get only details for the current project and time type
-            entry => (entry.project === projectNames[i] && entry.timeType === timeTypeNames[j]))
-          .map( // convert to descriptions
-            entry => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
+          // get only details for the current project and time type
+          .filter(entry => (entry.project === projectNames[i]
+            && entry.timeType === timeTypeNames[j]))
+          // convert to descriptions
+          .map(entry => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
           .sort()
-          .filter( // eliminate dupes
-            (entry, k, array) => (k === 0 || entry !== array[k - 1]));
+          // eliminate dupes
+          .filter((entry, k, array) => (k === 0 || entry !== array[k - 1]));
         LOG(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
         LOG(detailEntries);
         if (detailEntries.length) {

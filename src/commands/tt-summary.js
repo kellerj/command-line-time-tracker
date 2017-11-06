@@ -6,9 +6,10 @@ import Table from 'easy-table';
 import debug from 'debug';
 
 import db from '../db';
-const LOG = debug('tt:summary');
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
+
+const LOG = debug('tt:summary');
 
 commander
   .description('Summarize time entry data in various formats.')
@@ -28,7 +29,7 @@ if (errorMessage) {
   throw new Error(errorMessage);
 }
 
-co(function* run() {
+async function run() {
   let reportHeader = '';
   if (!commander.noHeader) {
     if (startDate.getTime() === endDate.getTime()) {
@@ -41,7 +42,7 @@ co(function* run() {
     console.log(chalk.yellow('-'.repeat(reportHeader.length)));
   }
 
-  const r = yield* db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
+  const r = await db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
     console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
     return;
@@ -92,6 +93,16 @@ co(function* run() {
   });
 
   console.log(t.toString());
-}).catch((err) => {
-  console.log(chalk.bgRed(err.stack));
-});
+}
+
+try {
+  run().catch((err) => {
+    console.log(chalk.red(err.message));
+    LOG(err);
+    process.exitCode = 1;
+  });
+} catch (err) {
+  console.log(chalk.red(err.message));
+  LOG(err);
+  process.exitCode = 1;
+}
