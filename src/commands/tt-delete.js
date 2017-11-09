@@ -9,6 +9,7 @@ import debug from 'debug';
 
 import db from '../db';
 import displayUtils from '../utils/display-utils';
+import { deleteTimeEntries } from '../lib/timeEntry';
 
 const LOG = debug('tt:delete');
 
@@ -21,19 +22,6 @@ commander
 let entryDate = commander.date;
 const deleteLast = commander.last;
 LOG(JSON.stringify(commander, null, 2));
-
-async function deleteTimeEntries(entries) {
-  for (let i = 0; i < entries.length; i += 1) {
-    LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
-    // eslint-disable-next-line no-await-in-loop
-    const wasDeleted = await db.timeEntry.remove(entries[i]);
-    if (wasDeleted) {
-      console.log(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed`));
-    } else {
-      console.log(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database`));
-    }
-  }
-}
 
 async function run() {
   if (entryDate) {

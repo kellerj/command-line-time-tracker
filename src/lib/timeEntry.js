@@ -172,3 +172,19 @@ export async function deleteTimeEntries(entries) {
     }
   }
 }
+
+export async function updateTimeEntry(entry) {
+  LOG(`Updating ${JSON.stringify(entry, null, 2)}`);
+  const wasUpdated = await db.timeEntry.update(entry);
+  if (wasUpdated) {
+    const timeEntrySummary = sprintf(
+      '%s : %s : %s',
+      entry.entryDescription,
+      entry.project,
+      entry.timeType,
+    );
+    console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} Updated`));
+  } else {
+    console.log(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update`));
+  }
+}
