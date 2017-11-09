@@ -12,7 +12,9 @@ import debug from 'debug';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import db from '../db';
-import * as te from '../lib/timeEntry';
+import { getEntryDate, getEntryMinutes, getInsertTime,
+  getTimeType, getProjectName, getMinutesSinceLastEntry,
+  addTimeEntry, addNewProject } from '../lib/timeEntry';
 
 const LOG = debug('tt:add');
 
@@ -39,11 +41,10 @@ const newEntry = {
   wasteOfTime: false,
 };
 
-// LOG(JSON.stringify(commander, null, 2));
 LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
-newEntry.entryDate = te.getEntryDate(commander);
-newEntry.minutes = te.getEntryMinutes(commander);
+newEntry.entryDate = getEntryDate(commander);
+newEntry.minutes = getEntryMinutes(commander);
 
 
 async function run() {
@@ -54,13 +55,13 @@ async function run() {
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
-  newEntry.insertTime = te.getInsertTime(commander, lastEntry, newEntry);
-  const minutesSinceLastEntry = te.getMinutesSinceLastEntry(newEntry, lastEntry);
+  newEntry.insertTime = getInsertTime(commander, lastEntry, newEntry);
+  const minutesSinceLastEntry = getMinutesSinceLastEntry(newEntry, lastEntry);
 
-  newEntry.project = te.getProjectName(newEntry, projects);
+  newEntry.project = getProjectName(newEntry, projects);
   const projectDefaulted = newEntry.projectName !== commander.project;
 
-  newEntry.timeType = te.getTimeType(newEntry, timeTypes);
+  newEntry.timeType = getTimeType(newEntry, timeTypes);
   const timeTypeDefaulted = newEntry.timeType !== commander.timeType;
 
   // Add the new project option to the end of the list
@@ -89,12 +90,12 @@ async function run() {
       LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
       // if they answered the newProject question, create that project first
       if (newEntry.newProject) {
-        await te.addProject(newEntry.newProject);
+        await addNewProject(newEntry.newProject);
         newEntry.project = newEntry.newProject;
         delete newEntry.newProject;
       }
       // write the time entry to the database
-      await te.performUpdate(newEntry);
+      await addTimeEntry(newEntry);
       LOG('TimeEntry added');
     },
   );

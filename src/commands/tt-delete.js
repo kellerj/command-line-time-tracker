@@ -22,7 +22,7 @@ let entryDate = commander.date;
 const deleteLast = commander.last;
 LOG(JSON.stringify(commander, null, 2));
 
-async function performUpdate(entries) {
+async function deleteTimeEntries(entries) {
   for (let i = 0; i < entries.length; i += 1) {
     LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
     // eslint-disable-next-line no-await-in-loop
@@ -84,7 +84,7 @@ async function run() {
       if (deleteLast) {
         answer.entries = [entries[0]._id];
       }
-      await performUpdate(answer.entries);
+      await deleteTimeEntries(answer.entries);
     }
   } else {
     console.log(chalk.yellow(`No Time Entries Entered for ${moment(entryDate).format('YYYY-MM-DD')}`));

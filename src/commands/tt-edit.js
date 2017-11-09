@@ -6,11 +6,11 @@ import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
 import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
-import { sprintf } from 'sprintf-js';
 
 import db from '../db';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
+import { updateTimeEntry } from '../lib/timeEntry';
 
 const LOG = debug('tt:edit');
 
@@ -25,22 +25,6 @@ commander
 let entryDate = commander.date;
 const editLast = commander.last;
 LOG(JSON.stringify(commander, null, 2));
-
-async function performUpdate(entry) {
-  LOG(`Updating ${JSON.stringify(entry, null, 2)}`);
-  const wasUpdated = await db.timeEntry.update(entry);
-  if (wasUpdated) {
-    const timeEntrySummary = sprintf(
-      '%s : %s : %s',
-      entry.entryDescription,
-      entry.project,
-      entry.timeType,
-    );
-    console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} Updated`));
-  } else {
-    console.log(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update`));
-  }
-}
 
 async function getEntryToEdit(date) {
   const r = await db.timeEntry.get(date);
@@ -132,7 +116,7 @@ async function handleEntryChanges(entry) {
   answer.insertTime.month(entryMoment.month());
   answer.insertTime.date(entryMoment.date());
   answer.insertTime = answer.insertTime.toDate();
-  LOG(`Updated Entry: ${JSON.stringify(answer, null, 2)}`);
+  LOG(`Adjusted Entry: ${JSON.stringify(answer, null, 2)}`);
   return answer;
 }
 
@@ -162,7 +146,7 @@ async function run() {
   // implement the edit UI
   entry = await handleEntryChanges(entry);
   // TODO: Update the record in the database - new db API method
-  await performUpdate(entry);
+  await updateTimeEntry(entry);
 }
 
 try {

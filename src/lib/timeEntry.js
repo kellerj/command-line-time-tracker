@@ -134,7 +134,7 @@ export function getMinutesSinceLastEntry(newEntry, lastEntry) {
   return minutesSinceLastEntry;
 }
 
-export async function performUpdate(timeEntry) {
+export async function addTimeEntry(timeEntry) {
   LOG(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
   const insertSuceeded = await db.timeEntry.insert(timeEntry);
   if (insertSuceeded) {
@@ -150,7 +150,7 @@ export async function performUpdate(timeEntry) {
   }
 }
 
-export async function addProject(newProject) {
+export async function addNewProject(newProject) {
   LOG(`Request to add project "${newProject}"`);
   const insertSuceeded = await db.project.insert(newProject);
   if (insertSuceeded) {
@@ -160,13 +160,15 @@ export async function addProject(newProject) {
   }
 }
 
-export default {
-  performUpdate,
-  addProject,
-  getEntryDate,
-  getInsertTime,
-  getProjectName,
-  getEntryMinutes,
-  getTimeType,
-  getMinutesSinceLastEntry,
-};
+export async function deleteTimeEntries(entries) {
+  for (let i = 0; i < entries.length; i += 1) {
+    LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
+    // eslint-disable-next-line no-await-in-loop
+    const wasDeleted = await db.timeEntry.remove(entries[i]);
+    if (wasDeleted) {
+      console.log(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed`));
+    } else {
+      console.log(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database`));
+    }
+  }
+}
