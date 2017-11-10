@@ -10,55 +10,55 @@ import validations from '../utils/validations';
 const LOG = require('debug')('timeEntry');
 
 
-export function getEntryDate(inputParameters) {
-  if (inputParameters.date) {
-    const parsedDate = moment(inputParameters.date, DATE_FORMAT);
+export function getEntryDate({ date, yesterday }) {
+  if (date) {
+    const parsedDate = moment(date, DATE_FORMAT);
     if (!parsedDate.isValid()) {
-      throw new Error(`-d, --date: Invalid Date: ${inputParameters.date}`);
+      throw new Error(`-d, --date: Invalid Date: ${date}`);
     }
     return parsedDate.format(DATE_FORMAT);
-  } else if (inputParameters.yesterday) {
+  } else if (yesterday) {
     return moment().subtract(1, 'day').format(DATE_FORMAT);
   }
   return moment().format(DATE_FORMAT);
 }
 
-export function getEntryMinutes(inputParameters) {
-  if (inputParameters.time) {
-    const minutes = Number.parseInt(inputParameters, 10);
+export function getEntryMinutes({ time }) {
+  if (time) {
+    const minutes = Number.parseInt(time, 10);
     const validationMessage = validations.validateMinutes(minutes);
     LOG(validationMessage);
     if (validationMessage !== true) {
-      throw new Error(`-t, --time: "${inputParameters.time}" ${validationMessage}`);
+      throw new Error(`-t, --time: "${time}" ${validationMessage}`);
     }
     return minutes;
   }
   return null;
 }
 
-export function getInsertTime(inputParameters, lastEntry, newEntry) {
+export function getInsertTime({ backTime, logTime }, lastEntry, newEntry) {
   let insertTime = moment(newEntry.insertTime);
-  if (inputParameters.backTime) {
-    if (inputParameters.logTime) {
+  if (backTime) {
+    if (logTime) {
       throw new Error('You may not set both --backTime and --logTime.');
     }
     const validationMessage = validations
-      .validateMinutes(Number.parseInt(inputParameters.backTime, 10), -1);
+      .validateMinutes(Number.parseInt(backTime, 10), -1);
     LOG(`GetInsertTime Error: ${validationMessage}`);
     if (validationMessage !== true) {
-      throw new Error(`-b, --backTime: "${inputParameters.backTime}" ${validationMessage}`);
+      throw new Error(`-b, --backTime: "${backTime}" ${validationMessage}`);
     }
-    insertTime = moment().subtract(inputParameters.backTime, 'minute');
+    insertTime = moment().subtract(backTime, 'minute');
   }
 
-  if (inputParameters.logTime) {
-    LOG(`Processing LogTime: ${inputParameters.logTime}`);
-    const validationMessage = validations.validateTime(inputParameters.logTime);
+  if (logTime) {
+    LOG(`Processing LogTime: ${logTime}`);
+    const validationMessage = validations.validateTime(logTime);
     LOG(`GetInsertTime Error: ${validationMessage}`);
     if (validationMessage !== true) {
-      throw new Error(`-l, --logTime: "${inputParameters.logTime}" ${validationMessage}`);
+      throw new Error(`-l, --logTime: "${logTime}" ${validationMessage}`);
     }
-    insertTime = moment(inputParameters.logTime, 'h:mm a');
+    insertTime = moment(logTime, 'h:mm a');
 
     // now, ensure the date matches the entry date since it's assumed the time should be on that day
     const entryDate = moment(newEntry.entryDate);
