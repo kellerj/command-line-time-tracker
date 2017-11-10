@@ -1,11 +1,12 @@
 import { expect } from 'chai';
-import { stub } from 'sinon';
+import { stub, spy } from 'sinon';
 import { format, parse } from 'date-fns';
 import subDays from 'date-fns/sub_days';
 
 import { DATE_FORMAT } from '../../src/constants';
 import * as timeEntry from '../../src/lib/timeEntry';
 import validations from '../../src/utils/validations';
+import db from '../../src/db';
 
 console.log(DATE_FORMAT);
 
@@ -47,9 +48,8 @@ context('lib/timeEntry', () => {
   });
 
   describe('#getEntryMinutes', () => {
-    let valStub = null;
     beforeEach(() => {
-      valStub = stub(validations, 'validateMinutes');
+      stub(validations, 'validateMinutes');
     });
     afterEach(() => {
       validations.validateMinutes.restore();
@@ -60,20 +60,38 @@ context('lib/timeEntry', () => {
       expect(result).to.be.null;
     });
     it('throws an error when the number does not validate.', () => {
-      valStub.withArgs(-1).returns('Time may not be negative.');
+      validations.validateMinutes.withArgs(-1).returns('Time may not be negative.');
       expect(() => timeEntry.getEntryMinutes({ time: '-1' }))
         .to.throw();
     });
     it('reports the validation message in the error', () => {
-      valStub.withArgs(-1).returns('Time may not be negative.');
+      validations.validateMinutes.withArgs(-1).returns('Time may not be negative.');
       expect(() => timeEntry.getEntryMinutes({ time: '-1' }))
         .to.throw('Time may not be negative.');
     });
     it('returns an integer equal to the passed in time', () => {
-      valStub.withArgs(123).returns(true);
+      validations.validateMinutes.withArgs(123).returns(true);
       const result = timeEntry.getEntryMinutes({ time: '123' });
       expect(result).to.be.a('number');
       expect(result).to.equal(123);
+    });
+  });
+
+  describe('#addTimeEntry', () => {
+    beforeEach(() => {
+      stub(db.timeEntry, 'insert');
+      spy(console, 'log');
+    });
+    afterEach(() => {
+      db.timeEntry.insert.restore();
+      console.log.restore();
+    });
+    it('returns true with a summary message', async () => {
+      db.timeEntry.insert.returns(true);
+      await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
+      // eslint-disable-next-line no-unused-expressions
+      expect(console.log.getCall(0).args[0]).to.match(/.*Time Entry.*added.*/);
+      expect(console.log.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
     });
   });
 });
