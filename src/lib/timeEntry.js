@@ -36,7 +36,7 @@ export function getEntryMinutes({ time }) {
   return null;
 }
 
-export function getInsertTime({ backTime, logTime }, lastEntry, newEntry) {
+export function getInsertTime({ backTime, logTime }, newEntry) {
   let insertTime = moment(newEntry.insertTime);
   if (backTime) {
     if (logTime) {
