@@ -4,6 +4,7 @@ import moment from 'moment'; // TODO: Convert to use date-fns
 import Table from 'easy-table';
 
 import db from '../db';
+import { DATE_FORMAT } from '../constants';
 import validations from '../utils/validations';
 
 const LOG = require('debug')('timeEntry');
@@ -11,15 +12,15 @@ const LOG = require('debug')('timeEntry');
 
 export function getEntryDate(inputParameters) {
   if (inputParameters.date) {
-    const parsedDate = moment(inputParameters.date, 'YYYY-MM-DD');
+    const parsedDate = moment(inputParameters.date, DATE_FORMAT);
     if (!parsedDate.isValid()) {
       throw new Error(`-d, --date: Invalid Date: ${inputParameters.date}`);
     }
-    return parsedDate.format('YYYY-MM-DD');
+    return parsedDate.format(DATE_FORMAT);
   } else if (inputParameters.yesterday) {
-    return moment().subtract(1, 'day').format('YYYY-MM-DD');
+    return moment().subtract(1, 'day').format(DATE_FORMAT);
   }
-  return moment().format('YYYY-MM-DD');
+  return moment().format(DATE_FORMAT);
 }
 
 export function getEntryMinutes(inputParameters) {

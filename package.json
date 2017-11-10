@@ -32,6 +32,7 @@
   "dependencies": {
     "chalk": "2.1.x",
     "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
+    "date-fns": "^1.29.0",
     "debug": "3.0.x",
     "easy-table": "1.1.x",
     "inquirer": "3.2.x",
