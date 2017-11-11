@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { stub, spy } from 'sinon';
-import { format, parse, subDays, subHours, setMilliseconds, setSeconds } from 'date-fns';
+import { format, parse, subDays, subHours, subMinutes, setMilliseconds, setSeconds } from 'date-fns';
 
 import { DATE_FORMAT } from '../../src/constants';
 import * as timeEntry from '../../src/lib/timeEntry';
@@ -59,17 +59,17 @@ context('lib/timeEntry', () => {
       expect(result).to.be.null;
     });
     it('throws an error when the number does not validate.', () => {
-      validations.validateMinutes.withArgs(-1).returns('Time may not be negative.');
+      validations.validateMinutes.returns('Time may not be negative.');
       expect(() => timeEntry.getEntryMinutes({ time: '-1' }))
         .to.throw();
     });
     it('reports the validation message in the error', () => {
-      validations.validateMinutes.withArgs(-1).returns('Time may not be negative.');
+      validations.validateMinutes.returns('Time may not be negative.');
       expect(() => timeEntry.getEntryMinutes({ time: '-1' }))
         .to.throw('Time may not be negative.');
     });
     it('returns an integer equal to the passed in time', () => {
-      validations.validateMinutes.withArgs(123).returns(true);
+      validations.validateMinutes.returns(true);
       const result = timeEntry.getEntryMinutes({ time: '123' });
       expect(result).to.be.a('number');
       expect(result).to.equal(123);
@@ -87,13 +87,20 @@ context('lib/timeEntry', () => {
       validations.validateTime.restore();
     });
     describe('when backTime is set', () => {
-      it.skip('backs up from the present time when the backTime parameter is passed', () => {
+      it('backs up from the present time when the backTime parameter is passed', () => {
+        validations.validateMinutes.returns(true);
+        const result = timeEntry.getInsertTime({ backTime: 20 }, { insertTime });
+        expect(result).to.be.a('Date');
+        expect(result.toISOString()).to.equal(subMinutes(insertTime, 20).toISOString());
       });
       it('throws an exception if both logTime and backTime are used', () => {
         expect(() => timeEntry.getInsertTime({ logTime: '5:23 am', backTime: 20 }, { insertTime }))
           .to.throw();
       });
-      it.skip('throws an exception backTime is invalid', () => {
+      it('throws an exception backTime is invalid', () => {
+        validations.validateMinutes.returns('Time may not be negative.');
+        expect(() => timeEntry.getInsertTime({ backTime: -1 }, { insertTime }))
+          .to.throw('Time may not be negative');
       });
     });
     describe('when logTime is set', () => {
@@ -104,14 +111,25 @@ context('lib/timeEntry', () => {
         expect(result).to.be.a('Date');
         expect(result.toISOString()).to.equal(logTime.toISOString());
       });
-      it.skip('throws an exception if logTime does not parse', () => {
+      it('throws an exception if logTime does not parse', () => {
+        validations.validateTime.returns('Something is wrong with the date');
+        expect(() => timeEntry.getInsertTime({ logTime: 'I\'m not a date!' }, { insertTime }))
+          .to.throw('Something is wrong with the date');
       });
       it.skip('should always use the entry\'s date even when setting time on a different day', () => {
+        const yesterday = subDays(insertTime, 1).format(DATE_FORMAT);
+        const logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
+        validations.validateTime.returns(true);
+        const result = timeEntry.getInsertTime(
+          { logTime: format(logTime, 'h:mm a') },
+          { insertTime, entryDate: yesterday },
+        );
+        expect(result).to.be.a('Date');
+        expect(result.toISOString()).to.equal(logTime.toISOString());
       });
     });
     describe('when neither is set', () => {
       it('should use the insert time on the entry', () => {
-        const insertTime = new Date();
         const result = timeEntry.getInsertTime({}, { insertTime });
         expect(result).to.be.a('Date');
         expect(result.toISOString()).to.equal(insertTime.toISOString());

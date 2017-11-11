@@ -48,7 +48,7 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${backTime}" ${validationMessage}`);
     }
-    insertTime = moment().subtract(backTime, 'minute');
+    insertTime = insertTime.subtract(backTime, 'minute');
   }
 
   if (logTime) {
