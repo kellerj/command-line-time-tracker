@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { stub, spy } from 'sinon';
-import { format, parse, subDays, subHours, subMinutes, setMilliseconds, setSeconds } from 'date-fns';
+import { format, parse, subDays, subHours,
+  subMinutes, setMilliseconds, setSeconds,
+  getYear, setYear, getMonth, setMonth, getDate, setDate } from 'date-fns';
 
 import { DATE_FORMAT } from '../../src/constants';
 import * as timeEntry from '../../src/lib/timeEntry';
@@ -105,7 +107,10 @@ context('lib/timeEntry', () => {
     });
     describe('when logTime is set', () => {
       it('should use the time', () => {
-        const logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
+        let logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
+        logTime = setYear(logTime, getYear(insertTime));
+        logTime = setMonth(logTime, getMonth(insertTime));
+        logTime = setDate(logTime, getDate(insertTime));
         validations.validateTime.returns(true);
         const result = timeEntry.getInsertTime({ logTime: format(logTime, 'h:mm a') }, { insertTime });
         expect(result).to.be.a('Date');
