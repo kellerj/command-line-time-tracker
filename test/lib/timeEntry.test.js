@@ -77,6 +77,7 @@ context('lib/timeEntry', () => {
   });
 
   describe('#getInsertTime', () => {
+    const insertTime = new Date();
     beforeEach(() => {
       stub(validations, 'validateMinutes');
       stub(validations, 'validateTime');
@@ -88,14 +89,15 @@ context('lib/timeEntry', () => {
     describe('when backTime is set', () => {
       it.skip('backs up from the present time when the backTime parameter is passed', () => {
       });
-      it.skip('throws an exception if both logTime and backTime are used', () => {
+      it('throws an exception if both logTime and backTime are used', () => {
+        expect(() => timeEntry.getInsertTime({ logTime: '5:23 am', backTime: 20 }, { insertTime }))
+          .to.throw();
       });
       it.skip('throws an exception backTime is invalid', () => {
       });
     });
     describe('when logTime is set', () => {
       it('should use the time', () => {
-        const insertTime = new Date();
         const logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
         validations.validateTime.returns(true);
         const result = timeEntry.getInsertTime({ logTime: format(logTime, 'h:mm a') }, { insertTime });
@@ -126,12 +128,25 @@ context('lib/timeEntry', () => {
       db.timeEntry.insert.restore();
       console.log.restore();
     });
-    it('returns true with a summary message', async () => {
+    it('returns true with a summary message when insert succeeds', async () => {
       db.timeEntry.insert.returns(true);
-      await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
-      // eslint-disable-next-line no-unused-expressions
+      const result = await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
+      expect(result).to.be.true; // eslint-disable-line no-unused-expressions
       expect(console.log.getCall(0).args[0]).to.match(/.*Time Entry.*added.*/);
       expect(console.log.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
+    });
+    it('returns false with a summary message when insert fails', async () => {
+      db.timeEntry.insert.returns(false);
+      const result = await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
+      expect(result).to.be.false; // eslint-disable-line no-unused-expressions
+      expect(console.log.getCall(0).args[0]).to.match(/.*Failed.*/);
+      expect(console.log.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
+    });
+    it('returns false and does not blow up when null object passed', async () => {
+      db.timeEntry.insert.returns(false);
+      const result = await timeEntry.addTimeEntry(null);
+      expect(result).to.be.false; // eslint-disable-line no-unused-expressions
+      expect(console.log.getCall(0).args[0]).to.match(/.*Failed.*/);
     });
   });
 });

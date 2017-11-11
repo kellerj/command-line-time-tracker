@@ -149,6 +149,7 @@ export async function addTimeEntry(timeEntry) {
   } else {
     console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
   }
+  return insertSuceeded;
 }
 
 export async function addNewProject(newProject) {
