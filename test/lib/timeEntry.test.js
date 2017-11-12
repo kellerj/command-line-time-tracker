@@ -182,7 +182,7 @@ context('lib/timeEntry', () => {
       const result = timeEntry.getTimeType({ timeType: 'AnotherOne' }, validTimeTypes);
       expect(result).to.equal('AnotherOne');
     });
-    it('valid time type checks should be case insensitive but return the value as fro mthe time type table', () => {
+    it('valid time type checks should be case insensitive but return the value as from the time type table', () => {
       const result = timeEntry.getTimeType({ timeType: 'YETANOTHER' }, validTimeTypes);
       expect(result).to.equal('YetAnother');
     });
@@ -202,6 +202,36 @@ context('lib/timeEntry', () => {
     });
     it('if no time type exists in the entry description, return null', () => {
       const result = timeEntry.getTimeType({ entryDescription: 'There is no time type in this description.' }, validTimeTypes);
+      expect(result).to.be.null; // eslint-disable-line no-unused-expressions
+    });
+  });
+
+  describe('#getProjectName', () => {
+    const validProjects = ['Project1', 'AnotherOne', 'YetAnother'];
+    it('returns a valid project when passed in', () => {
+      const result = timeEntry.getProjectName({ project: 'AnotherOne' }, validProjects);
+      expect(result).to.equal('AnotherOne');
+    });
+    it('valid project checks should be case insensitive but return the value as from the project table', () => {
+      const result = timeEntry.getProjectName({ project: 'YETANOTHER' }, validProjects);
+      expect(result).to.equal('YetAnother');
+    });
+    it('return null when passed in an invalid projectName', () => {
+      const result = timeEntry.getProjectName({ project: 'NotATimeType' }, validProjects);
+      expect(result).to.be.null; // eslint-disable-line no-unused-expressions
+    });
+    it('if a project exists in the entry description, then use it', () => {
+      let result = timeEntry.getProjectName({ entryDescription: 'Working on AnotherOne' }, validProjects);
+      expect(result).to.equal('AnotherOne', 'Should have detected AnotherOne at the end of the string');
+
+      result = timeEntry.getProjectName({ entryDescription: 'Working on AnotherOne and YetAnother' }, validProjects);
+      expect(result).to.equal('AnotherOne', 'Should have detected AnotherOne within the string');
+
+      result = timeEntry.getProjectName({ entryDescription: 'AnotherOne bites the dust' }, validProjects);
+      expect(result).to.equal('AnotherOne', 'Should have detected AnotherOne at the start of the string');
+    });
+    it('if no project exists in the entry description, return null', () => {
+      const result = timeEntry.getProjectName({ entryDescription: 'There is no time type in this description.' }, validProjects);
       expect(result).to.be.null; // eslint-disable-line no-unused-expressions
     });
   });

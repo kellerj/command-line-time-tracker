@@ -81,30 +81,17 @@ export function getTimeType({ timeType: inputTimeType, entryDescription }, timeT
   return timeType || null;
 }
 
-export function getProjectName(newEntry, projects) {
-  // If project option is not a valid project, reject with list of project names
-  let projectName = newEntry.project;
-  if (projectName) {
-    LOG(`Input Project Name: ${projectName}, checking project list.`);
+export function getProjectName({ project: inputProjectName, entryDescription }, projects) {
+  if (inputProjectName) {
+    LOG(`Input Project Name: ${inputProjectName}, checking project list.`);
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    projectName = projects.find(p => (p.match(new RegExp(`^${projectName.trim()}$`, 'i'))));
-    if (projectName === undefined) {
-      console.log(chalk.red(`Project ${chalk.yellow(newEntry.project)} does not exist.  Known Projects:`));
-      console.log(chalk.yellow(Table.print(
-        projects.map(e => ({ name: e })),
-        { name: { name: chalk.white.bold('Project Name') } },
-      )));
-      throw new Error();
-    }
-  } else {
-    // see if we can find a name in the description
-    projectName = projects.find(p => (newEntry.entryDescription.match(new RegExp(p, 'i'))));
-    if (projectName === undefined) {
-      projectName = newEntry.project;
-    }
+    const projectName = projects.find(p => (p.match(new RegExp(`^${inputProjectName.trim()}$`, 'i'))));
+    return projectName || null;
   }
-  return projectName;
+  // see if we can find a name in the description
+  const projectName = projects.find(p => (entryDescription.match(new RegExp(p, 'i'))));
+  return projectName || null;
 }
 
 export function getMinutesSinceLastEntry(newEntry, lastEntry) {

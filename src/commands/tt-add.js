@@ -34,7 +34,7 @@ commander
 // Build the new entry object with command line arguments
 const newEntry = {
   entryDescription: commander.args.join(' ').trim(),
-  project: commander.projectName,
+  project: commander.project,
   timeType: commander.type,
   minutes: commander.time,
   insertTime: moment().toDate(),
@@ -60,10 +60,18 @@ async function run() {
   const minutesSinceLastEntry = getMinutesSinceLastEntry(newEntry, lastEntry);
 
   newEntry.project = getProjectName(newEntry, projects);
-  const projectDefaulted = newEntry.projectName !== commander.project;
+  if (commander.project && !newEntry.project) {
+    // If project option is not a valid project, reject with list of project names
+    console.log(chalk.red(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`));
+    console.log(chalk.yellow(Table.print(
+      projects.map(e => ({ name: e })),
+      { name: { name: chalk.white.bold('Project Name') } },
+    )));
+    throw new Error();
+  }
+  const projectDefaulted = newEntry.project !== commander.project;
 
   newEntry.timeType = getTimeType(newEntry, timeTypes);
-  LOG(JSON.stringify(newEntry));
   if (commander.type && !newEntry.timeType) {
     // If time type option is not a valid project, reject with list of type names
     console.log(chalk.red(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`));
@@ -134,8 +142,8 @@ async function run() {
     type: 'autocomplete',
     message: 'Project:',
     source: (answers, input) =>
-      (displayUtils.autocompleteListSearch(projects, input, newEntry.projectName)),
-    when: () => (newEntry.projectName === undefined || projectDefaulted),
+      (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
+    when: () => (newEntry.project === undefined || projectDefaulted),
     pageSize: 10,
   });
   prompts.onNext({
