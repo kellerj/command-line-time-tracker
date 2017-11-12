@@ -233,7 +233,7 @@ context('lib/timeEntry', () => {
       expect(result).to.be.null; // eslint-disable-line no-unused-expressions
     });
   });
-  describe.only('#getMinutesSinceLastEntry', () => {
+  describe('#getMinutesSinceLastEntry', () => {
     it('returns the default time when no prior entry is found', () => {
       const result = timeEntry.getMinutesSinceLastEntry({}, null);
       expect(result).to.equal(DEFAULT_MINUTES);
