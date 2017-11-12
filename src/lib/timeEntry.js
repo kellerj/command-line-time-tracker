@@ -1,6 +1,7 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
+import { format, parse, subDays, isValid, subMinutes } from 'date-fns';
+import moment from 'moment';
 
 import db from '../db';
 import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
@@ -11,15 +12,15 @@ const LOG = require('debug')('tt:lib:timeEntry');
 
 export function getEntryDate({ date, yesterday }) {
   if (date) {
-    const parsedDate = moment(date, DATE_FORMAT);
-    if (!parsedDate.isValid()) {
+    const parsedDate = parse(date);
+    if (!isValid(parsedDate)) {
       throw new Error(`-d, --date: Invalid Date: ${date}`);
     }
-    return parsedDate.format(DATE_FORMAT);
+    return format(parsedDate, DATE_FORMAT);
   } else if (yesterday) {
-    return moment().subtract(1, 'day').format(DATE_FORMAT);
+    return format(subDays(new Date(), 1), DATE_FORMAT);
   }
-  return moment().format(DATE_FORMAT);
+  return format(new Date(), DATE_FORMAT);
 }
 
 export function getEntryMinutes({ time }) {
@@ -36,7 +37,7 @@ export function getEntryMinutes({ time }) {
 }
 
 export function getInsertTime({ backTime, logTime }, newEntry) {
-  let insertTime = moment(newEntry.insertTime);
+  let { insertTime } = newEntry;
   if (backTime) {
     if (logTime) {
       throw new Error('You may not set both --backTime and --logTime.');
@@ -47,7 +48,7 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
     if (validationMessage !== true) {
       throw new Error(`-b, --backTime: "${backTime}" ${validationMessage}`);
     }
-    insertTime = insertTime.subtract(backTime, 'minute');
+    insertTime = subMinutes(insertTime, backTime);
   }
 
   if (logTime) {
@@ -57,15 +58,9 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
     if (validationMessage !== true) {
       throw new Error(`-l, --logTime: "${logTime}" ${validationMessage}`);
     }
-    insertTime = moment(logTime, 'h:mm a');
-
-    // now, ensure the date matches the entry date since it's assumed the time should be on that day
-    const entryDate = moment(newEntry.entryDate);
-    insertTime.year(entryDate.year());
-    insertTime.month(entryDate.month());
-    insertTime.date(entryDate.date());
+    insertTime = parse(`${newEntry.entryDate}T${logTime}`);
   }
-  return insertTime.toDate();
+  return insertTime;
 }
 
 export function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {

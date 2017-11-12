@@ -41,7 +41,7 @@ context('lib/timeEntry', () => {
         expect(result).to.equal('2017-05-22');
       });
       it('throws an error if it can not parse the date', () => {
-        expect(() => timeEntry.getEntryDate({ date: 'Jan 1, 2017', yesterday: true })).to.throw('Invalid Date');
+        expect(() => timeEntry.getEntryDate({ date: 'fdsfdsfds', yesterday: true })).to.throw('Invalid Date');
       });
     });
   });
@@ -89,17 +89,26 @@ context('lib/timeEntry', () => {
     describe('when backTime is set', () => {
       it('backs up from the present time when the backTime parameter is passed', () => {
         validations.validateMinutes.returns(true);
-        const result = timeEntry.getInsertTime({ backTime: 20 }, { insertTime });
+        const result = timeEntry.getInsertTime(
+          { backTime: 20 },
+          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+        );
         expect(result).to.be.a('Date');
         expect(result.toISOString()).to.equal(subMinutes(insertTime, 20).toISOString());
       });
       it('throws an exception if both logTime and backTime are used', () => {
-        expect(() => timeEntry.getInsertTime({ logTime: '5:23 am', backTime: 20 }, { insertTime }))
+        expect(() => timeEntry.getInsertTime(
+          { logTime: '5:23 am', backTime: 20 },
+          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+        ))
           .to.throw();
       });
       it('throws an exception backTime is invalid', () => {
         validations.validateMinutes.returns('Time may not be negative.');
-        expect(() => timeEntry.getInsertTime({ backTime: -1 }, { insertTime }))
+        expect(() => timeEntry.getInsertTime(
+          { backTime: -1 },
+          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+        ))
           .to.throw('Time may not be negative');
       });
     });
@@ -110,7 +119,10 @@ context('lib/timeEntry', () => {
         logTime = setMonth(logTime, getMonth(insertTime));
         logTime = setDate(logTime, getDate(insertTime));
         validations.validateTime.returns(true);
-        const result = timeEntry.getInsertTime({ logTime: format(logTime, 'h:mm a') }, { insertTime });
+        const result = timeEntry.getInsertTime(
+          { logTime: format(logTime, 'h:mm a') },
+          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+        );
         expect(result).to.be.a('Date');
         expect(result.toISOString()).to.equal(logTime.toISOString());
       });
