@@ -5,9 +5,9 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import debug from 'debug';
 
-import db from '../db';
+import { addNewProject } from '../lib/project';
 
-const LOG = debug('tt:project:add');
+const LOG = debug('tt:commands:project:add');
 
 commander
   .description('Add a time tracking project to the database')
@@ -16,19 +16,9 @@ commander
 
 const inputProjectName = commander.args.join(' ');
 
-async function performProjectUpdate(projectName) {
-  LOG(`Request to add project "${projectName}"`);
-  const insertSuceeded = await db.project.insert(projectName);
-  if (insertSuceeded) {
-    console.log(chalk.green(`Project ${chalk.white.bold(projectName)} added`));
-  } else {
-    console.log(chalk.bgRed(`Project ${chalk.yellow.bold(projectName)} already exists.`));
-  }
-}
-
 async function run() {
   if (inputProjectName) {
-    performProjectUpdate(inputProjectName);
+    addNewProject(inputProjectName);
   } else {
     const answer = await inquirer.prompt([
       {
@@ -37,7 +27,7 @@ async function run() {
         message: 'Please enter the new project name:',
       },
     ]);
-    performProjectUpdate(answer.projectName);
+    addNewProject(answer.projectName);
   }
 }
 

@@ -6,7 +6,7 @@ import db from '../db';
 import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
 import validations from '../utils/validations';
 
-const LOG = require('debug')('timeEntry');
+const LOG = require('debug')('tt:lib:timeEntry');
 
 
 export function getEntryDate({ date, yesterday }) {
@@ -123,16 +123,6 @@ export async function addTimeEntry(timeEntry) {
     console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
   }
   return insertSuceeded;
-}
-
-export async function addNewProject(newProject) {
-  LOG(`Request to add project "${newProject}"`);
-  const insertSuceeded = await db.project.insert(newProject);
-  if (insertSuceeded) {
-    console.log(chalk.green(`Project ${chalk.white.bold(newProject)} added`));
-  } else {
-    console.log(chalk.bgRed(`Project ${chalk.yellow.bold(newProject)} already exists.`));
-  }
 }
 
 export async function deleteTimeEntries(entries) {

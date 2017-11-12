@@ -15,7 +15,8 @@ import displayUtils from '../utils/display-utils';
 import db from '../db';
 import { getEntryDate, getEntryMinutes, getInsertTime,
   getTimeType, getProjectName, getMinutesSinceLastEntry,
-  addTimeEntry, addNewProject } from '../lib/timeEntry';
+  addTimeEntry } from '../lib/timeEntry';
+import { addNewProject } from '../lib/project';
 
 const LOG = debug('tt:add');
 

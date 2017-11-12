@@ -2,31 +2,11 @@
 
 ## Roadmap
 
-### 1.3
-
-- [x] Add CL option to back-date the insert time entry on add
-- [x] Add -y, --yesterday to add command to allow adding to the previous day
-- [x] Change the get most recent to accept an entryDate
-- [x] Add ability to edit the logged time on an entry
-- [x] Add percentages after the hours in the summary section of the report
-- [x] Addition of inquirer-autocomplete-prompt for the project and time type lists
-    - [x] add
-    - [x] edit
-- [x] Switch all use of process.exit to try/catch (make unit testing possible)
-    - [x] list
-    - [x] report
-    - [x] summary
-- [x] Backdating improvements
-    - [x] subtract backdate time from minutes since last entry/default minutes
-    - [x] display the effective logging time when using backdating (always?)
-- [x] Fix bug with edit where errors out when using --last on a day with no entries
-
-
 ### 2.0
 
 - [ ] Repackaging of commands as modules
-- [ ] Convert code base to async/await
-- [ ] Re-package source into single directory
+- [x] Convert code base to async/await
+- [x] Re-package source into single directory
 - [ ] Entry List
     - [ ] Date Range Support
     - [ ] CSV format option
@@ -84,8 +64,28 @@
         - [ ] Allow entry of new name
         - [ ] Command line old name / new name parameters
 - [ ] Find place to report on "wasted time"
+- [ ] unit testing of commands paths
 
 ## Completed Items
+
+### 1.3
+
+- [x] Add CL option to back-date the insert time entry on add
+- [x] Add -y, --yesterday to add command to allow adding to the previous day
+- [x] Change the get most recent to accept an entryDate
+- [x] Add ability to edit the logged time on an entry
+- [x] Add percentages after the hours in the summary section of the report
+- [x] Addition of inquirer-autocomplete-prompt for the project and time type lists
+    - [x] add
+    - [x] edit
+- [x] Switch all use of process.exit to try/catch (make unit testing possible)
+    - [x] list
+    - [x] report
+    - [x] summary
+- [x] Backdating improvements
+    - [x] subtract backdate time from minutes since last entry/default minutes
+    - [x] display the effective logging time when using backdating (always?)
+- [x] Fix bug with edit where errors out when using --last on a day with no entries
 
 ### 1.2
 
