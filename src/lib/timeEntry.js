@@ -69,29 +69,16 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
   return insertTime.toDate();
 }
 
-export function getTimeType(newEntry, timeTypes) {
-  // If time type option is not a valid project, reject with list of type names
-  let { timeType } = newEntry;
-  if (timeType) {
+export function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
+  if (inputTimeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    timeType = timeTypes.find(t => (t.match(new RegExp(`^${timeType.trim()}$`, 'i'))));
-    if (newEntry.timeType === undefined) {
-      console.log(chalk.red(`Project ${chalk.yellow(newEntry.timeType)} does not exist.  Known Time Types:`));
-      console.log(chalk.yellow(Table.print(
-        timeTypes.map(e => ({ name: e })),
-        { name: { name: chalk.white.bold('Time Type') } },
-      )));
-      throw new Error();
-    }
-  } else {
-    // see if we can find a name in the description
-    timeType = timeTypes.find(t => (newEntry.entryDescription.match(new RegExp(t, 'i'))));
-    if (timeType === undefined) {
-      ({ timeType } = newEntry);
-    }
+    const timeType = timeTypes.find(t => (t.match(new RegExp(`^${inputTimeType.trim()}$`, 'i'))));
+    return timeType || null;
   }
-  return timeType;
+  // see if we can find a name in the description
+  const timeType = timeTypes.find(t => (entryDescription.match(new RegExp(t, 'i'))));
+  return timeType || null;
 }
 
 export function getProjectName(newEntry, projects) {

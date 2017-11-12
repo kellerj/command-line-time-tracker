@@ -8,6 +8,7 @@ import moment from 'moment'; // TODO: Convert to use date-fns
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
 import debug from 'debug';
+import Table from 'easy-table';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
@@ -62,7 +63,17 @@ async function run() {
   const projectDefaulted = newEntry.projectName !== commander.project;
 
   newEntry.timeType = getTimeType(newEntry, timeTypes);
-  const timeTypeDefaulted = newEntry.timeType !== commander.timeType;
+  LOG(JSON.stringify(newEntry));
+  if (commander.type && !newEntry.timeType) {
+    // If time type option is not a valid project, reject with list of type names
+    console.log(chalk.red(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`));
+    console.log(chalk.yellow(Table.print(
+      timeTypes.map(e => ({ name: e })),
+      { name: { name: chalk.white.bold('Time Type') } },
+    )));
+    throw new Error();
+  }
+  const timeTypeDefaulted = newEntry.timeType !== commander.type;
 
   // Add the new project option to the end of the list
   projects.push(new inquirer.Separator());

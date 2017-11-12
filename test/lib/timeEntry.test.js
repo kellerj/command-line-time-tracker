@@ -121,16 +121,19 @@ context('lib/timeEntry', () => {
         expect(() => timeEntry.getInsertTime({ logTime: 'I\'m not a date!' }, { insertTime }))
           .to.throw('Something is wrong with the date');
       });
-      it.skip('should always use the entry\'s date even when setting time on a different day', () => {
-        const yesterday = subDays(insertTime, 1).format(DATE_FORMAT);
-        const logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
+      it('should always use the entry\'s date even when setting time on a different day', () => {
+        const yesterday = format(subDays(insertTime, 1), DATE_FORMAT);
+        let logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
+        logTime = setYear(logTime, getYear(insertTime));
+        logTime = setMonth(logTime, getMonth(insertTime));
+        logTime = setDate(logTime, getDate(insertTime));
         validations.validateTime.returns(true);
         const result = timeEntry.getInsertTime(
           { logTime: format(logTime, 'h:mm a') },
           { insertTime, entryDate: yesterday },
         );
         expect(result).to.be.a('Date');
-        expect(result.toISOString()).to.equal(logTime.toISOString());
+        expect(format(result, DATE_FORMAT)).to.equal(format(yesterday, DATE_FORMAT));
       });
     });
     describe('when neither is set', () => {
@@ -170,6 +173,36 @@ context('lib/timeEntry', () => {
       const result = await timeEntry.addTimeEntry(null);
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
       expect(console.log.getCall(0).args[0]).to.match(/.*Failed.*/);
+    });
+  });
+
+  describe('#getTimeType', () => {
+    const validTimeTypes = ['TimeType1', 'AnotherOne', 'YetAnother'];
+    it('returns a valid time type when passed in', () => {
+      const result = timeEntry.getTimeType({ timeType: 'AnotherOne' }, validTimeTypes);
+      expect(result).to.equal('AnotherOne');
+    });
+    it('valid time type checks should be case insensitive but return the value as fro mthe time type table', () => {
+      const result = timeEntry.getTimeType({ timeType: 'YETANOTHER' }, validTimeTypes);
+      expect(result).to.equal('YetAnother');
+    });
+    it('return null when passed in an invalid timeType', () => {
+      const result = timeEntry.getTimeType({ timeType: 'NotATimeType' }, validTimeTypes);
+      expect(result).to.be.null; // eslint-disable-line no-unused-expressions
+    });
+    it('if a time type exists in the entry description, then use it', () => {
+      let result = timeEntry.getTimeType({ entryDescription: 'Working on AnotherOne' }, validTimeTypes);
+      expect(result).to.equal('AnotherOne', 'Should have detected AnotherOne at the end of the string');
+
+      result = timeEntry.getTimeType({ entryDescription: 'Working on AnotherOne and YetAnother' }, validTimeTypes);
+      expect(result).to.equal('AnotherOne', 'Should have detected AnotherOne within the string');
+
+      result = timeEntry.getTimeType({ entryDescription: 'AnotherOne bites the dust' }, validTimeTypes);
+      expect(result).to.equal('AnotherOne', 'Should have detected AnotherOne at the start of the string');
+    });
+    it('if no time type exists in the entry description, return null', () => {
+      const result = timeEntry.getTimeType({ entryDescription: 'There is no time type in this description.' }, validTimeTypes);
+      expect(result).to.be.null; // eslint-disable-line no-unused-expressions
     });
   });
 });
