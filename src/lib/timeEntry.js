@@ -1,10 +1,9 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import moment from 'moment'; // TODO: Convert to use date-fns
-import Table from 'easy-table';
 
 import db from '../db';
-import { DATE_FORMAT } from '../constants';
+import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
 import validations from '../utils/validations';
 
 const LOG = require('debug')('timeEntry');
@@ -97,8 +96,8 @@ export function getProjectName({ project: inputProjectName, entryDescription }, 
 export function getMinutesSinceLastEntry(newEntry, lastEntry) {
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
-  let minutesSinceLastEntry = 60;
-  if (lastEntry && moment(lastEntry.insertTime).isSame(newEntry.insertTime, 'day')) {
+  let minutesSinceLastEntry = DEFAULT_MINUTES;
+  if (lastEntry && lastEntry.entryDate === newEntry.entryDate) {
     minutesSinceLastEntry = moment(newEntry.insertTime).diff(lastEntry.insertTime, 'minutes');
     if (minutesSinceLastEntry < 0) {
       minutesSinceLastEntry = 0;

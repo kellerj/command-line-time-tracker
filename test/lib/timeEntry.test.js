@@ -1,15 +1,13 @@
 import { expect } from 'chai';
 import { stub, spy } from 'sinon';
-import { format, parse, subDays, subHours,
+import { format, parse, subDays, subHours, addHours,
   subMinutes, setMilliseconds, setSeconds,
   getYear, setYear, getMonth, setMonth, getDate, setDate } from 'date-fns';
 
-import { DATE_FORMAT } from '../../src/constants';
+import { DATE_FORMAT, DEFAULT_MINUTES } from '../../src/constants';
 import * as timeEntry from '../../src/lib/timeEntry';
 import validations from '../../src/utils/validations';
 import db from '../../src/db';
-
-console.log(DATE_FORMAT);
 
 context('lib/timeEntry', () => {
   describe('#getEntryDate', () => {
@@ -233,6 +231,34 @@ context('lib/timeEntry', () => {
     it('if no project exists in the entry description, return null', () => {
       const result = timeEntry.getProjectName({ entryDescription: 'There is no time type in this description.' }, validProjects);
       expect(result).to.be.null; // eslint-disable-line no-unused-expressions
+    });
+  });
+  describe.only('#getMinutesSinceLastEntry', () => {
+    it('returns the default time when no prior entry is found', () => {
+      const result = timeEntry.getMinutesSinceLastEntry({}, null);
+      expect(result).to.equal(DEFAULT_MINUTES);
+    });
+    it('returns the default time when the prior entry is not on the same day', () => {
+      const result = timeEntry.getMinutesSinceLastEntry(
+        { entryDate: '2017-11-11' },
+        { entryDate: '2017-11-10' },
+      );
+      expect(result).to.equal(DEFAULT_MINUTES);
+    });
+    it('returns zero when the given most recent entry is in the future', () => {
+      const result = timeEntry.getMinutesSinceLastEntry(
+        { entryDate: '2017-11-11', insertTime: new Date() },
+        { entryDate: '2017-11-11', insertTime: addHours(new Date(), 1) },
+      );
+      expect(result).to.equal(0);
+    });
+    it('returns the difference in minutes between the insert time of the new record and the old record', () => {
+      const currTime = new Date();
+      const result = timeEntry.getMinutesSinceLastEntry(
+        { entryDate: '2017-11-11', insertTime: currTime },
+        { entryDate: '2017-11-11', insertTime: subMinutes(currTime, 120) },
+      );
+      expect(result).to.equal(120);
     });
   });
 });
