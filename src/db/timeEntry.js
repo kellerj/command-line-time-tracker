@@ -18,7 +18,7 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
-    if (debug.enabled) {
+    if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
     }
@@ -44,7 +44,7 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
-    if (debug.enabled) {
+    if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
     }
@@ -68,7 +68,7 @@ module.exports = getConnection => ({
       endDate = startDate;
     }
 
-    if (debug.enabled) {
+    if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
     }
@@ -87,7 +87,7 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
-    if (debug.enabled) {
+    if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
     }
@@ -130,26 +130,33 @@ module.exports = getConnection => ({
       endDate = startDate;
     }
 
-    if (debug.enabled) {
+    if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
     }
 
-    const cursor = collection.aggregate(
-      [
-        { $match: {
+    const cursor = collection.aggregate([
+      {
+        $match: {
           entryDate: {
             $gte: moment(startDate).format(ENTRY_DATE_FORMAT),
             $lte: moment(endDate).format(ENTRY_DATE_FORMAT),
           },
-        } },
-        { $group: {
+        },
+      },
+      {
+        $group: {
           _id: { project: '$project', timeType: '$timeType' },
           minutes: { $sum: '$minutes' },
-        } },
-        { $project: { project: '$_id.project', timeType: '$_id.timeType', minutes: '$minutes', _id: 0 } },
-        { $sort: { project: 1, timeType: 1 } },
-      ]);
+        },
+      },
+      {
+        $project: {
+          project: '$_id.project', timeType: '$_id.timeType', minutes: '$minutes', _id: 0,
+        },
+      },
+      { $sort: { project: 1, timeType: 1 } },
+    ]);
     const r = await cursor.toArray();
     db.close();
     LOG(`Summary Data: ${JSON.stringify(r, null, 2)}`);
