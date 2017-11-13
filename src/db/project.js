@@ -13,6 +13,12 @@ module.exports = getConnection => ({
   async getAll() {
     const db = await getConnection();
     const collection = db.collection(collectionName);
+
+    if (LOG.enabled) {
+      // eslint-disable-next-line global-require
+      require('mongodb').Logger.setLevel('debug');
+    }
+
     const r = await collection.find({}).sort({ name: 1 }).toArray();
     // Close the connection
     db.close();
@@ -27,6 +33,11 @@ module.exports = getConnection => ({
   async insert(name) {
     const db = await getConnection();
     const collection = db.collection(collectionName);
+
+    if (LOG.enabled) {
+      // eslint-disable-next-line global-require
+      require('mongodb').Logger.setLevel('debug');
+    }
 
     let r = await collection.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
     // console.log(JSON.stringify(r));
@@ -44,6 +55,11 @@ module.exports = getConnection => ({
   async remove(name) {
     const db = await getConnection();
     const collection = db.collection(collectionName);
+
+    if (LOG.enabled) {
+      // eslint-disable-next-line global-require
+      require('mongodb').Logger.setLevel('debug');
+    }
 
     const r = await collection.findAndRemove({ name });
     LOG(JSON.stringify(r, null, 2));
