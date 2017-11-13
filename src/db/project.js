@@ -14,6 +14,7 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
+    /* istanbul ignore if */
     if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
@@ -34,6 +35,7 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
+    /* istanbul ignore if */
     if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
@@ -56,6 +58,7 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
+    /* istanbul ignore if */
     if (LOG.enabled) {
       // eslint-disable-next-line global-require
       require('mongodb').Logger.setLevel('debug');
