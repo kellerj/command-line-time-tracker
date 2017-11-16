@@ -1,15 +1,23 @@
-import moment from 'moment';
+// import moment from 'moment';
+import debug from 'debug';
+import { parse, format, startOfDay, isValid,
+  startOfISOWeek, endOfISOWeek, subDays,
+  subWeeks, subMonths, startOfMonth, endOfMonth, isAfter } from 'date-fns';
+
+import { DATE_FORMAT } from '../constants';
+
 // TODO: Convert to use date-fns
-const LOG = require('debug')('tt:validations');
+const LOG = debug('tt:validations');
 
 function validateAndDefaultInputDateString(dateString) {
   if (!dateString) {
-    return moment().startOf('day');
+    return startOfDay(new Date());
   }
-  if (!moment(dateString, 'YYYY-MM-DD').isValid()) {
+  const parsedDate = parse(dateString);
+  if (!isValid(parsedDate)) {
     return `Date ${dateString} is not a valid date.`;
   }
-  return moment(dateString).startOf('day');
+  return startOfDay(parsedDate);
 }
 
 module.exports = {
@@ -41,7 +49,7 @@ module.exports = {
 
   validateTime: (input) => {
     // attempt to parse the time as 12-hour format then 24 hour
-    const parsedTime = moment(input, 'h:mm a');
+    const parsedTime = parse(`${format(new Date(), DATE_FORMAT)}T${input}`);
     if (!parsedTime.isValid()) {
       return `${input} is not a valid time, must be in h:mm am format.`;
     }
@@ -56,21 +64,21 @@ module.exports = {
     const errorMessage = '';
 
     if (input.week || input.month) {
-      const reportDate = validateAndDefaultInputDateString(entryDate);
+      let reportDate = validateAndDefaultInputDateString(entryDate);
       if (input.week) {
         if (input.last) {
-          reportDate.subtract(1, 'week');
+          reportDate = subWeeks(reportDate, 1);
         }
-        LOG(`Setting to week containing: ${reportDate}`);
-        startDate = moment(reportDate.startOf('isoWeek'));
-        endDate = moment(reportDate.endOf('isoWeek'));
+        LOG('Setting to week containing: %s', reportDate);
+        startDate = startOfISOWeek(reportDate);
+        endDate = endOfISOWeek(reportDate);
       } else { // input.month == true
         if (input.last) {
-          reportDate.subtract(1, 'month');
+          reportDate = subMonths(reportDate, 1);
         }
-        LOG(`Setting to month containing: ${reportDate}`);
-        startDate = moment(reportDate.startOf('month'));
-        endDate = moment(reportDate.endOf('month'));
+        LOG('Setting to month containing: %s', reportDate);
+        startDate = startOfMonth(reportDate);
+        endDate = endOfMonth(reportDate);
       }
       // if not set, use today.  In either case set to start of day
     } else if (entryDate || (!startDate && !endDate)) {
@@ -79,13 +87,13 @@ module.exports = {
         return { startDate: undefined, endDate: undefined, errorMessage: entryDate };
       }
       if (input.last || input.yesterday) {
-        entryDate.subtract(1, 'day');
+        entryDate = subDays(entryDate, 1);
       }
-      LOG(`Start and end date not set, using entryDate: ${entryDate}`);
+      LOG('Start and end date not set, using entryDate: %s', entryDate);
       startDate = entryDate;
       endDate = entryDate;
-    } else {
-      LOG(`Using start and end dates: ${startDate} -- ${endDate}`);
+    } else { // we have start and end dates - check those
+      LOG('Using start and end dates: %s -- %s', startDate, endDate);
       // we have a start date and/or end date
       startDate = validateAndDefaultInputDateString(startDate);
       if (typeof startDate === 'string') {
@@ -95,14 +103,14 @@ module.exports = {
       if (typeof endDate === 'string') {
         return { startDate: undefined, endDate: undefined, errorMessage: endDate };
       }
-      if (startDate.isAfter(endDate)) {
-        LOG(`${startDate} is after ${endDate}`);
+      if (isAfter(startDate, endDate)) {
+        LOG('%s is after %s, setting startDate to the endDate', startDate, endDate);
         startDate = endDate;
       }
     }
-    // done with the moment objects - convert to dates for later use
-    startDate = startDate.startOf('day').toDate();
-    endDate = endDate.startOf('day').toDate();
+    // Eliminate any time components from the dates
+    startDate = startOfDay(startDate);
+    endDate = startOfDay(endDate);
 
     return { startDate, endDate, errorMessage };
   },

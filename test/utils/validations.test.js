@@ -1,9 +1,11 @@
 import { expect } from 'chai';
 import moment from 'moment'; // TODO: Convert to use date-fns
+import dateFns from 'date-fns';
 
-const validations = require('../../src/utils/validations');
+// import { DATE_FORMAT } from '../../src/constants';
+import validations from '../../src/utils/validations';
 
-describe('validations', () => {
+describe.only('validations', () => {
   describe('validateMinutes', () => {
     it('returns true for a positive numeric input', () => {
       expect(validations.validateMinutes('123')).to.equal(true);
@@ -51,16 +53,17 @@ describe('validations', () => {
 
   describe('validateAndDefaultInputDateString', () => {
     it('returns today when no date passed', () => {
-      const today = moment().startOf('day');
+      const today = dateFns.startOfDay(new Date());
       expect(typeof validations.validateAndDefaultInputDateString()).to.equal('object');
-      expect(validations.validateAndDefaultInputDateString().format()).to.equal(today.format());
+      expect(dateFns.format(validations.validateAndDefaultInputDateString()))
+        .to.equal(dateFns.format(today));
     });
     it('Strips off time component of a given date.', () => {
-      const today = moment().startOf('day');
-      expect(typeof validations.validateAndDefaultInputDateString(moment().format()))
+      const today = dateFns.startOfDay(new Date());
+      expect(typeof validations.validateAndDefaultInputDateString(dateFns.format(today)))
         .to.equal('object');
-      expect(validations.validateAndDefaultInputDateString(moment().format()).format())
-        .to.equal(today.format());
+      expect(dateFns.format(validations.validateAndDefaultInputDateString(dateFns.format(today))))
+        .to.equal(dateFns.format(today));
     });
     it('returns error message when the date is invalid', () => {
       expect(typeof validations.validateAndDefaultInputDateString('skajhdsjkahdjkas'))
@@ -79,8 +82,10 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(moment().startOf('isoWeek').startOf('day').format());
-          expect(moment(result.endDate).format()).to.equal(moment().endOf('isoWeek').startOf('day').format());
+          expect(dateFns.format(result.startDate))
+            .to.equal(dateFns.format(dateFns.startOfISOWeek(new Date())));
+          expect(dateFns.format(result.endDate))
+            .to.equal(dateFns.format(dateFns.startOfDay(dateFns.endOfISOWeek(new Date()))));
         });
 
         it('returns mon-sun of the given week when date set', () => {
@@ -92,8 +97,10 @@ describe('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('isoWeek').startOf('day').format());
-          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').endOf('isoWeek').startOf('day').format());
+          expect(dateFns.format(result.startDate))
+            .to.equal(dateFns.format(dateFns.startOfISOWeek(input.date)));
+          expect(dateFns.format(result.endDate))
+            .to.equal(dateFns.format(dateFns.startOfDay(dateFns.endOfISOWeek(input.date))));
         });
       });
       describe('--last is set', () => {
