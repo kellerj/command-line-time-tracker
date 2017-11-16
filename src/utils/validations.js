@@ -1,5 +1,6 @@
 // import moment from 'moment';
 import debug from 'debug';
+import parseTime from 'parse-loose-time';
 import { parse, format, startOfDay, isValid,
   startOfISOWeek, endOfISOWeek, subDays,
   subWeeks, subMonths, startOfMonth, endOfMonth, isAfter } from 'date-fns';
@@ -49,8 +50,8 @@ module.exports = {
 
   validateTime: (input) => {
     // attempt to parse the time as 12-hour format then 24 hour
-    const parsedTime = parse(`${format(new Date(), DATE_FORMAT)}T${input}`);
-    if (!parsedTime.isValid()) {
+    const parsedTime = parseTime(input);
+    if (!parsedTime) {
       return `${input} is not a valid time, must be in h:mm am format.`;
     }
     return true;

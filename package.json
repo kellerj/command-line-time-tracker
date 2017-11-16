@@ -39,6 +39,7 @@
     "inquirer-autocomplete-prompt": "0.11.x",
     "moment": "2.18.x",
     "mongodb": "^2.2.31",
+    "parse-loose-time": "^1.0.1",
     "rx": "4.1.x",
     "sprintf-js": "1.1.x",
     "supports-color": "^5.0.0"

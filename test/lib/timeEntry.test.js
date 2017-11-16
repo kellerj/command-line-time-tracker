@@ -100,16 +100,14 @@ context('lib/timeEntry', () => {
         expect(() => timeEntry.getInsertTime(
           { logTime: '5:23 am', backTime: 20 },
           { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
-        ))
-          .to.throw();
+        )).to.throw();
       });
       it('throws an exception backTime is invalid', () => {
         validations.validateMinutes.returns('Time may not be negative.');
         expect(() => timeEntry.getInsertTime(
           { backTime: -1 },
           { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
-        ))
-          .to.throw('Time may not be negative');
+        )).to.throw('Time may not be negative');
       });
     });
     describe('when logTime is set', () => {

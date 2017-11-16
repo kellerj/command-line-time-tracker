@@ -5,7 +5,7 @@ import dateFns from 'date-fns';
 // import { DATE_FORMAT } from '../../src/constants';
 import validations from '../../src/utils/validations';
 
-describe.only('validations', () => {
+describe('validations', () => {
   describe('validateMinutes', () => {
     it('returns true for a positive numeric input', () => {
       expect(validations.validateMinutes('123')).to.equal(true);
@@ -54,20 +54,20 @@ describe.only('validations', () => {
   describe('validateAndDefaultInputDateString', () => {
     it('returns today when no date passed', () => {
       const today = dateFns.startOfDay(new Date());
-      expect(typeof validations.validateAndDefaultInputDateString()).to.equal('object');
-      expect(dateFns.format(validations.validateAndDefaultInputDateString()))
-        .to.equal(dateFns.format(today));
+      expect(validations.validateAndDefaultInputDateString()).to.be.a('Date');
+      expect(validations.validateAndDefaultInputDateString().toISOString())
+        .to.equal(today.toISOString());
     });
     it('Strips off time component of a given date.', () => {
       const today = dateFns.startOfDay(new Date());
-      expect(typeof validations.validateAndDefaultInputDateString(dateFns.format(today)))
-        .to.equal('object');
-      expect(dateFns.format(validations.validateAndDefaultInputDateString(dateFns.format(today))))
-        .to.equal(dateFns.format(today));
+      expect(validations.validateAndDefaultInputDateString(dateFns.format(today)))
+        .to.be.a('Date');
+      expect(validations.validateAndDefaultInputDateString(dateFns.format(today)).toISOString())
+        .to.equal(today.toISOString());
     });
     it('returns error message when the date is invalid', () => {
-      expect(typeof validations.validateAndDefaultInputDateString('skajhdsjkahdjkas'))
-        .to.equal('string');
+      expect(validations.validateAndDefaultInputDateString('skajhdsjkahdjkas'))
+        .to.be.a('string');
     });
   });
 
@@ -82,10 +82,12 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
-          expect(dateFns.format(result.startDate))
-            .to.equal(dateFns.format(dateFns.startOfISOWeek(new Date())));
-          expect(dateFns.format(result.endDate))
-            .to.equal(dateFns.format(dateFns.startOfDay(dateFns.endOfISOWeek(new Date()))));
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
+          expect(result.startDate.toISOString())
+            .to.equal(dateFns.startOfISOWeek(new Date()).toISOString());
+          expect(result.endDate.toISOString())
+            .to.equal(dateFns.startOfDay(dateFns.endOfISOWeek(new Date())).toISOString());
         });
 
         it('returns mon-sun of the given week when date set', () => {
@@ -97,6 +99,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(dateFns.format(result.startDate))
             .to.equal(dateFns.format(dateFns.startOfISOWeek(input.date)));
           expect(dateFns.format(result.endDate))
@@ -113,6 +117,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'week')
             .startOf('isoWeek').startOf('day')
             .format());
@@ -131,6 +137,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
             .startOf('isoWeek').startOf('day')
             .format());
@@ -151,6 +159,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(moment(result.startDate).format()).to.equal(moment().startOf('month').startOf('day').format());
           expect(moment(result.endDate).format()).to.equal(moment().endOf('month').startOf('day').format());
         });
@@ -164,6 +174,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('month').startOf('day').format());
           expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').endOf('month').startOf('day').format());
         });
@@ -178,6 +190,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'month')
             .startOf('month').startOf('day')
             .format());
@@ -196,6 +210,8 @@ describe.only('validations', () => {
           // console.log(JSON.stringify(result));
           expect(result).to.have.ownPropertyDescriptor('startDate');
           expect(result).to.have.ownPropertyDescriptor('endDate');
+          expect(result.startDate).to.be.a('Date');
+          expect(result.endDate).to.be.a('Date');
           expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
             .startOf('month').startOf('day')
             .format());
@@ -211,6 +227,8 @@ describe.only('validations', () => {
         const input = {
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment().startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
@@ -219,6 +237,8 @@ describe.only('validations', () => {
           last: true,
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'day').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
@@ -227,6 +247,8 @@ describe.only('validations', () => {
           date: '2017-05-15',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
@@ -236,6 +258,8 @@ describe.only('validations', () => {
           last: true,
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'day').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
       });
@@ -244,6 +268,8 @@ describe.only('validations', () => {
           startDate: '2017-05-15',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment().startOf('day').format());
       });
@@ -253,6 +279,8 @@ describe.only('validations', () => {
           endDate: '2017-05-16',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
       });
@@ -262,6 +290,8 @@ describe.only('validations', () => {
           endDate: '2017-05-15',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
       });
@@ -271,6 +301,8 @@ describe.only('validations', () => {
           endDate: '2017-05-15',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.a('Date');
+        expect(result.endDate).to.be.a('Date');
         expect(moment(result.startDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
         expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
       });
@@ -279,6 +311,9 @@ describe.only('validations', () => {
           date: 'NOT_A_DATE',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.undefined; // eslint-disable-line no-unused-expressions
+        expect(result.endDate).to.be.undefined; // eslint-disable-line no-unused-expressions
+        expect(result.errorMessage).to.be.a('string');
         expect(result.errorMessage).to.not.equal('');
       });
       it('returns an error message when given an invalid start date', () => {
@@ -286,6 +321,9 @@ describe.only('validations', () => {
           startDate: 'NOT_A_DATE',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.undefined; // eslint-disable-line no-unused-expressions
+        expect(result.endDate).to.be.undefined; // eslint-disable-line no-unused-expressions
+        expect(result.errorMessage).to.be.a('string');
         expect(result.errorMessage).to.not.equal('');
       });
       it('returns an error message when given an invalid start date', () => {
@@ -293,6 +331,9 @@ describe.only('validations', () => {
           endDate: 'NOT_A_DATE',
         };
         const result = validations.getStartAndEndDates(input);
+        expect(result.startDate).to.be.undefined; // eslint-disable-line no-unused-expressions
+        expect(result.endDate).to.be.undefined; // eslint-disable-line no-unused-expressions
+        expect(result.errorMessage).to.be.a('string');
         expect(result.errorMessage).to.not.equal('');
       });
     });
