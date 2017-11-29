@@ -30,8 +30,11 @@
     "tt": "./src/commands/tt.js"
   },
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
     "chalk": "2.1.x",
-    "commander": "git+https://github.com/tj/commander.js.git#3367806abf354cb420477ffe1a9dcaeb7388392f",
+    "commander": "^2.12.2",
     "date-fns": "^1.29.0",
     "debug": "3.0.x",
     "easy-table": "1.1.x",
@@ -45,9 +48,6 @@
     "supports-color": "^5.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-register": "^6.26.0",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "eslint": "^4.10.0",
