@@ -1,7 +1,8 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import parseTime from 'parse-loose-time';
-import { format, parse, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes } from 'date-fns';
+import { format, parse, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes,
+  getYear, getMonth, getDate, setYear, setMonth, setDate } from 'date-fns';
 
 import db from '../db';
 import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
@@ -38,6 +39,11 @@ export function getEntryMinutes({ time }) {
 
 export function getInsertTime({ backTime, logTime }, newEntry) {
   let { insertTime } = newEntry;
+  const entryDate = parse(newEntry.entryDate);
+  insertTime = setYear(insertTime, getYear(entryDate));
+  insertTime = setMonth(insertTime, getMonth(entryDate));
+  insertTime = setDate(insertTime, getDate(entryDate));
+
   if (backTime) {
     if (logTime) {
       throw new Error('You may not set both --backTime and --logTime.');
@@ -59,7 +65,7 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
       throw new Error(`-l, --logTime: "${logTime}" ${validationMessage}`);
     }
     const parsedTime = parseTime(logTime);
-    insertTime = setHours(newEntry.entryDate, parsedTime.hour);
+    insertTime = setHours(entryDate, parsedTime.hour);
     insertTime = setMinutes(insertTime, parsedTime.minute);
   }
   return insertTime;

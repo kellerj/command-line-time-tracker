@@ -4,7 +4,8 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
+// import moment from 'moment'; // TODO: Convert to use date-fns
+import { format } from 'date-fns';
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
 import debug from 'debug';
@@ -38,7 +39,7 @@ const newEntry = {
   project: commander.project,
   timeType: commander.type,
   minutes: commander.time,
-  insertTime: moment().toDate(),
+  insertTime: new Date(),
   entryDate: commander.date,
   wasteOfTime: false,
 };
@@ -170,7 +171,7 @@ async function run() {
     message: 'Waste of Time?',
     default: false,
   });
-  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', moment(newEntry.insertTime).format('h:mm a'))));
+  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', format(newEntry.insertTime, 'h:mm a'))));
   ui.log.write(chalk.black.bgWhite(sprintf('Minutes Since Last Entry: %-8s', minutesSinceLastEntry)));
 }
 

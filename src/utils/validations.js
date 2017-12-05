@@ -1,13 +1,10 @@
 // import moment from 'moment';
 import debug from 'debug';
 import parseTime from 'parse-loose-time';
-import { parse, format, startOfDay, isValid,
+import { parse, startOfDay, isValid,
   startOfISOWeek, endOfISOWeek, subDays,
   subWeeks, subMonths, startOfMonth, endOfMonth, isAfter } from 'date-fns';
 
-import { DATE_FORMAT } from '../constants';
-
-// TODO: Convert to use date-fns
 const LOG = debug('tt:validations');
 
 function validateAndDefaultInputDateString(dateString) {
