@@ -1,8 +1,7 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import parseTime from 'parse-loose-time';
-import { format, parse, subDays, isValid, subMinutes, setHours, setMinutes } from 'date-fns';
-import moment from 'moment';
+import { format, parse, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes } from 'date-fns';
 
 import db from '../db';
 import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
@@ -96,7 +95,7 @@ export function getMinutesSinceLastEntry(newEntry, lastEntry) {
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = DEFAULT_MINUTES;
   if (lastEntry && lastEntry.entryDate === newEntry.entryDate) {
-    minutesSinceLastEntry = moment(newEntry.insertTime).diff(lastEntry.insertTime, 'minutes');
+    minutesSinceLastEntry = differenceInMinutes(newEntry.insertTime, lastEntry.insertTime);
     if (minutesSinceLastEntry < 0) {
       minutesSinceLastEntry = 0;
     }

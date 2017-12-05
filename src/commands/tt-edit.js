@@ -4,9 +4,10 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
+import { format, parse, subDays, isValid, getYear, getMonth, getDate, setYear, setMonth, setDate } from 'date-fns';
 import debug from 'debug';
 
+import { DATE_FORMAT } from '../constants';
 import db from '../db';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
@@ -32,7 +33,8 @@ async function getEntryToEdit(date) {
   if (r && r.length) {
     LOG(JSON.stringify(r, null, 2));
   } else {
-    console.log(chalk.yellow(`No Time Entries Defined for ${moment(date).format('YYYY-MM-DD')}`));
+    console.log(chalk.yellow(`No Time Entries Defined for ${format(date, DATE_FORMAT)}`));
+    return null;
   }
   if (r) {
     LOG(JSON.stringify(r, null, 2));
@@ -50,7 +52,7 @@ async function getEntryToEdit(date) {
     ]);
     return r.find(e => (e._id === answer.entry));
   }
-  console.log(chalk.yellow(`No Time Entries Entered for ${moment(date).format('YYYY-MM-DD')}`));
+  console.log(chalk.yellow(`No Time Entries Entered for ${format(date, DATE_FORMAT)}`));
   return null;
 }
 
@@ -81,8 +83,8 @@ async function handleEntryChanges(entry) {
       name: 'insertTime',
       type: 'input',
       message: 'Entry Time:',
-      default: moment(entry.insertTime).format('h:mm a'),
-      filter: input => (moment(input, 'h:mm a')),
+      default: format(entry.insertTime, 'h:mm a'),
+      // filter: input => (format(parseTime(input), 'h:mm a')),
       validate: validations.validateTime,
     },
     {
@@ -111,11 +113,9 @@ async function handleEntryChanges(entry) {
   answer._id = entry._id;
   answer.entryDate = entry.entryDate;
   // reset the date on the record and convert back to a date
-  const entryMoment = moment(answer.entryDate);
-  answer.insertTime.year(entryMoment.year());
-  answer.insertTime.month(entryMoment.month());
-  answer.insertTime.date(entryMoment.date());
-  answer.insertTime = answer.insertTime.toDate();
+  answer.insertTime = setYear(answer.insertTime, getYear(answer.entryDate));
+  answer.insertTime = setMonth(answer.insertTime, getMonth(answer.entryDate));
+  answer.insertTime = setDate(answer.insertTime, getDate(answer.entryDate));
   LOG(`Adjusted Entry: ${JSON.stringify(answer, null, 2)}`);
   return answer;
 }
@@ -123,30 +123,31 @@ async function handleEntryChanges(entry) {
 async function run() {
   let entry = null;
   if (entryDate) {
-    const temp = moment(entryDate, 'YYYY-MM-DD');
-    if (!temp.isValid()) {
+    const temp = parse(entryDate);
+    if (!isValid(temp)) {
       throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
     }
     entryDate = temp;
   } else if (commander.yesterday) {
-    entryDate = moment().subtract(1, 'day');
+    entryDate = subDays(new Date(), 1);
   } else {
-    entryDate = moment();
+    entryDate = new Date();
   }
   if (!editLast) {
     entry = await getEntryToEdit(entryDate);
   } else {
     entry = await db.timeEntry.getMostRecentEntry(entryDate);
     if (!entry) {
-      throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(entryDate).format('YYYY-MM-DD')}`));
+      throw new Error(chalk.yellow(`No Time Entries Defined for ${format(entryDate, DATE_FORMAT)}`));
     }
   }
   LOG(`Entry Selected: ${JSON.stringify(entry)}`);
-
-  // implement the edit UI
-  entry = await handleEntryChanges(entry);
-  // TODO: Update the record in the database - new db API method
-  await updateTimeEntry(entry);
+  if (entry) {
+    // implement the edit UI
+    entry = await handleEntryChanges(entry);
+    // Update the record in the database - new db API method
+    await updateTimeEntry(entry);
+  }
 }
 
 try {

@@ -1,5 +1,6 @@
 import Table from 'easy-table';
-import moment from 'moment'; // TODO: Convert to use date-fns
+import moment from 'moment';
+// TODO: Convert to use date-fns
 const sprintf = require('sprintf-js').sprintf;
 
 module.exports = {
@@ -48,12 +49,14 @@ module.exports = {
     return width ? Table.padLeft(str, width) : str;
   },
 
-  formatEntryChoice: entry => sprintf('%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
+  formatEntryChoice: entry => sprintf(
+    '%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
     moment(entry.insertTime).format('h:mm a'),
     entry.entryDescription,
     entry.minutes,
     entry.project,
-    entry.timeType),
+    entry.timeType,
+  ),
 
   // Utility to sort Other into the last position in an array
   // Special function to also detect if there is a 'project'
@@ -82,8 +85,7 @@ module.exports = {
     if (defaultValue && (!searchString || !searchString.trim())) {
       searchString = defaultValue;
     }
-    resolve(list.filter(
-      e => !searchString || (typeof e === 'string' && e.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
+    resolve(list.filter(e => !searchString || (typeof e === 'string' && e.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
   }),
 
 };
