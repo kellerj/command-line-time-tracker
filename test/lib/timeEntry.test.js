@@ -78,6 +78,7 @@ context('lib/timeEntry', () => {
 
   describe('#getInsertTime', () => {
     const insertTime = new Date();
+    const entryDate = format(insertTime, DATE_FORMAT);
     beforeEach(() => {
       stub(validations, 'validateMinutes');
       stub(validations, 'validateTime');
@@ -91,7 +92,7 @@ context('lib/timeEntry', () => {
         validations.validateMinutes.returns(true);
         const result = timeEntry.getInsertTime(
           { backTime: 20 },
-          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+          { insertTime, entryDate },
         );
         expect(result).to.be.a('Date');
         expect(result.toISOString()).to.equal(subMinutes(insertTime, 20).toISOString());
@@ -99,14 +100,14 @@ context('lib/timeEntry', () => {
       it('throws an exception if both logTime and backTime are used', () => {
         expect(() => timeEntry.getInsertTime(
           { logTime: '5:23 am', backTime: 20 },
-          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+          { insertTime, entryDate },
         )).to.throw();
       });
       it('throws an exception backTime is invalid', () => {
         validations.validateMinutes.returns('Time may not be negative.');
         expect(() => timeEntry.getInsertTime(
           { backTime: -1 },
-          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+          { insertTime, entryDate },
         )).to.throw('Time may not be negative');
       });
     });
@@ -119,7 +120,7 @@ context('lib/timeEntry', () => {
         validations.validateTime.returns(true);
         const result = timeEntry.getInsertTime(
           { logTime: format(logTime, 'h:mm a') },
-          { insertTime, entryDate: format(insertTime, DATE_FORMAT) },
+          { insertTime, entryDate },
         );
         expect(result).to.be.a('Date');
         expect(result.toISOString()).to.equal(logTime.toISOString());
@@ -144,10 +145,11 @@ context('lib/timeEntry', () => {
         expect(format(result, DATE_FORMAT)).to.equal(format(yesterday, DATE_FORMAT));
       });
     });
-    describe('when neither is set', () => {
+    describe.only('when neither is set', () => {
       it('should use the insert time on the entry', () => {
-        const result = timeEntry.getInsertTime({}, { insertTime });
+        const result = timeEntry.getInsertTime({}, { insertTime, entryDate });
         expect(result).to.be.a('Date');
+        expect(() => result.toISOString(), `unable to output date date: ${result}`).to.not.throw();
         expect(result.toISOString()).to.equal(insertTime.toISOString());
       });
     });
