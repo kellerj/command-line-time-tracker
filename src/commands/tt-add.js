@@ -55,10 +55,10 @@ async function run() {
   const projects = (await db.project.getAll()).map(item => (item.name));
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
-  const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate);
+  newEntry.insertTime = getInsertTime(commander, newEntry);
+  const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate, newEntry.insertTime);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
 
-  newEntry.insertTime = getInsertTime(commander, newEntry);
   const minutesSinceLastEntry = getMinutesSinceLastEntry(newEntry, lastEntry);
 
   newEntry.project = getProjectName(newEntry, projects);

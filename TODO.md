@@ -5,6 +5,7 @@
 ### 2.0
 
 - [ ] Repackaging of commands as modules
+    - [ ] Full test coverage to modules
 - [x] Convert code base to async/await
 - [x] Re-package source into single directory
 - [ ] Entry List
