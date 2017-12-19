@@ -4,7 +4,8 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import { format, parse, subDays, isValid, getYear, getMonth, getDate, setYear, setMonth, setDate } from 'date-fns';
+import { format, parse, subDays, isValid, setHours, setMinutes } from 'date-fns';
+import parseTime from 'parse-loose-time';
 import debug from 'debug';
 
 import { DATE_FORMAT } from '../constants';
@@ -110,12 +111,12 @@ async function handleEntryChanges(entry) {
       default: entry.wasteOfTime,
     },
   ]);
+  LOG(`Answer Object: ${JSON.stringify(answer, null, 2)}`);
   answer._id = entry._id;
   answer.entryDate = entry.entryDate;
-  // reset the date on the record and convert back to a date
-  answer.insertTime = setYear(answer.insertTime, getYear(answer.entryDate));
-  answer.insertTime = setMonth(answer.insertTime, getMonth(answer.entryDate));
-  answer.insertTime = setDate(answer.insertTime, getDate(answer.entryDate));
+  const parsedTime = parseTime(answer.insertTime);
+  answer.insertTime = setHours(answer.entryDate, parsedTime.hour);
+  answer.insertTime = setMinutes(answer.insertTime, parsedTime.minute);
   LOG(`Adjusted Entry: ${JSON.stringify(answer, null, 2)}`);
   return answer;
 }

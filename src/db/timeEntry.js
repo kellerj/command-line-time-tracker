@@ -105,13 +105,14 @@ module.exports = getConnection => ({
     return false;
   },
 
-  async getMostRecentEntry(entryDate) {
+  async getMostRecentEntry(entryDate, beforeTime = new Date()) {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
     const r = await collection.find({
       entryDate: moment(entryDate).format(ENTRY_DATE_FORMAT),
+      insertTime: { $lt: beforeTime },
     }).sort({ insertTime: -1 }).limit(1).toArray();
     db.close();
     if (r.length) {
