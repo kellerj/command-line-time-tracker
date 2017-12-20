@@ -33,6 +33,8 @@ commander
   .option('-y, --yesterday', 'Set the logging date to yesterday.')
   .parse(process.argv);
 
+LOG(`Parsed Commander Object: ${JSON.stringify(commander, null, 2)}`);
+
 // Build the new entry object with command line arguments
 const newEntry = {
   entryDescription: commander.args.join(' ').trim(),
@@ -48,7 +50,6 @@ LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
 newEntry.entryDate = getEntryDate(commander);
 newEntry.minutes = getEntryMinutes(commander);
-
 
 async function run() {
   // pull the lists of projects and time types from MongoDB
@@ -171,8 +172,25 @@ async function run() {
     message: 'Waste of Time?',
     default: false,
   });
-  ui.log.write(chalk.black.bgWhite(sprintf('Log Time:                 %-8s', format(newEntry.insertTime, 'h:mm a'))));
-  ui.log.write(chalk.black.bgWhite(sprintf('Minutes Since Last Entry: %-8s', minutesSinceLastEntry)));
+  const writeHeaderLine = (label, value) => {
+    ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
+  };
+
+  if (newEntry.entryDescription !== '') {
+    writeHeaderLine('Description', newEntry.entryDescription);
+  }
+  writeHeaderLine('Log Time', format(newEntry.insertTime, 'h:mm a'));
+  if (!newEntry.minutes) {
+    writeHeaderLine('Minutes Since Last Entry', minutesSinceLastEntry);
+  } else {
+    writeHeaderLine('Minutes', newEntry.minutes);
+  }
+  if (newEntry.project && !projectDefaulted) {
+    writeHeaderLine('Project Name', newEntry.project);
+  }
+  if (newEntry.timeType && !timeTypeDefaulted) {
+    writeHeaderLine('Time Type', newEntry.timeType);
+  }
 }
 
 try {
