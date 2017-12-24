@@ -110,7 +110,9 @@ async function run() {
     const colInfo = [];
     const projectColumnWidth = grid.reduce((maxWidth, gridRow) =>
       (gridRow.project.length > maxWidth ? gridRow.project.length : maxWidth), 0);
-    colInfo.push({ align: 'left', width: projectColumnWidth, heading: 'project' });
+    colInfo.push({
+      align: 'left', width: projectColumnWidth, heading: 'project', dataType: 'string',
+    });
     // headers
     process.stdout.write('| ');
     process.stdout.write('Project'.padEnd(projectColumnWidth));
@@ -118,7 +120,9 @@ async function run() {
     headings.forEach((heading) => {
       process.stdout.write(heading);
       process.stdout.write(' | ');
-      colInfo.push({ align: 'right', width: heading.length, heading });
+      colInfo.push({
+        align: 'right', width: heading.length, heading, dataType: 'duration',
+      });
     });
     process.stdout.write('\n');
     // dividing line
@@ -139,8 +143,10 @@ async function run() {
       // LOG(row);
       process.stdout.write('| ');
       colInfo.forEach((col) => {
-        if (!row[col.heading]) {
+        if (!row[col.heading]) { // handle missing data
           process.stdout.write(' '.repeat(col.width));
+        } else if (col.dataType === 'duration') {
+          process.stdout.write(displayUtils.timePrinter(row[col.heading], col.width));
         } else if (col.align === 'left') {
           process.stdout.write(row[col.heading].toString().padEnd(col.width));
         } else {
