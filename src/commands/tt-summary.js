@@ -107,6 +107,48 @@ async function run() {
     process.stdout.write('\n');
   } else {
     LOG(`Data Grid: ${JSON.stringify(grid, null, 2)}`);
+    // prepare the data for display
+    const projectTotals = {};
+    grid.forEach((row) => {
+      // LOG(row);
+      let rowTotal = 0;
+      headings.forEach((heading) => {
+        const value = row[heading];
+        // LOG(value);
+        // total amounts in row
+        if (typeof value === 'number') {
+          rowTotal += value;
+          if (!projectTotals[heading]) {
+            projectTotals[heading] = 0;
+          }
+          projectTotals[heading] += value;
+        }
+        if (!value) { // handle missing data
+          row[heading] = '';
+        } else {
+          row[heading] = displayUtils.timePrinter(value);
+        }
+      });
+      // LOG(row);
+      // add total column to row
+      row.Totals = displayUtils.timeAndPercentPrinter(rowTotal)(totalTime);
+    });
+    headings.push('Totals');
+    Object.keys(projectTotals).forEach((project) => {
+      projectTotals[project] = displayUtils.timePrinter(projectTotals[project]);
+    });
+    // LOG(projectTotals);
+    projectTotals.project = 'Totals';
+    projectTotals.Totals = displayUtils.timePrinter(totalTime);
+    grid.push(projectTotals);
+    // TODO: import table helper
+    // TODO: accept grid object
+    // TODO: accept formatting information object
+    // TODO: clone and merge objects into a single structure
+    // TODO: calculate needed column widths
+    // TODO: run over grid object and format the durations
+    // TODO: add the totals column
+    LOG(`Table Grid: ${JSON.stringify(grid, null, 2)}`);
     const colInfo = [];
     const projectColumnWidth = grid.reduce((maxWidth, gridRow) =>
       (gridRow.project.length > maxWidth ? gridRow.project.length : maxWidth), 0);
@@ -118,10 +160,12 @@ async function run() {
     process.stdout.write('Project'.padEnd(projectColumnWidth));
     process.stdout.write(' | ');
     headings.forEach((heading) => {
-      process.stdout.write(heading);
+      const columnWidth = grid.reduce((maxWidth, gridRow) =>
+        (gridRow[heading].length > maxWidth ? gridRow[heading].length : maxWidth), heading.length);
+      process.stdout.write(heading.padStart(columnWidth));
       process.stdout.write(' | ');
       colInfo.push({
-        align: 'right', width: heading.length, heading, dataType: 'duration',
+        align: 'right', width: columnWidth, heading, dataType: 'string',
       });
     });
     process.stdout.write('\n');
@@ -157,6 +201,17 @@ async function run() {
       process.stdout.write('\n');
     });
     process.stdout.write('\n');
+    // add totals row
+    // colInfo.forEach((info) => {
+    //   if (!projectTotals[info.heading]) {
+    //
+    //   }
+    //   process.stdout.write('-'.repeat(info.width - 1));
+    //   if (info.align === 'right') {
+    //     process.stdout.write(':');
+    //   }
+    //   process.stdout.write(' | ');
+    // });
   }
 }
 
