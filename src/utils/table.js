@@ -64,6 +64,8 @@ export default class Table {
   applyUserColumnInfo(userColumnInfo) {
     userColumnInfo.forEach((col) => {
       const column = this.columnInfo.find(e => (e.columnHeading === col.columnHeading));
+      LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
+      LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
       if (col) {
         if (col.align) {
           column.align = col.align;
@@ -74,12 +76,25 @@ export default class Table {
         if (col.printer) {
           column.printer = col.printer;
         }
+        if (col.colorizer) {
+          column.printer = col.colorizer;
+        }
       }
+      LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
     });
   }
 
   formatData() {
-
+    // only use columns with printers
+    const cols = this.columnInfo.filter(e => (typeof e.printer === 'function'));
+    this.dataGrid.forEach((row) => {
+      cols.forEach((col) => {
+        const value = row[col.columnHeading];
+        if (value) {
+          row[col.columnHeading] = col.printer(value);
+        }
+      });
+    });
   }
 
   calculateColumnWidths() {
@@ -119,14 +134,17 @@ export default class Table {
     // get the column types
     this.columnInfo = this.deriveColumnInfo();
     if (columnInfo) {
+      LOG(`Applying Column Info: ${JSON.stringify(columnInfo, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
       this.applyUserColumnInfo(columnInfo);
     }
     // TODO: format any data elements
     this.formatData();
     // calculate final column widths (based on headers and content)
     this.calculateColumnWidths();
+    // TODO: colorize
+    // this.colorizeColumnContents();
     // this.columnInfo = columnInfo;
-    LOG(`Final Table Object: ${JSON.stringify(this, null, 2)}`);
+    LOG(`Final Table Object: ${JSON.stringify(this, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
   }
 
   /**
@@ -137,45 +155,59 @@ export default class Table {
     return this.totalWidth;
   }
 
+  writeRow(w, rowData) {
+    const columnPadding = ' '.repeat(this.config.columnPadding);
+    rowData.forEach((value, i) => {
+      const col = this.columnInfo[i];
+      let stringValue = '';
+      if (value !== undefined && value !== null) {
+        stringValue = value.toString();
+      }
+      w.write(this.config.columnDelimiter);
+      w.write(columnPadding);
+      if (col.align === 'right') {
+        w.write(stringValue.padStart(col.width));
+      } else {
+        w.write(stringValue.padEnd(col.width));
+      }
+      w.write(columnPadding);
+    });
+    w.write(this.config.columnDelimiter);
+    w.write('\n');
+  }
+
+  writeHeader(w) {
+    // header
+    const headerNames = this.columnInfo.map(e => e.columnHeading);
+    this.writeRow(w, headerNames);
+    const headerSeparators = this.columnInfo.map((e, i) => {
+      const col = this.columnInfo[i];
+      if (col.align === 'right') {
+        return `${'-'.repeat(col.width - 1)}:`;
+      } else if (col.align === 'center') {
+        return `:${'-'.repeat(col.width - 2)}:`;
+      }
+      return `:${'-'.repeat(col.width - 1)}`;
+    });
+    this.writeRow(w, headerSeparators);
+  }
+
+  writeBody(w) {
+    this.dataGrid.forEach((row) => {
+      const rowData = this.columnInfo.map(e => row[e.columnHeading]);
+      this.writeRow(w, rowData);
+    });
+  }
+
   /**
    *
    * @param  {stream.Writable} w [description]
    * @return {void}
    */
   write(w) {
-    const columnPadding = ' '.repeat(this.config.columnPadding);
-    // TODO: header
-    this.columnInfo.forEach((col) => {
-      w.write(this.config.columnDelimiter);
-      w.write(columnPadding);
-      if (col.align === 'right') {
-        w.write(col.columnHeading.padStart(col.width));
-      } else {
-        w.write(col.columnHeading.padEnd(col.width));
-      }
-      w.write(columnPadding);
-    });
-    w.write(this.config.columnDelimiter);
-    w.write('\n');
-    this.columnInfo.forEach((col) => {
-      w.write(this.config.columnDelimiter);
-      w.write(columnPadding);
-      if (col.align === 'right') {
-        w.write('-'.repeat(col.width - 1));
-        w.write(':');
-      } else if (col.align === 'center') {
-        w.write(':');
-        w.write('-'.repeat(col.width - 2));
-        w.write(':');
-      } else {
-        w.write(':');
-        w.write('-'.repeat(col.width - 1));
-      }
-      w.write(columnPadding);
-    });
-    w.write(this.config.columnDelimiter);
-    w.write('\n');
+    this.writeHeader(w);
     // TODO: body
+    this.writeBody(w);
     // TODO: footer
   }
 
@@ -184,6 +216,16 @@ export default class Table {
   }
 }
 
+// TODO: separate data property name and column header name
+const displayUtils = require('./display-utils');
+
+// LOG(displayUtils.timePrinter);
+const columnInfo = [];
+columnInfo.push({
+  columnHeading: 'Column 22',
+  printer: displayUtils.timePrinter,
+});
+// LOG(columnInfo[0].printer);
 // testing code below
 const t = new Table();
 t.setData([
@@ -202,5 +244,6 @@ t.setData([
   {
     'Column 22': 342,
   },
-]);
+], columnInfo);
+
 t.write(process.stdout);
