@@ -53,7 +53,11 @@ export default class Table {
           } else {
             colInfo.align = 'left';
           }
-          colInfo.width = 1;
+          colInfo.width = col.length;
+          // make sure we have enough room for the markdown header divider line
+          if (colInfo.width < 3) {
+            colInfo.width = 3;
+          }
           columnInfo.push(colInfo);
         }
       });
@@ -62,6 +66,7 @@ export default class Table {
   }
 
   applyUserColumnInfo(userColumnInfo) {
+    const newColumnInfo = [];
     userColumnInfo.forEach((col) => {
       const column = this.columnInfo.find(e => (e.columnHeading === col.columnHeading));
       LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
@@ -81,7 +86,9 @@ export default class Table {
         }
       }
       LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
+      newColumnInfo.push(col);
     });
+    this.columnInfo = newColumnInfo;
   }
 
   formatData() {
@@ -137,13 +144,12 @@ export default class Table {
       LOG(`Applying Column Info: ${JSON.stringify(columnInfo, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
       this.applyUserColumnInfo(columnInfo);
     }
-    // TODO: format any data elements
+    // format any data elements
     this.formatData();
     // calculate final column widths (based on headers and content)
     this.calculateColumnWidths();
     // TODO: colorize
     // this.colorizeColumnContents();
-    // this.columnInfo = columnInfo;
     LOG(`Final Table Object: ${JSON.stringify(this, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
   }
 
@@ -199,6 +205,11 @@ export default class Table {
     });
   }
 
+  writeDividerLine(w) {
+    const headerSeparators = this.columnInfo.map((e, i) => '-'.repeat(this.columnInfo[i].width));
+    this.writeRow(w, headerSeparators);
+  }
+
   /**
    *
    * @param  {stream.Writable} w [description]
@@ -206,9 +217,12 @@ export default class Table {
    */
   write(w) {
     this.writeHeader(w);
-    // TODO: body
     this.writeBody(w);
-    // TODO: footer
+    if (this.config.footerLines > 0) {
+      if (this.config.footerDivider) {
+        this.writeDividerLine(w);
+      }
+    }
   }
 
   toString() {
@@ -222,17 +236,28 @@ const displayUtils = require('./display-utils');
 // LOG(displayUtils.timePrinter);
 const columnInfo = [];
 columnInfo.push({
+  columnHeading: 'Column 4',
+});
+columnInfo.push({
+  columnHeading: 'Column 333',
+});
+columnInfo.push({
+  columnHeading: 'Column 1',
+});
+columnInfo.push({
   columnHeading: 'Column 22',
   printer: displayUtils.timePrinter,
 });
 // LOG(columnInfo[0].printer);
 // testing code below
-const t = new Table();
+const t = new Table({
+  footerLines: 1,
+});
 t.setData([
   {
+    'Column 333': 'Value 1-333',
     'Column 1': 'Value 1-1',
     'Column 22': 12,
-    'Column 333': 'Value 1-333',
   },
   {
     'Column 1': 'Value 2-1',
