@@ -69,8 +69,8 @@ export default class Table {
     const newColumnInfo = [];
     userColumnInfo.forEach((col) => {
       const column = this.columnInfo.find(e => (e.columnHeading === col.columnHeading));
-      LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
-      LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
+      // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
+      // LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
       if (col) {
         if (col.align) {
           column.align = col.align;
@@ -85,7 +85,7 @@ export default class Table {
           column.printer = col.colorizer;
         }
       }
-      LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
+      // LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
       newColumnInfo.push(col);
     });
     this.columnInfo = newColumnInfo;
@@ -112,7 +112,7 @@ export default class Table {
       Object.keys(row).forEach((col) => {
         const column = this.columnInfo.find(e => (e.columnHeading === col));
         if (!column) {
-          LOG(`Error, unable to find column info for column ${col}.  ColumnInfo contained: ${JSON.stringify(this.columnInfo, null, 2)}`);
+          LOG(`Error, unable to find column info for column ${col}.  ColumnInfo contained: ${JSON.stringify(this.columnInfo)}`);
           return;
         }
         const value = row[col];
@@ -137,11 +137,13 @@ export default class Table {
     // clone the array object
     this.dataGrid = data.slice(0);
     // clone the array elements
-    this.dataGrid.forEach(e => (Object.assign({}, e)));
+    this.dataGrid.forEach((e, i, arr) => {
+      arr[i] = Object.assign({}, e);
+    });
     // get the column types
     this.columnInfo = this.deriveColumnInfo();
     if (columnInfo) {
-      LOG(`Applying Column Info: ${JSON.stringify(columnInfo, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
+      // LOG(`Applying Column Info: ${JSON.stringify(columnInfo, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
       this.applyUserColumnInfo(columnInfo);
     }
     // format any data elements
@@ -246,14 +248,10 @@ columnInfo.push({
 });
 columnInfo.push({
   columnHeading: 'Column 22',
+  align: 'right',
   printer: displayUtils.timePrinter,
 });
-// LOG(columnInfo[0].printer);
-// testing code below
-const t = new Table({
-  footerLines: 1,
-});
-t.setData([
+const data = [
   {
     'Column 333': 'Value 1-333',
     'Column 1': 'Value 1-1',
@@ -269,6 +267,41 @@ t.setData([
   {
     'Column 22': 342,
   },
-], columnInfo);
+];
+/*
+config:
+  footerColumnPrinter:
+  footerColumnHeadings: [ 'Totals' ]
+  footerColumnColorizer:
+ colInfo:
+  footerSummarizer: 'sum',
+  footerPrinter:
+  footerColorizer:
 
+
+ */
+/*
+[
+  {
+  col headings
+  printer
+  colorizer
+  value / summary type
+}
+]
+ */
+// LOG(columnInfo[0].printer);
+// testing code below
+const t = new Table({
+  footerLines: 1,
+});
+t.setData(data, columnInfo);
 t.write(process.stdout);
+
+const t2 = new Table({
+  footerLines: 1,
+  columnDelimiter: '',
+});
+LOG(JSON.stringify(data));
+t2.setData(data, columnInfo);
+t2.write(process.stdout);
