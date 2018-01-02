@@ -11,6 +11,7 @@ export default class Table {
     this.dataGrid = [];
     this.columnInfo = [];
     this.totalWidth = 0;
+    this.footerData = {};
     LOG(`Initialized Table: ${JSON.stringify(this, null, 2)}`);
   }
 
@@ -18,7 +19,8 @@ export default class Table {
     return {
       columnDelimiter: '|',
       columnPadding: 1,
-      footerLines: 0,
+      // footerLines: 0,
+      markdownStyleHeaderDivider: true,
       footerDivider: true,
       generateTotals: true,
       headerColumns: 0,
@@ -28,12 +30,15 @@ export default class Table {
 
   static defaultColumnInfo() {
     return {
-      columnHeading: undefined,
-      align: undefined,
-      dataType: undefined,
+      // columnHeading: undefined,
+      align: 'left',
+      dataType: 'string',
       printer: undefined,
       colorizer: undefined,
       width: undefined,
+      footerType: 'none',
+      footerPrinter: undefined,
+      footerColorizer: undefined,
     };
   }
 
@@ -46,7 +51,7 @@ export default class Table {
       Object.keys(row).forEach((col) => {
         if (!columnInfo.find(e => (e.columnHeading === col))) {
           LOG(`${col} not in the columnInfo object, adding`);
-          const colInfo = { columnHeading: col };
+          const colInfo = Object.assign(Table.defaultColumnInfo(), { columnHeading: col });
           colInfo.dataType = typeof row[col];
           if (typeof row[col] === 'number') {
             colInfo.align = 'right';
@@ -91,6 +96,24 @@ export default class Table {
     this.columnInfo = newColumnInfo;
   }
 
+  createFooterData() {
+    const footerData = {};
+    // get the columns which need summary information
+    const summaryColumns = this.columnInfo.filter(e => (e.footerType && e.footerType !== 'none'));
+    // iterate over all rows
+    this.dataGrid.forEach((row) => {
+      summaryColumns.forEach((col) => {
+        if (col.footerType === 'sum') {
+          if (!footerData[col.columnHeading]) {
+            footerData[col.columnHeading] = 0;
+          }
+          footerData[col.columnHeading] += row[col.columnHeading];
+        }
+      });
+    });
+    this.footerData = footerData;
+  }
+
   formatData() {
     // only use columns with printers
     const cols = this.columnInfo.filter(e => (typeof e.printer === 'function'));
@@ -128,7 +151,7 @@ export default class Table {
   }
 
   setData(data, columnInfo) {
-    if (!Array.isArray(data)) {
+    if (data && !Array.isArray(data)) {
       throw Error('data must be an Array object.');
     }
     if (columnInfo && !Array.isArray(columnInfo)) {
@@ -143,8 +166,13 @@ export default class Table {
     // get the column types
     this.columnInfo = this.deriveColumnInfo();
     if (columnInfo) {
-      // LOG(`Applying Column Info: ${JSON.stringify(columnInfo, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
       this.applyUserColumnInfo(columnInfo);
+    }
+    // check if we have any footer data
+    this.config.footerRow = this.columnInfo.reduce((footerCount, col) => (col.footerType && col.footerType !== 'none')) > 0;
+    // calculate any footer items
+    if (this.config.footerRow) {
+      this.createFooterData();
     }
     // format any data elements
     this.formatData();
@@ -249,6 +277,7 @@ columnInfo.push({
 columnInfo.push({
   columnHeading: 'Column 22',
   align: 'right',
+  footerType: 'sum',
   printer: displayUtils.timePrinter,
 });
 const data = [
@@ -270,15 +299,11 @@ const data = [
 ];
 /*
 config:
-  footerColumnPrinter:
   footerColumnHeadings: [ 'Totals' ]
-  footerColumnColorizer:
  colInfo:
-  footerSummarizer: 'sum',
+  footerType: 'sum',
   footerPrinter:
   footerColorizer:
-
-
  */
 /*
 [
