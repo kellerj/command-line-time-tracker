@@ -299,55 +299,55 @@ export default class Table {
 // testing code below
 
 // TODO: separate data property name and column header name
-const displayUtils = require('./display-utils');
-
-// LOG(displayUtils.timePrinter);
-const columnInfo = [];
-columnInfo.push({
-  columnHeading: 'Column 4',
-});
-columnInfo.push({
-  columnHeading: 'Column 333',
-  colorizer: require('chalk').red,
-});
-columnInfo.push({
-  columnHeading: 'Column 1',
-});
-columnInfo.push({
-  columnHeading: 'Column 22',
-  align: 'right',
-  footerType: 'sum',
-  printer: displayUtils.timePrinter,
-  footerPrinter: displayUtils.timeAndPercentPrinter(360),
-});
-const data = [
-  {
-    'Column 333': 'Value 1-333',
-    'Column 1': 'Value 1-1',
-    'Column 22': 12,
-  },
-  {
-    'Column 1': 'Value 2-1',
-    'Column 333': 'Value 2-333',
-  },
-  {
-    'Column 4': 'Value 3-4',
-  },
-  {
-    'Column 22': 342,
-  },
-];
-// LOG(columnInfo[0].printer);
-const t = new Table({
-  footerLines: 1,
-});
-t.setData(data, columnInfo);
-t.write(process.stdout);
-
-const t2 = new Table({
-  footerLines: 1,
-  columnDelimiter: '',
-});
-LOG(JSON.stringify(data));
-t2.setData(data, columnInfo);
-t2.write(process.stdout);
+// const displayUtils = require('./display-utils');
+//
+// // LOG(displayUtils.timePrinter);
+// const columnInfo = [];
+// columnInfo.push({
+//   columnHeading: 'Column 4',
+// });
+// columnInfo.push({
+//   columnHeading: 'Column 333',
+//   colorizer: require('chalk').red,
+// });
+// columnInfo.push({
+//   columnHeading: 'Column 1',
+// });
+// columnInfo.push({
+//   columnHeading: 'Column 22',
+//   align: 'right',
+//   footerType: 'sum',
+//   printer: displayUtils.timePrinter,
+//   footerPrinter: displayUtils.timeAndPercentPrinter(360),
+// });
+// const data = [
+//   {
+//     'Column 333': 'Value 1-333',
+//     'Column 1': 'Value 1-1',
+//     'Column 22': 12,
+//   },
+//   {
+//     'Column 1': 'Value 2-1',
+//     'Column 333': 'Value 2-333',
+//   },
+//   {
+//     'Column 4': 'Value 3-4',
+//   },
+//   {
+//     'Column 22': 342,
+//   },
+// ];
+// // LOG(columnInfo[0].printer);
+// const t = new Table({
+//   footerLines: 1,
+// });
+// t.setData(data, columnInfo);
+// t.write(process.stdout);
+//
+// const t2 = new Table({
+//   footerLines: 1,
+//   columnDelimiter: '',
+// });
+// LOG(JSON.stringify(data));
+// t2.setData(data, columnInfo);
+// t2.write(process.stdout);

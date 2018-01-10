@@ -15,7 +15,10 @@
     "preversion": "npm run lint && npm test",
     "version": "git add src",
     "postversion": "git push && git push --tags",
-    "tt": "DEBUG=*,-babel node -r babel-register src/commands/tt.js"
+    "tt": "DEBUG=*,-babel node -r babel-register src/commands/tt.js",
+    "compile": "babel -d dist/ src/",
+    "prepare": "npm run compile",
+    "watch": "babel --watch -d dist/ src/"
   },
   "author": {
     "name": "Jonathan Keller",
@@ -27,7 +30,7 @@
     "url": "https://github.com/kellerj/command-line-time-tracker.git"
   },
   "bin": {
-    "tt": "./src/commands/tt.js"
+    "tt": "./dist/commands/tt.js"
   },
   "dependencies": {
     "babel-cli": "^6.26.0",
@@ -48,6 +51,7 @@
     "supports-color": "^5.0.0"
   },
   "devDependencies": {
+    "babel-watch": "^2.0.7",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "eslint": "^4.12.1",
