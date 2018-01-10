@@ -125,6 +125,43 @@ export default class Table {
         }
       });
     });
+    cols.forEach((col) => {
+      const value = this.footerData[col.columnHeading];
+      if (value) {
+        if (typeof col.footerPrinter === 'function') {
+          this.footerData[col.columnHeading] = col.footerPrinter(value);
+        } else {
+          this.footerData[col.columnHeading] = col.printer(value);
+        }
+      }
+    });
+  }
+
+  colorizeColumnContents() {
+    // only use columns with colorizers
+    const cols = this.columnInfo.filter(e => (typeof e.colorizer === 'function'));
+    this.dataGrid.forEach((row) => {
+      cols.forEach((col) => {
+        const value = row[col.columnHeading];
+        if (value) {
+          row[col.columnHeading] = col.colorizer(value);
+        }
+      });
+    });
+  }
+
+  processRowWidths(row) {
+    Object.keys(row).forEach((col) => {
+      const column = this.columnInfo.find(e => (e.columnHeading === col));
+      if (!column) {
+        LOG(`Error, unable to find column info for column ${col}.  ColumnInfo contained: ${JSON.stringify(this.columnInfo)}`);
+        return;
+      }
+      const value = row[col];
+      if (value !== undefined && column.width < value.toString().length) {
+        column.width = value.toString().length;
+      }
+    });
   }
 
   calculateColumnWidths() {
@@ -132,18 +169,11 @@ export default class Table {
       col.width = col.columnHeading.length;
     });
     this.dataGrid.forEach((row) => {
-      Object.keys(row).forEach((col) => {
-        const column = this.columnInfo.find(e => (e.columnHeading === col));
-        if (!column) {
-          LOG(`Error, unable to find column info for column ${col}.  ColumnInfo contained: ${JSON.stringify(this.columnInfo)}`);
-          return;
-        }
-        const value = row[col];
-        if (value !== undefined && column.width < value.toString().length) {
-          column.width = value.toString().length;
-        }
-      });
+      this.processRowWidths(row);
     });
+    if (this.footerData) {
+      this.processRowWidths(this.footerData);
+    }
     this.totalWidth = this.columnInfo.reduce((totalWidth, col) =>
       (totalWidth + col.width + this.config.columnDelimiter.length
         + (this.config.columnPadding * 2)), 0);
@@ -178,8 +208,8 @@ export default class Table {
     this.formatData();
     // calculate final column widths (based on headers and content)
     this.calculateColumnWidths();
-    // TODO: colorize
-    // this.colorizeColumnContents();
+    // colorize
+    this.colorizeColumnContents();
     LOG(`Final Table Object: ${JSON.stringify(this, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
   }
 
@@ -240,6 +270,11 @@ export default class Table {
     this.writeRow(w, headerSeparators);
   }
 
+  writeFooter(w) {
+    const rowData = this.columnInfo.map(e => this.footerData[e.columnHeading]);
+    this.writeRow(w, rowData);
+  }
+
   /**
    *
    * @param  {stream.Writable} w [description]
@@ -253,12 +288,15 @@ export default class Table {
         this.writeDividerLine(w);
       }
     }
+    this.writeFooter(w);
   }
 
   toString() {
     // TODO: use write to a string writer
   }
 }
+
+// testing code below
 
 // TODO: separate data property name and column header name
 const displayUtils = require('./display-utils');
@@ -270,6 +308,7 @@ columnInfo.push({
 });
 columnInfo.push({
   columnHeading: 'Column 333',
+  colorizer: require('chalk').red,
 });
 columnInfo.push({
   columnHeading: 'Column 1',
@@ -279,6 +318,7 @@ columnInfo.push({
   align: 'right',
   footerType: 'sum',
   printer: displayUtils.timePrinter,
+  footerPrinter: displayUtils.timeAndPercentPrinter(360),
 });
 const data = [
   {
@@ -297,26 +337,7 @@ const data = [
     'Column 22': 342,
   },
 ];
-/*
-config:
-  footerColumnHeadings: [ 'Totals' ]
- colInfo:
-  footerType: 'sum',
-  footerPrinter:
-  footerColorizer:
- */
-/*
-[
-  {
-  col headings
-  printer
-  colorizer
-  value / summary type
-}
-]
- */
 // LOG(columnInfo[0].printer);
-// testing code below
 const t = new Table({
   footerLines: 1,
 });
