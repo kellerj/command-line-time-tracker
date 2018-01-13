@@ -17,8 +17,9 @@ export default class Table {
 
   static defaultConfig() {
     return {
-      columnDelimiter: '|',
-      columnPadding: 1,
+      columnDelimiter: ' ',
+      columnPadding: 0,
+      alignmentMarkerInHeader: false,
       // footerLines: 0,
       markdownStyleHeaderDivider: true,
       footerDivider: true,
@@ -117,6 +118,8 @@ export default class Table {
           if (row[col.columnHeading]) {
             footerData[col.columnHeading] += row[col.columnHeading];
           }
+        } else {
+          footerData[col.columnHeading] = col.footerType;
         }
       });
     });
@@ -257,12 +260,15 @@ export default class Table {
     this.writeRow(w, headerNames);
     const headerSeparators = this.columnInfo.map((e, i) => {
       const col = this.columnInfo[i];
-      if (col.align === 'right') {
-        return `${'-'.repeat(col.width - 1)}:`;
-      } else if (col.align === 'center') {
-        return `:${'-'.repeat(col.width - 2)}:`;
+      if (this.config.alignmentMarkerInHeader) {
+        if (col.align === 'right') {
+          return `${'-'.repeat(col.width - 1)}:`;
+        } else if (col.align === 'center') {
+          return `:${'-'.repeat(col.width - 2)}:`;
+        }
+        return `:${'-'.repeat(col.width - 1)}`;
       }
-      return `:${'-'.repeat(col.width - 1)}`;
+      return '-'.repeat(col.width);
     });
     this.writeRow(w, headerSeparators);
   }
@@ -292,7 +298,7 @@ export default class Table {
   write(w) {
     this.writeHeader(w);
     this.writeBody(w);
-    if (this.config.footerLines > 0) {
+    if (this.config.footerRow) {
       if (this.config.footerDivider) {
         this.writeDividerLine(w);
       }
