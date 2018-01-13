@@ -15,7 +15,8 @@
     "preversion": "npm run lint && npm test",
     "version": "git add src",
     "postversion": "git push && git push --tags",
-    "tt": "DEBUG=*,-babel node -r babel-register src/commands/tt.js",
+    "tt": "node -r babel-register src/commands/tt.js",
+    "tt-debug": "DEBUG=tt:* node -r babel-register src/commands/tt.js",
     "compile": "babel -d dist/ src/",
     "prepare": "npm run compile",
     "watch": "babel --watch -d dist/ src/"

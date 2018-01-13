@@ -53,7 +53,7 @@ export default class Table {
           LOG(`${col} not in the columnInfo object, adding`);
           const colInfo = Object.assign(Table.defaultColumnInfo(), { columnHeading: col });
           colInfo.dataType = typeof row[col];
-          if (typeof row[col] === 'number') {
+          if (colInfo.dataType === 'number') {
             colInfo.align = 'right';
           } else {
             colInfo.align = 'left';
@@ -64,6 +64,7 @@ export default class Table {
             colInfo.width = 3;
           }
           columnInfo.push(colInfo);
+          //LOG(`Added Column Object: ${JSON.stringify(colInfo, null, 2)}`);
         }
       });
     });
@@ -87,11 +88,17 @@ export default class Table {
           column.printer = col.printer;
         }
         if (col.colorizer) {
-          column.printer = col.colorizer;
+          column.colorizer = col.colorizer;
+        }
+        if (col.footerType) {
+          column.footerType = col.footerType;
+        }
+        if (col.footerPrinter) {
+          column.footerPrinter = col.footerPrinter;
         }
       }
       // LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
-      newColumnInfo.push(col);
+      newColumnInfo.push(column);
     });
     this.columnInfo = newColumnInfo;
   }
@@ -99,7 +106,7 @@ export default class Table {
   createFooterData() {
     const footerData = {};
     // get the columns which need summary information
-    const summaryColumns = this.columnInfo.filter(e => (e.footerType && e.footerType !== 'none'));
+    const summaryColumns = this.columnInfo.filter(e => (e && e.footerType && e.footerType !== 'none'));
     // iterate over all rows
     this.dataGrid.forEach((row) => {
       summaryColumns.forEach((col) => {
@@ -107,7 +114,9 @@ export default class Table {
           if (!footerData[col.columnHeading]) {
             footerData[col.columnHeading] = 0;
           }
-          footerData[col.columnHeading] += row[col.columnHeading];
+          if (row[col.columnHeading]) {
+            footerData[col.columnHeading] += row[col.columnHeading];
+          }
         }
       });
     });

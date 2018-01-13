@@ -68,11 +68,17 @@ module.exports = {
     if (left.project || right.project) {
       left = left.project;
       right = right.project;
+    } else if (left.Project || right.Project) {
+      left = left.Project;
+      right = right.Project;
     }
     if (left !== 'Other' && right === 'Other') {
       return -1;
     } else if (left === 'Other' && right !== 'Other') {
       return 1;
+    }
+    if (!left) {
+      left = '';
     }
     return left.localeCompare(right);
   },
