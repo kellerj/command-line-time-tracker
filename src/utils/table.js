@@ -1,6 +1,8 @@
 /**
  * @class Table
  */
+import streamBuffers from 'stream-buffers';
+
 const LOG = require('debug')('tt:utils:Table');
 
 export default class Table {
@@ -307,7 +309,9 @@ export default class Table {
   }
 
   toString() {
-    // TODO: use write to a string writer
+    const buffer = new streamBuffers.WritableStreamBuffer();
+    this.write(buffer);
+    return buffer.getContentsAsString('utf-8');
   }
 }
 

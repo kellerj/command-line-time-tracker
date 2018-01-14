@@ -49,6 +49,7 @@
     "parse-loose-time": "^1.0.1",
     "rx": "4.1.x",
     "sprintf-js": "1.1.x",
+    "stream-buffers": "^3.0.1",
     "supports-color": "^5.0.0"
   },
   "devDependencies": {
