@@ -22,12 +22,11 @@ export default class Table {
       columnDelimiter: ' ',
       columnPadding: 0,
       alignmentMarkerInHeader: false,
-      // footerLines: 0,
       markdownStyleHeaderDivider: true,
       footerDivider: true,
       generateTotals: true,
-      headerColumns: 0,
-      footerColumns: 0,
+      dividerColorizer: str => str,
+      headerColorizer: str => str,
     };
   }
 
@@ -81,24 +80,13 @@ export default class Table {
       // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
       // LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
       if (col) {
-        if (col.align) {
-          column.align = col.align;
-        }
-        if (col.dataType) {
-          column.dataType = col.dataType;
-        }
-        if (col.printer) {
-          column.printer = col.printer;
-        }
-        if (col.colorizer) {
-          column.colorizer = col.colorizer;
-        }
-        if (col.footerType) {
-          column.footerType = col.footerType;
-        }
-        if (col.footerPrinter) {
-          column.footerPrinter = col.footerPrinter;
-        }
+        column.align = col.align ? col.align : column.align;
+        column.dataType = col.dataType ? col.dataType : column.dataType;
+        column.printer = col.printer ? col.printer : column.printer;
+        column.colorizer = col.colorizer ? col.colorizer : column.colorizer;
+        column.footerType = col.footerType ? col.footerType : column.footerType;
+        column.footerPrinter = col.footerPrinter ? col.footerPrinter : column.footerPrinter;
+        column.footerColorizer = col.footerColorizer ? col.footerColorizer : column.footerColorizer;
       }
       // LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
       newColumnInfo.push(column);
@@ -154,6 +142,7 @@ export default class Table {
   colorizeColumnContents() {
     // only use columns with colorizers
     const cols = this.columnInfo.filter(e => (typeof e.colorizer === 'function'));
+    // handle body
     this.dataGrid.forEach((row) => {
       cols.forEach((col) => {
         const value = row[col.columnHeading];
@@ -162,6 +151,16 @@ export default class Table {
         }
       });
     });
+    // handle footer
+    const footerCols = this.columnInfo.filter(e => (typeof e.footerColorizer === 'function'));
+    if (this.footerData) {
+      footerCols.forEach((col) => {
+        const value = this.footerData[col.columnHeading];
+        if (value) {
+          this.footerData[col.columnHeading] = col.footerColorizer(value);
+        }
+      });
+    }
   }
 
   processRowWidths(row) {
@@ -222,6 +221,8 @@ export default class Table {
     this.formatData();
     // calculate final column widths (based on headers and content)
     this.calculateColumnWidths();
+    // TODO: pad column values - this needs to happen before colorization
+    // as the ansi codes used for colorizing change the apparent value length
     // colorize
     this.colorizeColumnContents();
     LOG(`Final Table Object: ${JSON.stringify(this, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
@@ -264,13 +265,13 @@ export default class Table {
       const col = this.columnInfo[i];
       if (this.config.alignmentMarkerInHeader) {
         if (col.align === 'right') {
-          return `${'-'.repeat(col.width - 1)}:`;
+          return this.config.dividerColorizer(`${'-'.repeat(col.width - 1)}:`);
         } else if (col.align === 'center') {
-          return `:${'-'.repeat(col.width - 2)}:`;
+          return this.config.dividerColorizer(`:${'-'.repeat(col.width - 2)}:`);
         }
-        return `:${'-'.repeat(col.width - 1)}`;
+        return this.config.dividerColorizer(`:${'-'.repeat(col.width - 1)}`);
       }
-      return '-'.repeat(col.width);
+      return this.config.dividerColorizer('-'.repeat(col.width));
     });
     this.writeRow(w, headerSeparators);
   }
@@ -283,7 +284,7 @@ export default class Table {
   }
 
   writeDividerLine(w) {
-    const headerSeparators = this.columnInfo.map((e, i) => '-'.repeat(this.columnInfo[i].width));
+    const headerSeparators = this.columnInfo.map((e, i) => this.config.dividerColorizer('-'.repeat(this.columnInfo[i].width)));
     this.writeRow(w, headerSeparators);
   }
 

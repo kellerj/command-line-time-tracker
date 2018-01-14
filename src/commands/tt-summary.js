@@ -1,8 +1,5 @@
-#!/usr/bin/env node -r babel-register
-
 import commander from 'commander';
 import chalk from 'chalk';
-// import Table from 'easy-table';
 import debug from 'debug';
 
 import db from '../db';
@@ -94,6 +91,7 @@ async function run() {
       footerType: 'sum',
       printer: displayUtils.timePrinter,
       footerPrinter: displayUtils.timeAndPercentPrinter(totalTime),
+      footerColorizer: commander.markdown ? null : chalk.bold,
     });
   });
   columnInfo.push({
@@ -102,6 +100,7 @@ async function run() {
     footerType: 'sum',
     printer: displayUtils.timeAndPercentPrinter(totalTime),
     footerPrinter: displayUtils.timePrinter,
+    footerColorizer: commander.markdown ? null : chalk.bold,
   });
   // Calculate per-project totals for last column
   grid.forEach((item) => {
@@ -117,6 +116,8 @@ async function run() {
     tableConfig.columnDelimiter = '|';
     tableConfig.columnPadding = 1;
     tableConfig.alignmentMarkerInHeader = true;
+  } else {
+    tableConfig.dividerColorizer = chalk.dim;
   }
   const t = new Table(tableConfig);
   t.setData(grid, columnInfo);
