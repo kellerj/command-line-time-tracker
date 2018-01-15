@@ -41,11 +41,11 @@ async function run() {
     if (commander.markdown) {
       process.stdout.write(`## ${reportHeader}\n\n`);
     } else {
-      process.stdout.write(chalk.yellow('-'.repeat(reportHeader.length)));
+      process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
       process.stdout.write('\n');
-      process.stdout.write(chalk.yellow(reportHeader));
+      process.stdout.write(chalk.yellowBright(reportHeader));
       process.stdout.write('\n');
-      process.stdout.write(chalk.yellow('-'.repeat(reportHeader.length)));
+      process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
       process.stdout.write('\n');
     }
   }
@@ -82,7 +82,9 @@ async function run() {
   const columnInfo = [];
   columnInfo.push({
     columnHeading: 'Project',
+    colorizer: commander.markdown ? null : chalk.bold.blueBright,
     footerType: 'Totals',
+    footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
   });
   headings.forEach((columnHeading) => {
     columnInfo.push({
@@ -91,7 +93,7 @@ async function run() {
       footerType: 'sum',
       printer: displayUtils.timePrinter,
       footerPrinter: displayUtils.timeAndPercentPrinter(totalTime),
-      footerColorizer: commander.markdown ? null : chalk.bold,
+      footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
     });
   });
   columnInfo.push({
@@ -99,8 +101,9 @@ async function run() {
     align: 'right',
     footerType: 'sum',
     printer: displayUtils.timeAndPercentPrinter(totalTime),
+    colorizer: commander.markdown ? null : chalk.bold.yellowBright,
     footerPrinter: displayUtils.timePrinter,
-    footerColorizer: commander.markdown ? null : chalk.bold,
+    footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
   });
   // Calculate per-project totals for last column
   grid.forEach((item) => {
@@ -118,6 +121,7 @@ async function run() {
     tableConfig.alignmentMarkerInHeader = true;
   } else {
     tableConfig.dividerColorizer = chalk.dim;
+    tableConfig.headerColorizer = chalk.bold.yellowBright;
   }
   const t = new Table(tableConfig);
   t.setData(grid, columnInfo);

@@ -193,6 +193,32 @@ export default class Table {
     this.totalWidth += 1;
   }
 
+  padRowValues(row) {
+    this.columnInfo.forEach((col) => {
+      const value = row[col.columnHeading];
+      let stringValue = '';
+      if (value !== undefined && value !== null) {
+        stringValue = value.toString().trim();
+      }
+      if (col.align === 'right') {
+        row[col.columnHeading] = stringValue.padStart(col.width);
+      } else {
+        row[col.columnHeading] = stringValue.padEnd(col.width);
+      }
+    });
+  }
+
+  padValuesForAlignment() {
+    // LOG(`Before Padding: ${JSON.stringify(this.dataGrid, null, 2)}`);
+    this.dataGrid.forEach((row) => {
+      this.padRowValues(row);
+    });
+    if (this.footerData) {
+      this.padRowValues(this.footerData);
+    }
+    // LOG(`After Padding: ${JSON.stringify(this.dataGrid, null, 2)}`);
+  }
+
   setData(data, columnInfo) {
     if (data && !Array.isArray(data)) {
       throw Error('data must be an Array object.');
@@ -221,8 +247,9 @@ export default class Table {
     this.formatData();
     // calculate final column widths (based on headers and content)
     this.calculateColumnWidths();
-    // TODO: pad column values - this needs to happen before colorization
+    // pad column values - this needs to happen before colorization
     // as the ansi codes used for colorizing change the apparent value length
+    this.padValuesForAlignment();
     // colorize
     this.colorizeColumnContents();
     LOG(`Final Table Object: ${JSON.stringify(this, (key, value) => ((typeof value === 'function') ? 'function' : value), 2)}`);
@@ -238,19 +265,10 @@ export default class Table {
 
   writeRow(w, rowData) {
     const columnPadding = ' '.repeat(this.config.columnPadding);
-    rowData.forEach((value, i) => {
-      const col = this.columnInfo[i];
-      let stringValue = '';
-      if (value !== undefined && value !== null) {
-        stringValue = value.toString();
-      }
+    rowData.forEach((value) => {
       w.write(this.config.columnDelimiter);
       w.write(columnPadding);
-      if (col.align === 'right') {
-        w.write(stringValue.padStart(col.width));
-      } else {
-        w.write(stringValue.padEnd(col.width));
-      }
+      w.write(value);
       w.write(columnPadding);
     });
     w.write(this.config.columnDelimiter);
@@ -259,7 +277,12 @@ export default class Table {
 
   writeHeader(w) {
     // header
-    const headerNames = this.columnInfo.map(e => e.columnHeading);
+    const headerNames = this.columnInfo.map((col) => {
+      if (col.align === 'right') {
+        return this.config.headerColorizer(col.columnHeading.padStart(col.width));
+      }
+      return this.config.headerColorizer(col.columnHeading.padEnd(col.width));
+    });
     this.writeRow(w, headerNames);
     const headerSeparators = this.columnInfo.map((e, i) => {
       const col = this.columnInfo[i];
