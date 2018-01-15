@@ -19,7 +19,9 @@ export default class Table {
 
   static defaultConfig() {
     return {
-      columnDelimiter: ' ',
+      columnDelimiter: '  ',
+      columnDelimiterAtStart: false,
+      columnDelimiterAtEnd: false,
       columnPadding: 0,
       alignmentMarkerInHeader: false,
       markdownStyleHeaderDivider: true,
@@ -190,7 +192,13 @@ export default class Table {
     this.totalWidth = this.columnInfo.reduce((totalWidth, col) =>
       (totalWidth + col.width + this.config.columnDelimiter.length
         + (this.config.columnPadding * 2)), 0);
-    this.totalWidth += 1;
+    // if no column delimiter at start, subtract that since included in above
+    if (!this.config.columnDelimiterAtStart) {
+      this.totalWidth -= this.config.columnDelimiter.length;
+    }
+    if (this.config.columnDelimiterAtEnd) {
+      this.totalWidth += this.config.columnDelimiter.length;
+    }
   }
 
   padRowValues(row) {
@@ -265,13 +273,17 @@ export default class Table {
 
   writeRow(w, rowData) {
     const columnPadding = ' '.repeat(this.config.columnPadding);
-    rowData.forEach((value) => {
-      w.write(this.config.columnDelimiter);
+    rowData.forEach((value, i) => {
+      if (i !== 0 || this.config.columnDelimiterAtStart) {
+        w.write(this.config.columnDelimiter);
+      }
       w.write(columnPadding);
       w.write(value);
       w.write(columnPadding);
     });
-    w.write(this.config.columnDelimiter);
+    if (this.config.columnDelimiterAtEnd) {
+      w.write(this.config.columnDelimiter);
+    }
     w.write('\n');
   }
 

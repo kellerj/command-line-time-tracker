@@ -117,6 +117,8 @@ async function run() {
   };
   if (commander.markdown) {
     tableConfig.columnDelimiter = '|';
+    tableConfig.columnDelimiterAtStart = true;
+    tableConfig.columnDelimiterAtEnd = true;
     tableConfig.columnPadding = 1;
     tableConfig.alignmentMarkerInHeader = true;
   } else {
