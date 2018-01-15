@@ -344,7 +344,7 @@ export default class Table {
 // TODO: separate data property name and column header name
 // const displayUtils = require('./display-utils');
 //
-// // LOG(displayUtils.timePrinter);
+// // LOG(displayUtils.durationPrinter);
 // const columnInfo = [];
 // columnInfo.push({
 //   columnHeading: 'Column 4',
@@ -360,7 +360,7 @@ export default class Table {
 //   columnHeading: 'Column 22',
 //   align: 'right',
 //   footerType: 'sum',
-//   printer: displayUtils.timePrinter,
+//   printer: displayUtils.durationPrinter,
 //   footerPrinter: displayUtils.timeAndPercentPrinter(360),
 // });
 // const data = [

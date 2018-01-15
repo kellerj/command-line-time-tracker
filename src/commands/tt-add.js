@@ -177,12 +177,12 @@ async function run() {
   };
 
   if (lastEntry) {
-    writeHeaderLine('Last Entry', `${displayUtils.insertTimePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
+    writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
   }
   if (newEntry.entryDescription !== '') {
     writeHeaderLine('Description', newEntry.entryDescription);
   }
-  writeHeaderLine('Log Time', displayUtils.insertTimePrinter(newEntry.insertTime));
+  writeHeaderLine('Log Time', displayUtils.timePrinter(newEntry.insertTime));
   if (!newEntry.minutes) {
     writeHeaderLine('Minutes Since Last Entry', minutesSinceLastEntry);
   } else {

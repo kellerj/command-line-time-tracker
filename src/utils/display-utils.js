@@ -5,18 +5,18 @@ import { sprintf } from 'sprintf-js';
 module.exports = {
 
   // eslint-disable-next-line no-unused-vars
-  entryDatePrinter: (val, width) => {
+  datePrinter: (val, width) => {
     const str = moment(val).format('ddd, MMM Do');
     return str;
   },
 
   // eslint-disable-next-line no-unused-vars
-  insertTimePrinter: (val, width) => {
+  timePrinter: (val, width) => {
     const str = moment(val).format('h:mm a');
     return str;
   },
 
-  timePrinter: (val, width) => {
+  durationPrinter: (val, width) => {
     const duration = moment.duration(val, 'minutes');
     let str = '';
     if (duration.asHours() >= 1) {

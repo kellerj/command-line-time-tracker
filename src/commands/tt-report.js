@@ -45,9 +45,9 @@ async function run() {
   } else if (commander.month) {
     reportOutput = `# Monthly Summary: ${moment(startDate).format('MMMM, YYYY')}`;
   } else if (startDate.getTime() === endDate.getTime()) {
-    reportOutput = `${reportOutput} ${displayUtils.entryDatePrinter(startDate)}`;
+    reportOutput = `${reportOutput} ${displayUtils.datePrinter(startDate)}`;
   } else { // arbitrary date range
-    reportOutput = `${reportOutput} ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
+    reportOutput = `${reportOutput} ${displayUtils.datePrinter(startDate)} through ${displayUtils.datePrinter(endDate)}`;
   }
   reportOutput += '\n\n';
   // Get total time for calculating percentages
@@ -98,7 +98,7 @@ async function run() {
     reportOutput += `| ${rpad('Name', ' ', projectNameMaxLength)} |    Time | Percent |\n`;
     reportOutput += `| :${'-'.repeat(projectNameMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < projectNames.length; i++) {
-      reportOutput += `| ${rpad(projectNames[i], ' ', projectNameMaxLength)} | ${lpad(displayUtils.timePrinter(projects[projectNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (projects[projectNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
+      reportOutput += `| ${rpad(projectNames[i], ' ', projectNameMaxLength)} | ${lpad(displayUtils.durationPrinter(projects[projectNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (projects[projectNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
     }
     reportOutput += '\n';
 
@@ -109,7 +109,7 @@ async function run() {
     reportOutput += `| ${rpad('Name', ' ', timeTypeMaxLength)} |    Time | Percent |\n`;
     reportOutput += `| :${'-'.repeat(timeTypeMaxLength - 1)} | ------: | ------: |\n`;
     for (let i = 0; i < timeTypeNames.length; i++) {
-      reportOutput += `| ${rpad(timeTypeNames[i], ' ', timeTypeMaxLength)} | ${lpad(displayUtils.timePrinter(timeTypes[timeTypeNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (timeTypes[timeTypeNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
+      reportOutput += `| ${rpad(timeTypeNames[i], ' ', timeTypeMaxLength)} | ${lpad(displayUtils.durationPrinter(timeTypes[timeTypeNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (timeTypes[timeTypeNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
     }
     reportOutput += '\n';
   }
@@ -122,7 +122,7 @@ async function run() {
     const entries = await db.timeEntry.get(startDate, endDate);
     // LOG(JSON.stringify(entries, null, 2));
     for (let i = 0; i < projectNames.length; i++) {
-      reportOutput += `### ${projectNames[i]} (${displayUtils.timePrinter(projects[projectNames[i]]).trim()})\n\n`;
+      reportOutput += `### ${projectNames[i]} (${displayUtils.durationPrinter(projects[projectNames[i]]).trim()})\n\n`;
 
       for (let j = 0; j < timeTypeNames.length; j++) {
         const detailEntries = entries

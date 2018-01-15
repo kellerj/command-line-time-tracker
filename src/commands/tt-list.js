@@ -36,18 +36,18 @@ async function run() {
     const t = new Table();
     r.forEach((item) => {
       if (startDate.getTime() !== endDate.getTime()) {
-        t.cell('Date', item.entryDate, displayUtils.entryDatePrinter);
+        t.cell('Date', item.entryDate, displayUtils.datePrinter);
       }
-      t.cell('Logged', item.insertTime, displayUtils.insertTimePrinter);
+      t.cell('Logged', item.insertTime, displayUtils.timePrinter);
       t.cell('Project', item.project ? item.project : '');
       t.cell('Type', item.timeType ? item.timeType : '');
-      t.cell('Time', item.minutes ? item.minutes : 0, displayUtils.timePrinter);
+      t.cell('Time', item.minutes ? item.minutes : 0, displayUtils.durationPrinter);
       t.cell('Description', item.entryDescription);
       t.cell(' ', item.wasteOfTime ? '💩' : '');
       t.newRow();
     });
     t.total('Time', {
-      printer: displayUtils.timePrinter,
+      printer: displayUtils.durationPrinter,
     });
     console.log(t.toString());
   } else {

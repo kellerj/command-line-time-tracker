@@ -34,9 +34,9 @@ async function run() {
   let reportHeader = '';
   if (!commander.noHeader) {
     if (startDate.getTime() === endDate.getTime()) {
-      reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)}`;
+      reportHeader = `Time Summary Report for ${displayUtils.datePrinter(startDate)}`;
     } else {
-      reportHeader = `Time Summary Report for ${displayUtils.entryDatePrinter(startDate)} through ${displayUtils.entryDatePrinter(endDate)}`;
+      reportHeader = `Time Summary Report for ${displayUtils.datePrinter(startDate)} through ${displayUtils.datePrinter(endDate)}`;
     }
     if (commander.markdown) {
       process.stdout.write(`## ${reportHeader}\n\n`);
@@ -91,7 +91,7 @@ async function run() {
       columnHeading,
       align: 'right',
       footerType: 'sum',
-      printer: displayUtils.timePrinter,
+      printer: displayUtils.durationPrinter,
       footerPrinter: displayUtils.timeAndPercentPrinter(totalTime),
       footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
     });
@@ -102,7 +102,7 @@ async function run() {
     footerType: 'sum',
     printer: displayUtils.timeAndPercentPrinter(totalTime),
     colorizer: commander.markdown ? null : chalk.bold.yellowBright,
-    footerPrinter: displayUtils.timePrinter,
+    footerPrinter: displayUtils.durationPrinter,
     footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
   });
   // Calculate per-project totals for last column
