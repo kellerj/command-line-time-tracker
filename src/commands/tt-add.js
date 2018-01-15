@@ -176,10 +176,13 @@ async function run() {
     ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
   };
 
+  if (lastEntry) {
+    writeHeaderLine('Last Entry', `${displayUtils.insertTimePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
+  }
   if (newEntry.entryDescription !== '') {
     writeHeaderLine('Description', newEntry.entryDescription);
   }
-  writeHeaderLine('Log Time', format(newEntry.insertTime, 'h:mm a'));
+  writeHeaderLine('Log Time', displayUtils.insertTimePrinter(newEntry.insertTime));
   if (!newEntry.minutes) {
     writeHeaderLine('Minutes Since Last Entry', minutesSinceLastEntry);
   } else {
