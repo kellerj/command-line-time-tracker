@@ -1,7 +1,6 @@
-import Table from 'easy-table';
 import moment from 'moment';
 // TODO: Convert to use date-fns
-const sprintf = require('sprintf-js').sprintf;
+import { sprintf } from 'sprintf-js';
 
 module.exports = {
 
@@ -24,11 +23,12 @@ module.exports = {
       str += `${Math.floor(duration.asHours())}h `;
     }
     if (duration.minutes()) {
-      str += Table.padLeft(`${duration.minutes()}m`, 3);
+      str += `${duration.minutes()}m`.padStart(3);
     } else {
       str += '   ';
     }
-    return width ? Table.padLeft(str, width) : str;
+    // TODO: remove return of width when easy-table fully removed
+    return width ? str.padStart(width) : str;
   },
 
   // this method returns a printer function for easy-table
@@ -41,12 +41,13 @@ module.exports = {
       str += `${Math.floor(duration.asHours())}h `;
     }
     if (duration.minutes()) {
-      str += Table.padLeft(`${duration.minutes()}m`, 3);
+      str += `${duration.minutes()}m`.padStart(3);
     } else {
       str += '   ';
     }
     str = `(${Math.round(100 * (val / totalTime), 0)}%) ${str}`;
-    return width ? Table.padLeft(str, width) : str;
+    // TODO: remove return of width when easy-table fully removed
+    return width ? str.padStart(width) : str;
   },
 
   formatEntryChoice: entry => sprintf(
