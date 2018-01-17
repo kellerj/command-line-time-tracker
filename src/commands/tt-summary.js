@@ -4,6 +4,7 @@ import debug from 'debug';
 
 import db from '../db';
 import Table from '../utils/table';
+import ColumnInfo from '../utils/column-info';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 
@@ -56,31 +57,28 @@ function buildProjectByTimeTypeDataGrid(data) {
 }
 
 function buildColumnInfo(headings, totalTime) {
-  const columnInfo = [{
-    columnHeading: 'Project',
-    colorizer: commander.markdown ? null : chalk.bold.blueBright,
-    footerType: 'Totals',
-    footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
-  }];
+  const columnInfo = [];
+  let tempCol = new ColumnInfo('Project', 'left');
+  tempCol.footerType = 'Totals';
+  if (commander.markdown) {
+    tempCol.colorizer = chalk.bold.blueBright;
+    tempCol.footerColorizer = chalk.bold.yellowBright;
+  }
+  columnInfo.push(tempCol);
   headings.forEach((columnHeading) => {
-    columnInfo.push({
-      columnHeading,
-      align: 'right',
-      footerType: 'sum',
-      printer: displayUtils.durationPrinter,
-      footerPrinter: displayUtils.timeAndPercentPrinter(totalTime),
-      footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
-    });
+    tempCol = new ColumnInfo(columnHeading, 'right');
+    tempCol.footerType = 'sum';
+    tempCol.printer = displayUtils.durationPrinter;
+    tempCol.footerPrinter = displayUtils.timeAndPercentPrinter(totalTime);
+    tempCol.footerColorizer = commander.markdown ? null : chalk.bold.yellowBright;
+    columnInfo.push(tempCol);
   });
-  columnInfo.push({
-    columnHeading: 'Totals',
-    align: 'right',
-    footerType: 'sum',
-    printer: displayUtils.timeAndPercentPrinter(totalTime),
-    colorizer: commander.markdown ? null : chalk.bold.yellowBright,
-    footerPrinter: displayUtils.durationPrinter,
-    footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
-  });
+  tempCol = new ColumnInfo('Totals', 'right');
+  tempCol.footerType = 'sum';
+  tempCol.printer = displayUtils.timeAndPercentPrinter(totalTime);
+  tempCol.footerPrinter = displayUtils.durationPrinter;
+  tempCol.footerColorizer = commander.markdown ? null : chalk.bold.yellowBright;
+  columnInfo.push(tempCol);
   return columnInfo;
 }
 

@@ -2,6 +2,7 @@
  * @class Table
  */
 import streamBuffers from 'stream-buffers';
+import ColumnInfo from './column-info';
 
 const LOG = require('debug')('tt:utils:Table');
 
@@ -32,20 +33,6 @@ export default class Table {
     };
   }
 
-  static defaultColumnInfo() {
-    return {
-      // columnHeading: undefined,
-      align: 'left',
-      dataType: 'string',
-      printer: undefined,
-      colorizer: undefined,
-      width: undefined,
-      footerType: 'none',
-      footerPrinter: undefined,
-      footerColorizer: undefined,
-    };
-  }
-
   deriveColumnInfo() {
     // loop over all data
     // determine data type of each
@@ -55,7 +42,7 @@ export default class Table {
       Object.keys(row).forEach((col) => {
         if (!columnInfo.find(e => (e.columnHeading === col))) {
           LOG(`${col} not in the columnInfo object, adding`);
-          const colInfo = Object.assign(Table.defaultColumnInfo(), { columnHeading: col });
+          const colInfo = new ColumnInfo(col);
           colInfo.dataType = typeof row[col];
           if (colInfo.dataType === 'number') {
             colInfo.align = 'right';
@@ -68,7 +55,7 @@ export default class Table {
             colInfo.width = 3;
           }
           columnInfo.push(colInfo);
-          //LOG(`Added Column Object: ${JSON.stringify(colInfo, null, 2)}`);
+          // LOG(`Added Column Object: ${JSON.stringify(colInfo, null, 2)}`);
         }
       });
     });
@@ -82,13 +69,7 @@ export default class Table {
       // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
       // LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
       if (col) {
-        column.align = col.align ? col.align : column.align;
-        column.dataType = col.dataType ? col.dataType : column.dataType;
-        column.printer = col.printer ? col.printer : column.printer;
-        column.colorizer = col.colorizer ? col.colorizer : column.colorizer;
-        column.footerType = col.footerType ? col.footerType : column.footerType;
-        column.footerPrinter = col.footerPrinter ? col.footerPrinter : column.footerPrinter;
-        column.footerColorizer = col.footerColorizer ? col.footerColorizer : column.footerColorizer;
+        column.overlay(col);
       }
       // LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
       newColumnInfo.push(column);
