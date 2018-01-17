@@ -81,6 +81,7 @@ export default class Table {
     const footerData = {};
     // get the columns which need summary information
     const summaryColumns = this.columnInfo.filter(e => (e && e.footerType && e.footerType !== 'none'));
+    LOG(`Columns with Summary: ${JSON.stringify(summaryColumns)}`);
     // iterate over all rows
     this.dataGrid.forEach((row) => {
       summaryColumns.forEach((col) => {
@@ -227,7 +228,7 @@ export default class Table {
       this.applyUserColumnInfo(columnInfo);
     }
     // check if we have any footer data
-    this.config.footerRow = this.columnInfo.reduce((footerCount, col) => (col.footerType && col.footerType !== 'none')) > 0;
+    this.config.footerRow = this.columnInfo.reduce((hasSummary, col) => (hasSummary || (col.footerType && col.footerType !== 'none')));
     // calculate any footer items
     if (this.config.footerRow) {
       this.createFooterData();

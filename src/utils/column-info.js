@@ -2,14 +2,29 @@
  * @class ColumnInfo
  */
 export default class ColumnInfo {
-  constructor(name, alignment) {
+  /**
+   * [constructor description]
+   * @param {string} name      [description]
+   * @param {string} alignment [description]
+   * @param {function} printer   [description]
+   */
+  constructor(name, alignment = 'left', printer, colorizer, footerType = 'none') {
     this.columnHeading = name;
     this.align = alignment || 'left';
+    /**
+     * general data type of the contents of the column
+     * @type {String}
+     */
     this.dataType = 'string';
-    this.printer = undefined;
-    this.colorizer = undefined;
+    /**
+     * Function used to format the data before display.
+     * @type {function}
+     * @public
+     */
+    this.printer = printer;
+    this.colorizer = colorizer;
     this.width = undefined;
-    this.footerType = 'none';
+    this.footerType = footerType || 'none';
     this.footerPrinter = undefined;
     this.footerColorizer = undefined;
   }
