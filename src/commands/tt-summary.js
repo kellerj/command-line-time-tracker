@@ -30,43 +30,17 @@ if (errorMessage) {
   throw new Error(errorMessage);
 }
 
-async function run() {
-  let reportHeader = '';
-  if (!commander.noHeader) {
-    if (startDate.getTime() === endDate.getTime()) {
-      reportHeader = `Time Summary Report for ${displayUtils.datePrinter(startDate)}`;
-    } else {
-      reportHeader = `Time Summary Report for ${displayUtils.datePrinter(startDate)} through ${displayUtils.datePrinter(endDate)}`;
-    }
-    if (commander.markdown) {
-      process.stdout.write(`## ${reportHeader}\n\n`);
-    } else {
-      process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
-      process.stdout.write('\n');
-      process.stdout.write(chalk.yellowBright(reportHeader));
-      process.stdout.write('\n');
-      process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
-      process.stdout.write('\n');
-    }
-  }
-
-  const r = await db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
-  if (!r.length) {
-    process.stdout.write(chalk.yellow('There are no time entries to summarize for the given period.'));
-    process.stdout.write('\n');
-    return;
-  }
-  LOG(JSON.stringify(r, null, 2));
-  const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
-  // need to transform the structure into a new grid format - group by project
-  // and build a record with keys for each time type
-  const headings = r.reduce((acc, item) => {
+function buildTimeTypeHeadingsList(data) {
+  return data.reduce((acc, item) => {
     if (acc.indexOf(item.timeType) === -1) {
       acc.push(item.timeType);
     }
     return acc;
   }, []).sort(displayUtils.sortOtherLast);
-  let grid = r.reduce((acc, item) => {
+}
+
+function buildProjectByTimeTypeDataGrid(data) {
+  const grid = data.reduce((acc, item) => {
     let projectRow = acc.find(i => (i.Project === item.project));
     if (!projectRow) {
       projectRow = { Project: item.project };
@@ -78,14 +52,16 @@ async function run() {
     projectRow[item.timeType] += item.minutes;
     return acc;
   }, []);
-  grid = grid.sort(displayUtils.sortOtherLast);
-  const columnInfo = [];
-  columnInfo.push({
+  return grid.sort(displayUtils.sortOtherLast);
+}
+
+function buildColumnInfo(headings, totalTime) {
+  const columnInfo = [{
     columnHeading: 'Project',
     colorizer: commander.markdown ? null : chalk.bold.blueBright,
     footerType: 'Totals',
     footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
-  });
+  }];
   headings.forEach((columnHeading) => {
     columnInfo.push({
       columnHeading,
@@ -105,16 +81,58 @@ async function run() {
     footerPrinter: displayUtils.durationPrinter,
     footerColorizer: commander.markdown ? null : chalk.bold.yellowBright,
   });
-  // Calculate per-project totals for last column
-  grid.forEach((item) => {
-    let projectTotal = 0;
-    headings.forEach((heading) => {
-      projectTotal += item[heading] ? item[heading] : 0;
+  return columnInfo;
+}
+
+function addTotalColumn(grid) {
+  grid.forEach((row) => {
+    let rowTotal = 0;
+    Object.keys(row).forEach((col) => {
+      if (typeof row[col] === 'number') {
+        rowTotal += row[col];
+      }
     });
-    item.Totals = projectTotal;
+    row.Totals = rowTotal;
   });
-  const tableConfig = {
-  };
+}
+
+
+async function run() {
+  let reportHeader = '';
+  if (!commander.noHeader) {
+    if (startDate.getTime() === endDate.getTime()) {
+      reportHeader = `Time Summary for ${displayUtils.datePrinter(startDate)}`;
+    } else {
+      reportHeader = `Time Summary for ${displayUtils.datePrinter(startDate)} through ${displayUtils.datePrinter(endDate)}`;
+    }
+    if (commander.markdown) {
+      process.stdout.write(`## ${reportHeader}\n\n`);
+    } else {
+      // process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
+      process.stdout.write('\n');
+      process.stdout.write(chalk.greenBright.bold.underline(reportHeader));
+      process.stdout.write('\n');
+      // process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
+      process.stdout.write('\n');
+    }
+  }
+
+  const r = await db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
+  if (!r.length) {
+    process.stdout.write(chalk.yellow('There are no time entries to summarize for the given period.'));
+    process.stdout.write('\n');
+    return;
+  }
+  LOG(JSON.stringify(r, null, 2));
+  // and build a record with keys for each time type
+  const headings = buildTimeTypeHeadingsList(r);
+  // need to transform the structure into a new grid format - group by project
+  const grid = buildProjectByTimeTypeDataGrid(r);
+  const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
+  const columnInfo = buildColumnInfo(headings, totalTime);
+  // Calculate per-project totals for last column
+  addTotalColumn(grid);
+  const tableConfig = {};
   if (commander.markdown) {
     tableConfig.columnDelimiter = '|';
     tableConfig.columnDelimiterAtStart = true;
