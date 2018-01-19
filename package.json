@@ -34,11 +34,9 @@
     "tt": "./dist/commands/tt.js"
   },
   "dependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-register": "^6.26.0",
     "chalk": "^2.3.0",
     "commander": "^2.12.2",
+    "d3-scale-chromatic": "^1.1.1",
     "date-fns": "^1.29.0",
     "debug": "^3.1.0",
     "easy-table": "1.1.x",
@@ -53,6 +51,9 @@
     "supports-color": "^5.0.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
     "babel-watch": "^2.0.7",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",

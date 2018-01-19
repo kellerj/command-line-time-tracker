@@ -127,11 +127,11 @@ export default class Table {
     // only use columns with colorizers
     const cols = this.columnInfo.filter(e => (typeof e.colorizer === 'function'));
     // handle body
-    this.dataGrid.forEach((row) => {
+    this.dataGrid.forEach((row, i) => {
       cols.forEach((col) => {
         const value = row[col.columnHeading];
         if (value) {
-          row[col.columnHeading] = col.colorizer(value);
+          row[col.columnHeading] = col.colorizer(value, i);
         }
       });
     });

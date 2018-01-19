@@ -1,9 +1,8 @@
-#!/usr/bin/env node -r babel-register
-
 import commander from 'commander';
 import chalk from 'chalk';
 import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
+import * as d3ScaleChromatic from 'd3-scale-chromatic';
 
 import db from '../db';
 import Table from '../utils/table';
@@ -47,9 +46,33 @@ async function run() {
     if (startDate.getTime() !== endDate.getTime()) {
       columnInfo.push(new ColumnInfo('Date', 'left', displayUtils.datePrinter));
     }
+    // get distinct list of projects, will use indexof to colorize them
+    const projectList = [...grid.reduce((acc, row) => acc.add(row.Project), new Set())];
+    const projectColorList = d3ScaleChromatic.schemeSet1;
+    // LOG(`Project List: ${JSON.stringify(projectList)}`);
+    const projectColorizer = (value) => {
+      const colorIndex = projectList.indexOf(value.trim());
+      //LOG(`Project ${value} : ${colorIndex} : ${projectList}`);
+      if (colorIndex >= 0) {
+        return chalk.hex(projectColorList[colorIndex % projectColorList.length])(value);
+      }
+      return value;
+    };
+
+    const typeList = [...grid.reduce((acc, row) => acc.add(row.Type), new Set())];
+    const typeColorList = d3ScaleChromatic.schemeDark2;
+    // LOG(`Project List: ${JSON.stringify(projectList)}`);
+    const typeColorizer = (value) => {
+      const colorIndex = typeList.indexOf(value.trim());
+      //LOG(`Project ${value} : ${colorIndex} : ${projectList}`);
+      if (colorIndex >= 0) {
+        return chalk.hex(typeColorList[colorIndex % typeColorList.length])(value);
+      }
+      return value;
+    };
     columnInfo.push(new ColumnInfo('Logged', 'right', displayUtils.timePrinter));
-    columnInfo.push(new ColumnInfo('Project', 'left'));
-    columnInfo.push(new ColumnInfo('Type', 'left'));
+    columnInfo.push(new ColumnInfo('Project', 'left', null, projectColorizer));
+    columnInfo.push(new ColumnInfo('Type', 'left', null, typeColorizer));
     columnInfo.push(new ColumnInfo('Time', 'right', displayUtils.durationPrinter, null, 'sum'));
     columnInfo.push(new ColumnInfo('Description'));
     columnInfo.push(new ColumnInfo('💩'));
