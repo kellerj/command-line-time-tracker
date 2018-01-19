@@ -140,6 +140,7 @@ async function run() {
   } else {
     tableConfig.dividerColorizer = chalk.dim;
     tableConfig.headerColorizer = chalk.bold.yellowBright;
+    tableConfig.rowColorizer = (row, i) => ((i % 2) === 0 ? row : chalk.bgHex('#222222')(row));
   }
   const t = new Table(tableConfig);
   t.setData(grid, columnInfo);
