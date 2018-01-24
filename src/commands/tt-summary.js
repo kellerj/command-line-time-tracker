@@ -3,8 +3,7 @@ import chalk from 'chalk';
 import debug from 'debug';
 
 import db from '../db';
-import Table from '../utils/table';
-import ColumnInfo from '../utils/column-info';
+import { Table, ColumnInfo } from '../utils/table';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 

@@ -6,7 +6,7 @@ import ColumnInfo from './column-info';
 
 const LOG = require('debug')('tt:utils:Table');
 
-export default class Table {
+class Table {
   constructor(config) {
     const newConfig = {};
     Object.assign(newConfig, Table.defaultConfig(), config);
@@ -342,6 +342,7 @@ export default class Table {
   }
 }
 
+module.exports = Table;
 // testing code below
 
 // TODO: separate data property name and column header name

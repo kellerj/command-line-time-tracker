@@ -5,8 +5,7 @@ import debug from 'debug';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 
 import db from '../db';
-import Table from '../utils/table';
-import ColumnInfo from '../utils/column-info';
+import { Table, ColumnInfo } from '../utils/table';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 
