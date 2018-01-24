@@ -8,6 +8,11 @@ import moment from 'moment'; // TODO: Convert to use date-fns
 import db from '../db';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
+import { Table, ColumnInfo } from '../utils/table';
+import { buildTimeTypeHeadingsList,
+  buildProjectByTimeTypeDataGrid,
+  buildColumnInfo,
+  addTotalColumn } from '../lib/summarize';
 
 const LOG = debug('tt:report');
 
@@ -22,6 +27,7 @@ commander
   .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
   .option('-ns, --noSummary', 'Suppress the summary section of the report.')
   .option('-bd, --noDetails', 'Suppress the details section of the report.')
+  .option('--fullSummary', 'Include the full summary table in the output.')
   .parse(process.argv);
 
 LOG(JSON.stringify(commander, null, 2));
@@ -102,6 +108,26 @@ async function run() {
     }
     reportOutput += '\n';
 
+    // build list of project totals
+    const projectGrid = r.reduce((p, item) => {
+      const projectRow = p.find(e => (e.Project === item.project));
+      if (!projectRow) {
+        p.push({ Name: item.project, Time: item.minutes, Percent: item.minutes / totalTime });
+      } else {
+        projectRow.Time += item.minutes;
+        projectRow.Percent = projectRow.Time / totalTime;
+      }
+      return p;
+    }, []);
+
+    const projectTable = new Table({ markdown: true });
+    projectTable.setData(projectGrid, [
+      new ColumnInfo('Name'),
+      new ColumnInfo('Time'),
+      new ColumnInfo('Percent'),
+    ]);
+    reportOutput += projectTable.toString();
+
     reportOutput += '## Time Types\n\n';
 
     const timeTypeMaxLength = timeTypeNames
@@ -112,6 +138,20 @@ async function run() {
       reportOutput += `| ${rpad(timeTypeNames[i], ' ', timeTypeMaxLength)} | ${lpad(displayUtils.durationPrinter(timeTypes[timeTypeNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (timeTypes[timeTypeNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
     }
     reportOutput += '\n';
+  }
+
+  if (commander.fullSummary) {
+    // and build a record with keys for each time type
+    const headings = buildTimeTypeHeadingsList(r);
+    // need to transform the structure into a new grid format - group by project
+    const grid = buildProjectByTimeTypeDataGrid(r);
+    // const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
+    const columnInfo = buildColumnInfo(headings, totalTime, true);
+    // Calculate per-project totals for last column
+    addTotalColumn(grid);
+    const t = new Table({ markdown: true });
+    t.setData(grid, columnInfo);
+    reportOutput += t.toString();
   }
 
   if (!commander.noDetails) {
@@ -147,7 +187,7 @@ async function run() {
     }
   }
 
-  console.log(reportOutput);
+  process.stdout.write(reportOutput);
 }
 
 try {
