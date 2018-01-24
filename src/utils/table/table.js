@@ -27,7 +27,6 @@ class Table {
       columnDelimiterAtEnd: true,
       columnPadding: 1,
       alignmentMarkerInHeader: true,
-      markdownStyleHeaderDivider: true,
     });
   }
 
@@ -38,7 +37,6 @@ class Table {
       columnDelimiterAtEnd: false,
       columnPadding: 0,
       alignmentMarkerInHeader: false,
-      markdownStyleHeaderDivider: false,
       footerDivider: true,
       generateTotals: true,
       dividerColorizer: str => str,
@@ -267,19 +265,25 @@ class Table {
     return this.totalWidth;
   }
 
-  writeRow(w, rowData) {
+  getRow(rowData) {
     const columnPadding = ' '.repeat(this.config.columnPadding);
+    let row = '';
     rowData.forEach((value, i) => {
       if (i !== 0 || this.config.columnDelimiterAtStart) {
-        w.write(this.config.columnDelimiter);
+        row += this.config.columnDelimiter;
       }
-      w.write(columnPadding);
-      w.write(value);
-      w.write(columnPadding);
+      row += columnPadding;
+      row += value;
+      row += columnPadding;
     });
     if (this.config.columnDelimiterAtEnd) {
-      w.write(this.config.columnDelimiter);
+      row += this.config.columnDelimiter;
     }
+    return row;
+  }
+
+  writeRow(w, rowData) {
+    w.write(this.getRow(rowData));
     w.write('\n');
   }
 
@@ -308,9 +312,11 @@ class Table {
   }
 
   writeBody(w) {
-    this.dataGrid.forEach((row) => {
+    this.dataGrid.forEach((row, i) => {
       const rowData = this.columnInfo.map(e => row[e.columnHeading]);
-      this.writeRow(w, rowData);
+      const rowString = this.getRow(rowData);
+      w.write(this.config.rowColorizer(rowString, i));
+      w.write('\n');
     });
   }
 
