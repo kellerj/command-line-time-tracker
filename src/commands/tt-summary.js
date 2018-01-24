@@ -3,9 +3,13 @@ import chalk from 'chalk';
 import debug from 'debug';
 
 import db from '../db';
-import { Table, ColumnInfo } from '../utils/table';
+import { Table } from '../utils/table';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
+import { buildTimeTypeHeadingsList,
+  buildProjectByTimeTypeDataGrid,
+  buildColumnInfo,
+  addTotalColumn } from '../lib/summarize';
 
 const LOG = debug('tt:summary');
 
@@ -29,70 +33,6 @@ const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(com
 if (errorMessage) {
   throw new Error(errorMessage);
 }
-
-function buildTimeTypeHeadingsList(data) {
-  return data.reduce((acc, item) => {
-    if (acc.indexOf(item.timeType) === -1) {
-      acc.push(item.timeType);
-    }
-    return acc;
-  }, []).sort(displayUtils.sortOtherLast);
-}
-
-function buildProjectByTimeTypeDataGrid(data) {
-  const grid = data.reduce((acc, item) => {
-    let projectRow = acc.find(i => (i.Project === item.project));
-    if (!projectRow) {
-      projectRow = { Project: item.project };
-      acc.push(projectRow);
-    }
-    if (!projectRow[item.timeType]) {
-      projectRow[item.timeType] = 0;
-    }
-    projectRow[item.timeType] += item.minutes;
-    return acc;
-  }, []);
-  return grid.sort(displayUtils.sortOtherLast);
-}
-
-function buildColumnInfo(headings, totalTime) {
-  const columnInfo = [];
-  let tempCol = new ColumnInfo('Project', 'left');
-  tempCol.footerType = 'Totals';
-  if (commander.markdown) {
-    tempCol.colorizer = chalk.bold.blueBright;
-    tempCol.footerColorizer = chalk.bold.yellowBright;
-  }
-  columnInfo.push(tempCol);
-  headings.forEach((columnHeading) => {
-    tempCol = new ColumnInfo(columnHeading, 'right');
-    tempCol.footerType = 'sum';
-    tempCol.printer = displayUtils.durationPrinter;
-    tempCol.footerPrinter = displayUtils.timeAndPercentPrinter(totalTime);
-    tempCol.footerColorizer = commander.markdown ? null : chalk.bold.yellowBright;
-    columnInfo.push(tempCol);
-  });
-  tempCol = new ColumnInfo('Totals', 'right');
-  tempCol.footerType = 'sum';
-  tempCol.printer = displayUtils.timeAndPercentPrinter(totalTime);
-  tempCol.footerPrinter = displayUtils.durationPrinter;
-  tempCol.footerColorizer = commander.markdown ? null : chalk.bold.yellowBright;
-  columnInfo.push(tempCol);
-  return columnInfo;
-}
-
-function addTotalColumn(grid) {
-  grid.forEach((row) => {
-    let rowTotal = 0;
-    Object.keys(row).forEach((col) => {
-      if (typeof row[col] === 'number') {
-        rowTotal += row[col];
-      }
-    });
-    row.Totals = rowTotal;
-  });
-}
-
 
 async function run() {
   let reportHeader = '';
@@ -126,7 +66,7 @@ async function run() {
   // need to transform the structure into a new grid format - group by project
   const grid = buildProjectByTimeTypeDataGrid(r);
   const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
-  const columnInfo = buildColumnInfo(headings, totalTime);
+  const columnInfo = buildColumnInfo(headings, totalTime, commander.markdown);
   // Calculate per-project totals for last column
   addTotalColumn(grid);
   const tableConfig = {};

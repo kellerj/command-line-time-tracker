@@ -139,11 +139,11 @@ class Table {
     // only use columns with colorizers
     const cols = this.columnInfo.filter(e => (typeof e.colorizer === 'function'));
     // handle body
-    this.dataGrid.forEach((row, i) => {
+    this.dataGrid.forEach((row) => {
       cols.forEach((col) => {
         const value = row[col.columnHeading];
         if (value) {
-          row[col.columnHeading] = col.colorizer(value, i);
+          row[col.columnHeading] = col.colorizer(value);
         }
       });
     });
