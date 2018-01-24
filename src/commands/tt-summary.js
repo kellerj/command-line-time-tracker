@@ -131,11 +131,7 @@ async function run() {
   addTotalColumn(grid);
   const tableConfig = {};
   if (commander.markdown) {
-    tableConfig.columnDelimiter = '|';
-    tableConfig.columnDelimiterAtStart = true;
-    tableConfig.columnDelimiterAtEnd = true;
-    tableConfig.columnPadding = 1;
-    tableConfig.alignmentMarkerInHeader = true;
+    tableConfig.markdown = true;
   } else {
     tableConfig.dividerColorizer = chalk.dim;
     tableConfig.headerColorizer = chalk.bold.yellowBright;

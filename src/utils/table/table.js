@@ -4,18 +4,31 @@
 import streamBuffers from 'stream-buffers';
 import ColumnInfo from './column-info';
 
-const LOG = require('debug')('tt:utils:Table');
+const LOG = require('debug')('tt:utils:table:Table');
 
 class Table {
   constructor(config) {
-    const newConfig = {};
-    Object.assign(newConfig, Table.defaultConfig(), config);
-    this.config = newConfig;
+    this.config = Object.assign(
+      {},
+      config.markdown ? Table.markdownConfig() : Table.defaultConfig(),
+      config,
+    );
     this.dataGrid = [];
     this.columnInfo = [];
     this.totalWidth = 0;
     this.footerData = {};
-    LOG(`Initialized Table: ${JSON.stringify(this, null, 2)}`);
+    LOG(`Initialized Table Config: ${JSON.stringify(this, null, 2)}`);
+  }
+
+  static markdownConfig() {
+    return Object.assign({}, Table.defaultConfig(), {
+      columnDelimiter: '|',
+      columnDelimiterAtStart: true,
+      columnDelimiterAtEnd: true,
+      columnPadding: 1,
+      alignmentMarkerInHeader: true,
+      markdownStyleHeaderDivider: true,
+    });
   }
 
   static defaultConfig() {
@@ -25,7 +38,7 @@ class Table {
       columnDelimiterAtEnd: false,
       columnPadding: 0,
       alignmentMarkerInHeader: false,
-      markdownStyleHeaderDivider: true,
+      markdownStyleHeaderDivider: false,
       footerDivider: true,
       generateTotals: true,
       dividerColorizer: str => str,
@@ -254,25 +267,19 @@ class Table {
     return this.totalWidth;
   }
 
-  getRow(rowData) {
+  writeRow(w, rowData) {
     const columnPadding = ' '.repeat(this.config.columnPadding);
-    let row = '';
     rowData.forEach((value, i) => {
       if (i !== 0 || this.config.columnDelimiterAtStart) {
-        row += this.config.columnDelimiter;
+        w.write(this.config.columnDelimiter);
       }
-      row += columnPadding;
-      row += value;
-      row += columnPadding;
+      w.write(columnPadding);
+      w.write(value);
+      w.write(columnPadding);
     });
     if (this.config.columnDelimiterAtEnd) {
-      row += this.config.columnDelimiter;
+      w.write(this.config.columnDelimiter);
     }
-    return row;
-  }
-
-  writeRow(w, rowData) {
-    w.write(this.getRow(rowData));
     w.write('\n');
   }
 
@@ -301,11 +308,9 @@ class Table {
   }
 
   writeBody(w) {
-    this.dataGrid.forEach((row, i) => {
+    this.dataGrid.forEach((row) => {
       const rowData = this.columnInfo.map(e => row[e.columnHeading]);
-      const rowString = this.getRow(rowData);
-      w.write(this.config.rowColorizer(rowString, i));
-      w.write('\n');
+      this.writeRow(w, rowData);
     });
   }
 
