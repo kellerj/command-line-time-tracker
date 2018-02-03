@@ -32,6 +32,50 @@ commander
 
 LOG(JSON.stringify(commander, null, 2));
 
+function buildProjectTable(r, totalTime) {
+  const projectGrid = r.reduce((p, item) => {
+    const projectRow = p.find(e => (e.Name === item.project));
+    if (!projectRow) {
+      p.push({ Name: item.project, Time: item.minutes, Percent: item.minutes / totalTime });
+    } else {
+      projectRow.Time += item.minutes;
+      projectRow.Percent = projectRow.Time / totalTime;
+    }
+    return p;
+  }, []);
+  projectGrid.sort(displayUtils.sortOtherLast);
+
+  const projectTable = new Table({ markdown: true });
+  projectTable.setData(projectGrid, [
+    new ColumnInfo('Name'),
+    new ColumnInfo('Time', 'right', displayUtils.durationPrinter),
+    new ColumnInfo('Percent', 'right', displayUtils.percentPrinter),
+  ]);
+  return projectTable.toString();
+}
+
+function buildTimeTypeTable(r, totalTime) {
+  const timeTypeGrid = r.reduce((p, item) => {
+    const row = p.find(e => (e.Name === item.timeType));
+    if (!row) {
+      p.push({ Name: item.timeType, Time: item.minutes, Percent: item.minutes / totalTime });
+    } else {
+      row.Time += item.minutes;
+      row.Percent = row.Time / totalTime;
+    }
+    return p;
+  }, []);
+  timeTypeGrid.sort(displayUtils.sortOtherLast);
+
+  const timeTypeTable = new Table({ markdown: true });
+  timeTypeTable.setData(timeTypeGrid, [
+    new ColumnInfo('Name'),
+    new ColumnInfo('Time', 'right', displayUtils.durationPrinter),
+    new ColumnInfo('Percent', 'right', displayUtils.percentPrinter),
+  ]);
+  return timeTypeTable.toString();
+}
+
 async function run() {
   const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
   if (errorMessage) {
@@ -59,87 +103,19 @@ async function run() {
   // Get total time for calculating percentages
   // eslint-disable-next-line no-param-reassign
   const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
-  // build list of project totals
-  const projects = r.reduce((p, item) => {
-    if (!p[item.project]) {
-      p[item.project] = 0;
-    }
-    p[item.project] += item.minutes;
-    return p;
-  }, {});
-
-  const projectNames = Object.getOwnPropertyNames(projects).sort(displayUtils.sortOtherLast);
-  LOG(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
-  LOG(projectNames);
-
-  // list of time type totals
-  const timeTypes = r.reduce((p, item) => {
-    if (!p[item.timeType]) {
-      p[item.timeType] = 0;
-    }
-    p[item.timeType] += item.minutes;
-    return p;
-  }, {});
-  LOG(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
-  const timeTypeNames = Object.getOwnPropertyNames(timeTypes).sort(displayUtils.sortOtherLast);
-
-  LOG(timeTypeNames);
-
-  const lpad = (str, padString, length) => {
-    // eslint-disable-next-line no-param-reassign
-    while (str.length < length) { str = padString + str; }
-    return str;
-  };
-
-  const rpad = (str, padString, length) => {
-    // eslint-disable-next-line no-param-reassign
-    while (str.length < length) { str += padString; }
-    return str;
-  };
 
   if (!commander.noSummary) {
     reportOutput += '## Projects\n\n';
-    const projectNameMaxLength = projectNames
-      .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
-    reportOutput += `| ${rpad('Name', ' ', projectNameMaxLength)} |    Time | Percent |\n`;
-    reportOutput += `| :${'-'.repeat(projectNameMaxLength - 1)} | ------: | ------: |\n`;
-    for (let i = 0; i < projectNames.length; i++) {
-      reportOutput += `| ${rpad(projectNames[i], ' ', projectNameMaxLength)} | ${lpad(displayUtils.durationPrinter(projects[projectNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (projects[projectNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
-    }
+
+    reportOutput += buildProjectTable(r, totalTime);
     reportOutput += '\n';
-
-    // build list of project totals
-    const projectGrid = r.reduce((p, item) => {
-      const projectRow = p.find(e => (e.Name === item.project));
-      if (!projectRow) {
-        p.push({ Name: item.project, Time: item.minutes, Percent: item.minutes / totalTime });
-      } else {
-        projectRow.Time += item.minutes;
-        projectRow.Percent = projectRow.Time / totalTime;
-      }
-      return p;
-    }, []);
-    projectGrid.sort(displayUtils.sortOtherLast);
-
-    const projectTable = new Table({ markdown: true });
-    projectTable.setData(projectGrid, [
-      new ColumnInfo('Name'),
-      new ColumnInfo('Time', 'right', displayUtils.durationPrinter),
-      new ColumnInfo('Percent', 'right', displayUtils.percentPrinter),
-    ]);
-    reportOutput += projectTable.toString();
 
     reportOutput += '## Time Types\n\n';
 
-    const timeTypeMaxLength = timeTypeNames
-      .reduce((len, name) => ((name.length > len) ? name.length : len), 0);
-    reportOutput += `| ${rpad('Name', ' ', timeTypeMaxLength)} |    Time | Percent |\n`;
-    reportOutput += `| :${'-'.repeat(timeTypeMaxLength - 1)} | ------: | ------: |\n`;
-    for (let i = 0; i < timeTypeNames.length; i++) {
-      reportOutput += `| ${rpad(timeTypeNames[i], ' ', timeTypeMaxLength)} | ${lpad(displayUtils.durationPrinter(timeTypes[timeTypeNames[i]]), ' ', 7)} | ${lpad(Math.round(100 * (timeTypes[timeTypeNames[i]] / totalTime), 0).toString(10), ' ', 6)}% |\n`;
-    }
+    reportOutput += buildTimeTypeTable(r, totalTime);
     reportOutput += '\n';
   }
+
 
   if (commander.fullSummary) {
     // and build a record with keys for each time type
@@ -153,12 +129,31 @@ async function run() {
     const t = new Table({ markdown: true });
     t.setData(grid, columnInfo);
     reportOutput += t.toString();
+    reportOutput += '\n';
   }
 
   if (!commander.noDetails) {
     if (!commander.noSummary) {
       reportOutput += '## Details\n\n';
     }
+
+    // build list of project totals
+    const projects = r.reduce((p, item) => {
+      p[item.project] = (p[item.project] ? p[item.project] : 0) + item.minutes;
+      return p;
+    }, {});
+    const projectNames = Object.getOwnPropertyNames(projects).sort(displayUtils.sortOtherLast);
+    LOG(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
+    LOG(projectNames);
+
+    // list of time type totals
+    const timeTypes = r.reduce((p, item) => {
+      p[item.timeType] = (p[item.timeType] ? p[item.timeType] : 0) + item.minutes;
+      return p;
+    }, {});
+    LOG(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
+    const timeTypeNames = Object.getOwnPropertyNames(timeTypes).sort(displayUtils.sortOtherLast);
+    LOG(timeTypeNames);
 
     const entries = await db.timeEntry.get(startDate, endDate);
     // LOG(JSON.stringify(entries, null, 2));
