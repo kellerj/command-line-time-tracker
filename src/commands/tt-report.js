@@ -1,5 +1,3 @@
-#!/usr/bin/env node -r babel-register
-
 import commander from 'commander';
 import chalk from 'chalk';
 import debug from 'debug';
@@ -118,6 +116,7 @@ async function run() {
 
 
   if (commander.fullSummary) {
+    reportOutput += '## Summary\n\n';
     // and build a record with keys for each time type
     const headings = buildTimeTypeHeadingsList(r);
     // need to transform the structure into a new grid format - group by project
@@ -142,18 +141,18 @@ async function run() {
       p[item.project] = (p[item.project] ? p[item.project] : 0) + item.minutes;
       return p;
     }, {});
+    // LOG(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
     const projectNames = Object.getOwnPropertyNames(projects).sort(displayUtils.sortOtherLast);
-    LOG(`Project Summary: ${JSON.stringify(projects, null, 2)}`);
-    LOG(projectNames);
+    // LOG(projectNames);
 
     // list of time type totals
     const timeTypes = r.reduce((p, item) => {
       p[item.timeType] = (p[item.timeType] ? p[item.timeType] : 0) + item.minutes;
       return p;
     }, {});
-    LOG(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
+    // LOG(`Time Type Summary: ${JSON.stringify(timeTypes, null, 2)}`);
     const timeTypeNames = Object.getOwnPropertyNames(timeTypes).sort(displayUtils.sortOtherLast);
-    LOG(timeTypeNames);
+    // LOG(timeTypeNames);
 
     const entries = await db.timeEntry.get(startDate, endDate);
     // LOG(JSON.stringify(entries, null, 2));
@@ -170,8 +169,8 @@ async function run() {
           .sort()
           // eliminate dupes
           .filter((entry, k, array) => (k === 0 || entry !== array[k - 1]));
-        LOG(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
-        LOG(detailEntries);
+        // LOG(`Detail Entries for ${projectNames[i]} / ${timeTypeNames[j]}`);
+        // LOG(detailEntries);
         if (detailEntries.length) {
           reportOutput += `* **${timeTypeNames[j]}**\n`;
           for (let k = 0; k < detailEntries.length; k++) {
@@ -188,12 +187,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    process.stderr.write(chalk.red(err.message));
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  process.stderr.write(chalk.red(err.message));
   LOG(err);
   process.exitCode = 1;
 }
