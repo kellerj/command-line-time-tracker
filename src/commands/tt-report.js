@@ -110,7 +110,7 @@ async function run() {
 
     // build list of project totals
     const projectGrid = r.reduce((p, item) => {
-      const projectRow = p.find(e => (e.Project === item.project));
+      const projectRow = p.find(e => (e.Name === item.project));
       if (!projectRow) {
         p.push({ Name: item.project, Time: item.minutes, Percent: item.minutes / totalTime });
       } else {
@@ -119,12 +119,13 @@ async function run() {
       }
       return p;
     }, []);
+    projectGrid.sort(displayUtils.sortOtherLast);
 
     const projectTable = new Table({ markdown: true });
     projectTable.setData(projectGrid, [
       new ColumnInfo('Name'),
-      new ColumnInfo('Time'),
-      new ColumnInfo('Percent'),
+      new ColumnInfo('Time', 'right', displayUtils.durationPrinter),
+      new ColumnInfo('Percent', 'right', displayUtils.percentPrinter),
     ]);
     reportOutput += projectTable.toString();
 

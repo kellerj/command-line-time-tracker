@@ -50,6 +50,12 @@ module.exports = {
     return width ? str.padStart(width) : str;
   },
 
+  percentPrinter: (val, width) => {
+    const str = `${Math.round(100 * (val), 0)}%`;
+    // TODO: remove return of width when easy-table fully removed
+    return width ? str.padStart(width) : str;
+  },
+
   formatEntryChoice: entry => sprintf(
     '%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
     moment(entry.insertTime).format('h:mm a'),
@@ -72,6 +78,9 @@ module.exports = {
     } else if (left.Project || right.Project) {
       left = left.Project;
       right = right.Project;
+    } else if (left.Name || right.Name) {
+      left = left.Name;
+      right = right.Name;
     }
     if (left !== 'Other' && right === 'Other') {
       return -1;

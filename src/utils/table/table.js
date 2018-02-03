@@ -123,16 +123,18 @@ class Table {
         }
       });
     });
-    cols.forEach((col) => {
-      const value = this.footerData[col.columnHeading];
-      if (value) {
-        if (typeof col.footerPrinter === 'function') {
-          this.footerData[col.columnHeading] = col.footerPrinter(value);
-        } else {
-          this.footerData[col.columnHeading] = col.printer(value);
+    if (this.config.footerRow) {
+      cols.forEach((col) => {
+        const value = this.footerData[col.columnHeading];
+        if (value) {
+          if (typeof col.footerPrinter === 'function') {
+            this.footerData[col.columnHeading] = col.footerPrinter(value);
+          } else {
+            this.footerData[col.columnHeading] = col.printer(value);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   colorizeColumnContents() {
@@ -240,9 +242,10 @@ class Table {
       this.applyUserColumnInfo(columnInfo);
     }
     // check if we have any footer data
-    this.config.footerRow = this.columnInfo.reduce((hasSummary, col) => (hasSummary || (col.footerType && col.footerType !== 'none')));
+    this.config.footerRow = this.columnInfo.reduce((hasSummary, col) => (hasSummary || (col.footerType && col.footerType !== 'none')), false);
     // calculate any footer items
     if (this.config.footerRow) {
+      LOG('Creating Footer Data');
       this.createFooterData();
     }
     // format any data elements
@@ -342,8 +345,8 @@ class Table {
       if (this.config.footerDivider) {
         this.writeDividerLine(w);
       }
+      this.writeFooter(w);
     }
-    this.writeFooter(w);
   }
 
   toString() {
