@@ -17,7 +17,7 @@ to install the tools on your path.
 
 ## Requirements
 
-* Node 6+
+* Node 8+
 * MongoDB 3.2+
 
 By default, the application expects you to have an unsecured MongoDB server running on your local workstation on the standard port.  It uses (again by default) the `tt` database on that instance.  If you need to change the connection information, the settings are in the `db/config.js` file.

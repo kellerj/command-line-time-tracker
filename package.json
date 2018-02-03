@@ -69,7 +69,8 @@
     "exclude": [
       "src/commands/**",
       "coverage/**",
-      "test/**"
+      "test/**",
+      "dist/**"
     ],
     "check-coverage": false,
     "lines": 90,
