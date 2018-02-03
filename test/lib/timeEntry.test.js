@@ -145,7 +145,7 @@ context('lib/timeEntry', () => {
         expect(format(result, DATE_FORMAT)).to.equal(format(yesterday, DATE_FORMAT));
       });
     });
-    describe.only('when neither is set', () => {
+    describe('when neither is set', () => {
       it('should use the insert time on the entry', () => {
         const result = timeEntry.getInsertTime({}, { insertTime, entryDate });
         expect(result).to.be.a('Date');
