@@ -10,7 +10,7 @@ class Table {
   constructor(config) {
     this.config = Object.assign(
       {},
-      config.markdown ? Table.markdownConfig() : Table.defaultConfig(),
+      (config && config.markdown) ? Table.markdownConfig() : Table.defaultConfig(),
       config,
     );
     this.dataGrid = [];
