@@ -116,4 +116,8 @@ describe('class Table', () => {
       expect(columnInfo.find(col => col.columnHeading === 'a').width).to.equal(3);
     });
   });
+  describe('::applyUserColumnInfo', () => {
+    it('overlays data from the passed in array on the derived information');
+    it('omits columns from derived data which are not in the userColumnInfo');
+  });
 });

@@ -224,7 +224,7 @@ class Table {
   }
 
   setData(data, columnInfo) {
-    if (data && !Array.isArray(data)) {
+    if (!data || !Array.isArray(data)) {
       throw Error('data must be an Array object.');
     }
     if (columnInfo && !Array.isArray(columnInfo)) {
