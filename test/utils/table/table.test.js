@@ -39,10 +39,43 @@ describe('class Table', () => {
     });
   });
   describe('setData', () => {
-    it('should throw an error if data or columnInfo are not arrays');
-    it('should not modify the original data array');
-    it('should have copied the elements of the original array');
-    it('should not modify the original column info array');
+    it('should throw an error if data or columnInfo are not arrays', () => {
+      const table = new Table();
+      expect(() => table.setData(null), 'Should have thrown on null argument').to.throw();
+      expect(() => table.setData(), 'Should have thrown on undefined argument').to.throw();
+      expect(() => table.setData('string'), 'Should have thrown on string argument').to.throw();
+      expect(() => table.setData({}), 'Should have thrown on Object argument').to.throw();
+      expect(() => table.setData([]), 'Should not have thrown on Array argument').to.not.throw();
+
+      expect(() => table.setData([], 'string'), 'Should have thrown on columnInfo string argument').to.throw();
+      expect(() => table.setData([], []), 'Should not have thrown on columnInfo Array argument').to.not.throw();
+    });
+    it('should not modify the original data array', () => {
+      const t = new Table();
+      const data = [
+        {
+          Column1: 'string value',
+          Column2: 'string value 2',
+        },
+      ];
+      t.setData(data);
+      expect(t.dataGrid).to.not.equal(data, 'should have copied the array');
+      expect(t.dataGrid[0]).to.not.equal(data[0], 'should have copied each element');
+    });
+    it('should not modify the original column info array', () => {
+      const t = new Table();
+      const data = [
+        {
+          Column1: 'string value',
+          Column2: 'string value 2',
+        },
+      ];
+      const columnInfo = [
+        { columnHeading: 'Column1' },
+        { columnHeading: 'Column2' },
+      ];
+      expect(() => t.setData(data, columnInfo)).to.not.change(() => (columnInfo));
+    });
   });
   describe('deriveColumnInfo', () => {
     const t = new Table();

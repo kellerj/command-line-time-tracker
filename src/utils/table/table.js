@@ -46,16 +46,16 @@ class Table {
   }
 
   deriveColumnInfo() {
-    // loop over all data
-    // determine data type of each
-    // set align based on type
     const columnInfo = [];
+    // loop over all data
     this.dataGrid.forEach((row) => {
       Object.keys(row).forEach((col) => {
         if (!columnInfo.find(e => (e.columnHeading === col))) {
           LOG(`${col} not in the columnInfo object, adding`);
           const colInfo = new ColumnInfo(col);
+          // determine data type of each
           colInfo.dataType = typeof row[col];
+          // set align based on type
           if (colInfo.dataType === 'number') {
             colInfo.align = 'right';
           } else {
