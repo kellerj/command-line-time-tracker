@@ -30,6 +30,10 @@ class Table {
     });
   }
 
+  static defaultColorizer(value) {
+    return value;
+  }
+
   static defaultConfig() {
     return {
       columnDelimiter: '  ',
@@ -39,9 +43,9 @@ class Table {
       alignmentMarkerInHeader: false,
       footerDivider: true,
       generateTotals: true,
-      dividerColorizer: str => str,
-      headerColorizer: str => str,
-      rowColorizer: str => str,
+      dividerColorizer: Table.defaultColorizer,
+      headerColorizer: Table.defaultColorizer,
+      rowColorizer: Table.defaultColorizer,
     };
   }
 
@@ -78,14 +82,12 @@ class Table {
     const newColumnInfo = [];
     userColumnInfo.forEach((col) => {
       const column = this.columnInfo.find(e => (e.columnHeading === col.columnHeading));
+      // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
       if (!column) {
         throw new Error(`Configuration Error: Column ${col.columnHeading} does not exist in the derived columns.`);
       }
-      // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
       // LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
-      if (col) {
-        column.overlay(col);
-      }
+      column.overlay(col);
       // LOG(`After Update: ${JSON.stringify(column, null, 2)}`);
       newColumnInfo.push(column);
     });
