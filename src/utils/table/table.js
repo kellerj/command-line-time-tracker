@@ -78,6 +78,9 @@ class Table {
     const newColumnInfo = [];
     userColumnInfo.forEach((col) => {
       const column = this.columnInfo.find(e => (e.columnHeading === col.columnHeading));
+      if (!column) {
+        throw new Error(`Configuration Error: Column ${col.columnHeading} does not exist in the derived columns.`);
+      }
       // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
       // LOG(`Overlaying User Column: ${JSON.stringify(col, null, 2)}`);
       if (col) {

@@ -38,7 +38,7 @@ describe('class Table', () => {
       expect(t.config).to.not.shallowDeepEqual(Table.defaultConfig());
     });
   });
-  describe('setData', () => {
+  describe('::setData', () => {
     it('should throw an error if data or columnInfo are not arrays', () => {
       const table = new Table();
       expect(() => table.setData(null), 'Should have thrown on null argument').to.throw();
@@ -77,7 +77,7 @@ describe('class Table', () => {
       expect(() => t.setData(data, columnInfo)).to.not.change(() => (columnInfo));
     });
   });
-  describe('deriveColumnInfo', () => {
+  describe('::deriveColumnInfo', () => {
     const t = new Table();
     t.dataGrid = [
       {
@@ -117,7 +117,56 @@ describe('class Table', () => {
     });
   });
   describe('::applyUserColumnInfo', () => {
-    it('overlays data from the passed in array on the derived information');
-    it('omits columns from derived data which are not in the userColumnInfo');
+    const t = new Table();
+    t.dataGrid = [
+      {
+        Column1: 'string value',
+        Column2: 'string value 2',
+      },
+      {
+        Column3: 123,
+        Column2: 'another column',
+        Column1: 456,
+      },
+      {
+        Column4: new Date(),
+        a: 'abc',
+      },
+    ];
+    const dummyPrinterFunction = () => {};
+    const userColumnInfo = [
+      new ColumnInfo('Column1', 'right'),
+      new ColumnInfo('Column3', 'left', dummyPrinterFunction),
+    ];
+    it('overlays data from the passed in array on the derived information', () => {
+      t.columnInfo = t.deriveColumnInfo();
+      expect(t.columnInfo.find(col => (col.columnHeading === 'Column1')).align).to.equal('left');
+      expect(t.columnInfo.find(col => (col.columnHeading === 'Column3')).align).to.equal('right');
+      t.applyUserColumnInfo(userColumnInfo);
+      expect(t.columnInfo.length).to.equal(userColumnInfo.length);
+      expect(t.columnInfo[0].columnHeading).to.equal('Column1');
+      expect(t.columnInfo[1].columnHeading).to.equal('Column3');
+      expect(t.columnInfo.find(col => (col.columnHeading === 'Column1')).align).to.equal('right');
+      expect(t.columnInfo.find(col => (col.columnHeading === 'Column3')).align).to.equal('left');
+      expect(t.columnInfo.find(col => (col.columnHeading === 'Column3')).printer).to.equal(dummyPrinterFunction);
+    });
+    it('omits columns from derived data which are not in the userColumnInfo', () => {
+      t.columnInfo = t.deriveColumnInfo();
+      expect(t.columnInfo).to.satisfy(cols => cols.find(col => (col.columnHeading === 'Column2')));
+      expect(t.columnInfo).to.satisfy(cols => cols.find(col => (col.columnHeading === 'Column4')));
+      expect(t.columnInfo).to.satisfy(cols => cols.find(col => (col.columnHeading === 'a')));
+      t.applyUserColumnInfo(userColumnInfo);
+      expect(t.columnInfo).to.not.satisfy(cols => cols.find(col => (col.columnHeading === 'Column2')));
+      expect(t.columnInfo).to.not.satisfy(cols => cols.find(col => (col.columnHeading === 'Column4')));
+      expect(t.columnInfo).to.not.satisfy(cols => cols.find(col => (col.columnHeading === 'a')));
+    });
+    it('fails if the columnInfo contains a column which does not exist in the data columns', () => {
+      t.columnInfo = t.deriveColumnInfo();
+      const badColumnInfo = [
+        new ColumnInfo('BadColumn', 'right'),
+        new ColumnInfo('Column3', 'left', dummyPrinterFunction),
+      ];
+      expect(() => t.applyUserColumnInfo(badColumnInfo)).to.throw(/Configuration Error.*BadColumn/);
+    });
   });
 });
