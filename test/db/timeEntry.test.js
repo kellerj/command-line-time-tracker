@@ -59,7 +59,7 @@ describe('db/timeEntry', () => {
       expect(timeEntry, 'time Entry did not include today\'s date').to.include({ entryDate: format(new Date(), 'YYYY-MM-DD') });
     });
     it('calls insertOne on the collection with the passed in object', async () => {
-      const timeEntry = {};
+      const timeEntry = { entryDate: '2018-02-11' };
       const result = await lib.insert(timeEntry);
       expect(collection.insertOne.calledWithExactly(timeEntry)).to.equal(true, 'did not call insertOne on the collection');
 
