@@ -29,6 +29,7 @@ spy(collection, 'findAndRemove');
 spy(collection, 'insertOne');
 // spy(collection, 'findOne');
 spy(collection, 'find');
+spy(cursor, 'sort');
 
 const db = {
   // eslint-disable-next-line no-unused-vars,arrow-body-style
@@ -55,7 +56,9 @@ describe('db/timeEntry', () => {
   describe('#insert', () => {
     it('sets the entry date on the object if none present', async () => {
       const timeEntry = {};
+      lib.setDebug(true);
       await lib.insert(timeEntry);
+      lib.setDebug(false);
       expect(timeEntry, 'time Entry did not include today\'s date').to.include({ entryDate: format(new Date(), 'YYYY-MM-DD') });
     });
     it('calls insertOne on the collection with the passed in object', async () => {
@@ -103,10 +106,12 @@ describe('db/timeEntry', () => {
     it('returns false if unable to delete the entry and writes an error to stderr');
   });
   describe('#getMostRecentEntry', () => {
-
+    it('uses the current date if no beforeDate passed');
+    it('only returns one row from the resultset');
+    it('queries for entries on the given date and before the given time');
   });
   describe('#summarizeByProjectAndTimeType', () => {
-
+    it('sets the end date to the start date if the end date is not passed');
   });
 
 

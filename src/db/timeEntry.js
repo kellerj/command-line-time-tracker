@@ -8,6 +8,23 @@ const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
 
 const collectionName = 'timeEntry';
 
+function setMongoDBLoggingLevel(loggingLevel) {
+  // eslint-disable-next-line global-require
+  require('mongodb').Logger.setLevel(loggingLevel);
+}
+
+function setDebug(enabled) {
+  LOG.enabled = enabled;
+  if (enabled) {
+    setMongoDBLoggingLevel('debug');
+  } else {
+    setMongoDBLoggingLevel('info');
+  }
+}
+
+if (LOG.enabled) {
+  setMongoDBLoggingLevel('debug');
+}
 
 module.exports = getConnection => ({
   /**
@@ -17,11 +34,6 @@ module.exports = getConnection => ({
   async insert(timeEntry) {
     const db = await getConnection();
     const collection = db.collection(collectionName);
-
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
-    }
 
     // add the timing data to the object
     if (!timeEntry.entryDate) {
@@ -44,10 +56,6 @@ module.exports = getConnection => ({
     const db = await getConnection();
     const collection = db.collection(collectionName);
 
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
-    }
     LOG(`Updating ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
 
     const r = await collection.updateOne({ _id: timeEntry._id }, timeEntry);
@@ -66,11 +74,6 @@ module.exports = getConnection => ({
     if (!endDate) {
       // eslint-disable-next-line no-param-reassign
       endDate = startDate;
-    }
-
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
     }
 
     const r = await collection.find({
@@ -131,11 +134,6 @@ module.exports = getConnection => ({
       endDate = startDate;
     }
 
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
-    }
-
     const cursor = collection.aggregate([
       {
         $match: {
@@ -163,4 +161,5 @@ module.exports = getConnection => ({
     LOG(`Summary Data: ${JSON.stringify(r, null, 2)}`);
     return r;
   },
+  setDebug,
 });
