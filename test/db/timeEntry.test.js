@@ -6,6 +6,8 @@ const cursor = {
   // eslint-disable-next-line no-unused-vars
   sort: sortObj => cursor,
   // eslint-disable-next-line no-unused-vars
+  limit: sortObj => cursor,
+  // eslint-disable-next-line no-unused-vars
   toArray: () => [
     // { _id: '1', name: 'Project 1' },
     // { _id: '2', name: 'Project 2' },
@@ -30,6 +32,7 @@ spy(collection, 'insertOne');
 // spy(collection, 'findOne');
 spy(collection, 'find');
 spy(cursor, 'sort');
+spy(cursor, 'limit');
 
 const db = {
   // eslint-disable-next-line no-unused-vars,arrow-body-style
@@ -107,7 +110,11 @@ describe('db/timeEntry', () => {
   });
   describe('#getMostRecentEntry', () => {
     it('uses the current date if no beforeDate passed');
-    it('only returns one row from the resultset');
+    it('only returns one row from the resultset', async () => {
+      await lib.getMostRecentEntry('2018-02-11');
+      expect(collection.find.called).to.equal(true, 'collection.find not called');
+      expect(cursor.limit.calledWithExactly(1)).to.equal(true, 'cursor.limit not called');
+    });
     it('queries for entries on the given date and before the given time');
   });
   describe('#summarizeByProjectAndTimeType', () => {
