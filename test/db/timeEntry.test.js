@@ -1,5 +1,6 @@
 import { expect, assert } from 'chai';
 import { spy, stub } from 'sinon';
+import { format } from 'date-fns';
 
 const cursor = {
   // eslint-disable-next-line no-unused-vars
@@ -48,18 +49,40 @@ async function getConnection() {
   return db;
 }
 
-const timeEntry = require('../../src/db/timeEntry')(getConnection);
+const lib = require('../../src/db/timeEntry')(getConnection);
 
 describe('db/timeEntry', () => {
   describe('#insert', () => {
-    it('sets the entry date on the object if none present');
-    // const result = await project.insert('A New Project');
-    // expect(collection.insertOne.called).to.equal(true, 'did not call insertOne on the collection');
-    //
-    // expect(result).to.equal(true, 'Should have returned true after inserting record');
-    it('calls insertOne on the collection with the passed in object');
-    it('opens and closes the database connection');
-    it('throws an error if unable to insert the entry');
+    it('sets the entry date on the object if none present', async () => {
+      const timeEntry = {};
+      await lib.insert(timeEntry);
+      expect(timeEntry, 'time Entry did not include today\'s date').to.include({ entryDate: format(new Date(), 'YYYY-MM-DD') });
+    });
+    it('calls insertOne on the collection with the passed in object', async () => {
+      const timeEntry = {};
+      const result = await lib.insert(timeEntry);
+      expect(collection.insertOne.calledWithExactly(timeEntry)).to.equal(true, 'did not call insertOne on the collection');
+
+      expect(result).to.equal(true, 'Should have returned true after inserting record');
+    });
+    it('opens and closes the database connection', async () => {
+      const timeEntry = {};
+      await lib.insert(timeEntry);
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
+    it('throws an error if unable to insert the entry', async () => {
+      collection.insertOne.restore();
+      stub(collection, 'insertOne').callsFake(() => ({ insertedCount: 0 }));
+      await lib.insert({}).then(() => {
+        assert.fail('Should have thrown an exception');
+      }).catch((err) => {
+        expect(err.name).to.contain('AssertionError');
+      });
+      collection.insertOne.restore();
+      spy(collection, 'insertOne');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
   });
   describe('#update', () => {
     it('Calls updateOne on the collection with the passed in object using the _id of the object');
@@ -85,8 +108,6 @@ describe('db/timeEntry', () => {
   describe('#summarizeByProjectAndTimeType', () => {
 
   });
-  // expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
-  // expect(db.close.called).to.equal(true, 'db.close was not called');
 
 
   // it('throws an AssertionError when mongo reports an insert failure', async () => {

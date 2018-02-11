@@ -41,7 +41,8 @@ async function run() {
     LOG('Getting last entry');
     const entry = await db.timeEntry.getMostRecentEntry(entryDate);
     LOG('Got Last Entry');
-    console.log(chalk.yellow(displayUtils.formatEntryChoice(entry)));
+    process.stdout.write(chalk.yellow(displayUtils.formatEntryChoice(entry)));
+    process.stdout.write('\n');
     entries.push(entry);
   } else {
     entries = await db.timeEntry.get(entryDate);
@@ -75,18 +76,20 @@ async function run() {
       await deleteTimeEntries(answer.entries);
     }
   } else {
-    console.log(chalk.yellow(`No Time Entries Entered for ${moment(entryDate).format('YYYY-MM-DD')}`));
+    process.stdout.write(chalk.yellow(`No Time Entries Entered for ${moment(entryDate).format('YYYY-MM-DD')}\n`));
   }
 }
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    process.stderr.write(chalk.red(err.message));
+    process.stderr.write('\n');
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  process.stderr.write(chalk.red(err.message));
+  process.stderr.write('\n');
   LOG(err);
   process.exitCode = 1;
 }
