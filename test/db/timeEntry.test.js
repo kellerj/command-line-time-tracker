@@ -2,12 +2,10 @@ import { expect, assert } from 'chai';
 import { spy, stub } from 'sinon';
 import { format } from 'date-fns';
 
+/* eslint-disable no-unused-vars,require-yield */
 const cursor = {
-  // eslint-disable-next-line no-unused-vars
   sort: sortObj => cursor,
-  // eslint-disable-next-line no-unused-vars
-  limit: sortObj => cursor,
-  // eslint-disable-next-line no-unused-vars
+  limit: limitNum => cursor,
   async toArray() {
     return [
       { _id: '1', entryDate: '2018-02-11', insertTime: new Date() },
@@ -19,19 +17,17 @@ const cursor = {
 };
 
 const collection = {
-  // eslint-disable-next-line no-unused-vars,require-yield
   find(queryObj) { return cursor; },
-  // eslint-disable-next-line no-unused-vars,require-yield
   async findOne(queryObj) { return null; },
-  // eslint-disable-next-line no-unused-vars,require-yield
   async insertOne(obj) { return { insertedCount: 1 }; },
-  // eslint-disable-next-line no-unused-vars,require-yield
+  async updateOne(obj) { return { result: { nModified: 1 } }; },
   async findAndRemove(queryObj) { return { ok: 1, value: {} }; },
 };
+/* eslint-enable no-unused-vars,require-yield */
 
 spy(collection, 'findAndRemove');
 spy(collection, 'insertOne');
-// spy(collection, 'findOne');
+spy(collection, 'updateOne');
 spy(collection, 'find');
 spy(cursor, 'sort');
 spy(cursor, 'limit');
@@ -93,9 +89,34 @@ describe('db/timeEntry', () => {
     });
   });
   describe('#update', () => {
-    it('Calls updateOne on the collection with the passed in object using the _id of the object');
-    it('throws an error if unable to update the entry');
-    it('opens and closes the database connection');
+    it('Calls updateOne on the collection with the passed in object using the _id of the object', async () => {
+      const timeEntry = {
+        _id: 'entryId',
+        description: 'updatedDescription',
+      };
+      const result = await lib.update(timeEntry);
+      expect(collection.updateOne.calledWithExactly({ _id: timeEntry._id }, timeEntry), 'did not pass expected parameters to update method');
+      expect(result).to.equal(true, 'method should have returned true');
+    });
+    it('throws an error if unable to update the entry', async () => {
+      collection.updateOne.restore();
+      stub(collection, 'updateOne').callsFake(() => ({ result: { nModified: 0 } }));
+      try {
+        await lib.update({});
+        assert.fail('Should have thrown an exception');
+      } catch (err) {
+        expect(err.name).to.contain('AssertionError');
+      }
+      collection.updateOne.restore();
+      spy(collection, 'updateOne');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
+    it('opens and closes the database connection', async () => {
+      const timeEntry = {};
+      await lib.update(timeEntry);
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
   });
   describe('#get', () => {
     it('queries the collection using the start and end date criteria');
@@ -130,21 +151,6 @@ describe('db/timeEntry', () => {
     it('projects properties into the results');
     it('returns the resultset');
   });
-
-
-  // it('throws an AssertionError when mongo reports an insert failure', async () => {
-  //   collection.insertOne.restore();
-  //   stub(collection, 'insertOne').callsFake(() => ({ insertedCount: 0 }));
-  //   await project.insert('A New Project').then(() => {
-  //     assert.fail('Should have thrown an exception');
-  //   }).catch((err) => {
-  //     // do nothing
-  //     expect(err.name).to.contain('AssertionError');
-  //   });
-  //   collection.insertOne.restore();
-  //   spy(collection, 'insertOne');
-  //   expect(db.close.called).to.equal(true, 'db.close was not called');
-  // });
 
   // describe('remove', () => {
   //   it('opens and closes the database connection', async () => {

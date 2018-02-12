@@ -61,7 +61,7 @@ module.exports = getConnection => ({
     const r = await collection.updateOne({ _id: timeEntry._id }, timeEntry);
     db.close();
     LOG(`Result: ${JSON.stringify(r.result)}`);
-    assert.equal(1, r.result.nModified, chalk.bgRed(`Unable to update the timeEntry: ${JSON.stringify(r.result)}`));
+    assert.equal(1, r.result.nModified, `Unable to update the timeEntry: ${JSON.stringify(r.result)}`);
 
     return true;
   },
