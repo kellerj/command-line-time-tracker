@@ -1,8 +1,8 @@
 import { expect, assert } from 'chai';
-import { spy, stub } from 'sinon';
+import sinon from 'sinon';
 import { format } from 'date-fns';
 
-/* eslint-disable no-unused-vars,require-yield */
+/* eslint-disable no-unused-vars,require-yield,arrow-body-style */
 const cursor = {
   sort: sortObj => cursor,
   limit: limitNum => cursor,
@@ -23,17 +23,8 @@ const collection = {
   async updateOne(obj) { return { result: { nModified: 1 } }; },
   async findAndRemove(queryObj) { return { ok: 1, value: {} }; },
 };
-/* eslint-enable no-unused-vars,require-yield */
-
-spy(collection, 'findAndRemove');
-spy(collection, 'insertOne');
-spy(collection, 'updateOne');
-spy(collection, 'find');
-spy(cursor, 'sort');
-spy(cursor, 'limit');
 
 const db = {
-  // eslint-disable-next-line no-unused-vars,arrow-body-style
   collection: (collectionName) => {
     // console.log('db.collection');
     return collection;
@@ -42,9 +33,7 @@ const db = {
     // console.log('db.close');
   },
 };
-
-spy(db, 'collection');
-spy(db, 'close');
+/* eslint-enable no-unused-vars,require-yield */
 
 // eslint-disable-next-line require-yield
 async function getConnection() {
@@ -54,6 +43,25 @@ async function getConnection() {
 const lib = require('../../src/db/timeEntry')(getConnection);
 
 describe('db/timeEntry', () => {
+  const sandbox = sinon.sandbox.create();
+
+  beforeEach(() => {
+    sandbox.spy(collection, 'findAndRemove');
+    sandbox.spy(collection, 'insertOne');
+    sandbox.spy(collection, 'updateOne');
+    sandbox.spy(collection, 'find');
+    sandbox.spy(cursor, 'sort');
+    sandbox.spy(cursor, 'limit');
+
+    sandbox.spy(db, 'collection');
+    sandbox.spy(db, 'close');
+  });
+
+  afterEach(() => {
+    // Restore all the things made through the sandbox
+    sandbox.restore();
+  });
+
   describe('#insert', () => {
     it('sets the entry date on the object if none present', async () => {
       const timeEntry = {};
@@ -77,14 +85,12 @@ describe('db/timeEntry', () => {
     });
     it('throws an error if unable to insert the entry', async () => {
       collection.insertOne.restore();
-      stub(collection, 'insertOne').callsFake(() => ({ insertedCount: 0 }));
+      sandbox.stub(collection, 'insertOne').callsFake(() => ({ insertedCount: 0 }));
       await lib.insert({}).then(() => {
         assert.fail('Should have thrown an exception');
       }).catch((err) => {
         expect(err.name).to.contain('AssertionError');
       });
-      collection.insertOne.restore();
-      spy(collection, 'insertOne');
       expect(db.close.called).to.equal(true, 'db.close was not called');
     });
   });
@@ -100,15 +106,13 @@ describe('db/timeEntry', () => {
     });
     it('throws an error if unable to update the entry', async () => {
       collection.updateOne.restore();
-      stub(collection, 'updateOne').callsFake(() => ({ result: { nModified: 0 } }));
+      sandbox.stub(collection, 'updateOne').callsFake(() => ({ result: { nModified: 0 } }));
       try {
         await lib.update({});
         assert.fail('Should have thrown an exception');
       } catch (err) {
         expect(err.name).to.contain('AssertionError');
       }
-      collection.updateOne.restore();
-      spy(collection, 'updateOne');
       expect(db.close.called).to.equal(true, 'db.close was not called');
     });
     it('opens and closes the database connection', async () => {
