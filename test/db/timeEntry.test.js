@@ -8,12 +8,14 @@ const cursor = {
   // eslint-disable-next-line no-unused-vars
   limit: sortObj => cursor,
   // eslint-disable-next-line no-unused-vars
-  toArray: () => [
-    // { _id: '1', name: 'Project 1' },
-    // { _id: '2', name: 'Project 2' },
-    // { _id: '3', name: 'Project 3' },
-    // { _id: '4', name: 'Project 4' },
-  ],
+  async toArray() {
+    return [
+      { _id: '1', entryDate: '2018-02-11', insertTime: new Date() },
+      { _id: '2', entryDate: '2018-02-11', insertTime: new Date() },
+      { _id: '3', entryDate: '2018-02-11', insertTime: new Date() },
+      { _id: '4', entryDate: '2018-02-11', insertTime: new Date() },
+    ];
+  },
 };
 
 const collection = {
@@ -110,15 +112,23 @@ describe('db/timeEntry', () => {
   });
   describe('#getMostRecentEntry', () => {
     it('uses the current date if no beforeDate passed');
-    it('only returns one row from the resultset', async () => {
-      await lib.getMostRecentEntry('2018-02-11');
+    it('only returns first row from the cursor order by insert date', async () => {
+      const result = await lib.getMostRecentEntry('2018-02-11');
       expect(collection.find.called).to.equal(true, 'collection.find not called');
       expect(cursor.limit.calledWithExactly(1)).to.equal(true, 'cursor.limit not called');
+      expect(cursor.sort.firstCall.args[0]).to.include({ insertTime: -1 }, 'did not attempt to sort by insert descending');
+      const dbResults = await cursor.toArray();
+      expect(result._id).to.equal(dbResults[0]._id, 'did not return first row from cursor');
     });
     it('queries for entries on the given date and before the given time');
   });
   describe('#summarizeByProjectAndTimeType', () => {
     it('sets the end date to the start date if the end date is not passed');
+    it('filters on the given start date and end date');
+    it('groups by project and time type');
+    it('summarizes minutes');
+    it('projects properties into the results');
+    it('returns the resultset');
   });
 
 
