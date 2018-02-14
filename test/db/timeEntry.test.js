@@ -186,7 +186,11 @@ describe('db/timeEntry', () => {
         insertTime: { $lt: now },
       }, 'did not set date when entry date was blank');
     });
-    it('returns null when no entries found');
+    it('returns null when no entries found', async () => {
+      sandbox.stub(cursor, 'toArray').callsFake(async () => ({ result: { nModified: 0 } }));
+      const result = await lib.getMostRecentEntry();
+      expect(result).to.equal(null, 'should have returned null');
+    });
     it('resets to the current date if the user explicitly sends a null or undefined before time', async () => {
       const now = new Date();
       await lib.getMostRecentEntry(null, null);
