@@ -2,9 +2,11 @@ import assert from 'assert';
 import chalk from 'chalk';
 import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
+import { format } from 'date-fns';
+
+import { DATE_FORMAT } from '../constants';
 
 const LOG = debug('db:timeEntry');
-const ENTRY_DATE_FORMAT = 'YYYY-MM-DD';
 
 const collectionName = 'timeEntry';
 
@@ -38,7 +40,7 @@ module.exports = getConnection => ({
     // add the timing data to the object
     if (!timeEntry.entryDate) {
       // it's possible the date may be specified from the command line - if so, don't set
-      timeEntry.entryDate = moment().startOf('day').format(ENTRY_DATE_FORMAT);
+      timeEntry.entryDate = moment().startOf('day').format(DATE_FORMAT);
       LOG(`Defaulting entry date to ${timeEntry.entryDate}`);
     }
 
@@ -78,8 +80,8 @@ module.exports = getConnection => ({
 
     const r = await collection.find({
       entryDate: {
-        $gte: moment(startDate).format(ENTRY_DATE_FORMAT),
-        $lte: moment(endDate).format(ENTRY_DATE_FORMAT),
+        $gte: moment(startDate).format(DATE_FORMAT),
+        $lte: moment(endDate).format(DATE_FORMAT),
       },
     }).sort({ insertTime: 1 }).toArray();
     db.close();
@@ -108,13 +110,20 @@ module.exports = getConnection => ({
     return false;
   },
 
-  async getMostRecentEntry(entryDate, beforeTime = new Date()) {
+  async getMostRecentEntry(entryDateString, beforeTime = new Date()) {
     // console.log(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = await getConnection();
     const collection = db.collection(collectionName);
-
+    if (!beforeTime) {
+      // eslint-disable-next-line no-param-reassign
+      beforeTime = new Date();
+    }
+    if (!entryDateString) {
+      // eslint-disable-next-line no-param-reassign
+      entryDateString = format(beforeTime, DATE_FORMAT);
+    }
     const r = await collection.find({
-      entryDate: moment(entryDate).format(ENTRY_DATE_FORMAT),
+      entryDate: entryDateString,
       insertTime: { $lt: beforeTime },
     }).sort({ insertTime: -1 }).limit(1).toArray();
     db.close();
@@ -138,8 +147,8 @@ module.exports = getConnection => ({
       {
         $match: {
           entryDate: {
-            $gte: moment(startDate).format(ENTRY_DATE_FORMAT),
-            $lte: moment(endDate).format(ENTRY_DATE_FORMAT),
+            $gte: moment(startDate).format(DATE_FORMAT),
+            $lte: moment(endDate).format(DATE_FORMAT),
           },
         },
       },

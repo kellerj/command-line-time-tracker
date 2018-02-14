@@ -137,7 +137,7 @@ async function run() {
   if (!editLast) {
     entry = await getEntryToEdit(entryDate);
   } else {
-    entry = await db.timeEntry.getMostRecentEntry(entryDate);
+    entry = await db.timeEntry.getMostRecentEntry(format(entryDate, DATE_FORMAT));
     if (!entry) {
       throw new Error(chalk.yellow(`No Time Entries Defined for ${format(entryDate, DATE_FORMAT)}`));
     }

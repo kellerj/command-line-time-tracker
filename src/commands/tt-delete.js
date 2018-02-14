@@ -10,6 +10,7 @@ import debug from 'debug';
 import db from '../db';
 import displayUtils from '../utils/display-utils';
 import { deleteTimeEntries } from '../lib/timeEntry';
+import { DATE_FORMAT as ENTRY_DATE_FORMAT } from '../constants';
 
 const LOG = debug('tt:delete');
 
@@ -39,7 +40,8 @@ async function run() {
   let entries = [];
   if (deleteLast) {
     LOG('Getting last entry');
-    const entry = await db.timeEntry.getMostRecentEntry(entryDate);
+    const entry = await db.timeEntry
+      .getMostRecentEntry(moment(entryDate).format(ENTRY_DATE_FORMAT));
     LOG('Got Last Entry');
     process.stdout.write(chalk.yellow(displayUtils.formatEntryChoice(entry)));
     process.stdout.write('\n');

@@ -1,8 +1,10 @@
 import { expect, assert } from 'chai';
 import sinon from 'sinon';
-import { format } from 'date-fns';
+import { format, isSameMinute } from 'date-fns';
+import { DATE_FORMAT } from '../../src/constants';
 
 /* eslint-disable no-unused-vars,require-yield,arrow-body-style */
+// Mock object to simulate a MongoDB Cursor
 const cursor = {
   sort: sortObj => cursor,
   limit: limitNum => cursor,
@@ -16,7 +18,9 @@ const cursor = {
   },
 };
 
+// Mock object to simulate the MongoDB Connection object
 const collection = {
+  // This one is *not* async since it returns a cursor.  It's the Cursor.toArray() method which is async
   find(queryObj) { return cursor; },
   async findOne(queryObj) { return null; },
   async insertOne(obj) { return { insertedCount: 1 }; },
@@ -24,6 +28,7 @@ const collection = {
   async findAndRemove(queryObj) { return { ok: 1, value: {} }; },
 };
 
+// Mock object to simulate the MongoDB Database/connection object
 const db = {
   collection: (collectionName) => {
     // console.log('db.collection');
@@ -136,7 +141,60 @@ describe('db/timeEntry', () => {
     it('returns false if unable to delete the entry and writes an error to stderr');
   });
   describe('#getMostRecentEntry', () => {
-    it('uses the current date if no beforeDate passed');
+    it('queries for entries on the given date and before the given time', async () => {
+      const now = new Date();
+      await lib.getMostRecentEntry('2018-02-11', now);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      expect(findCall.args[0]).to.deep.include({
+        entryDate: '2018-02-11',
+        insertTime: { $lt: now },
+      }, 'did not call the MongoDB find with the correct arguments');
+    });
+    it('uses the current time if no beforeDate passed', async () => {
+      const now = new Date();
+      await lib.getMostRecentEntry('2018-02-11');
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      const mongoQuery = findCall.args[0];
+      expect(mongoQuery.insertTime.$lt).to.satisfy(insertTime => isSameMinute(insertTime, now));
+    });
+    it('uses the date from the before date for the entry date is null', async () => {
+      const now = new Date();
+      await lib.getMostRecentEntry(null, now);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      expect(collection.find.firstCall.args[0]).to.deep.include({
+        entryDate: format(now, DATE_FORMAT),
+        insertTime: { $lt: now },
+      }, 'did not set date when entry date was null');
+    });
+    it('uses the date from the before date for the entry date is undefined', async () => {
+      const now = new Date();
+      await lib.getMostRecentEntry(undefined, now);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      expect(collection.find.firstCall.args[0]).to.deep.include({
+        entryDate: format(now, DATE_FORMAT),
+        insertTime: { $lt: now },
+      }, 'did not set date when entry date was undefined');
+    });
+    it('uses the date from the before date for the entry date is empty', async () => {
+      const now = new Date();
+      await lib.getMostRecentEntry('', now);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      expect(collection.find.firstCall.args[0]).to.deep.include({
+        entryDate: format(now, DATE_FORMAT),
+        insertTime: { $lt: now },
+      }, 'did not set date when entry date was blank');
+    });
+    it('returns null when no entries found');
+    it('resets to the current date if the user explicitly sends a null or undefined before time', async () => {
+      const now = new Date();
+      await lib.getMostRecentEntry(null, null);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      const mongoQuery = findCall.args[0];
+      expect(mongoQuery.insertTime.$lt).to.satisfy(insertTime => isSameMinute(insertTime, now));
+    });
     it('only returns first row from the cursor order by insert date', async () => {
       const result = await lib.getMostRecentEntry('2018-02-11');
       expect(collection.find.called).to.equal(true, 'collection.find not called');
@@ -145,7 +203,6 @@ describe('db/timeEntry', () => {
       const dbResults = await cursor.toArray();
       expect(result._id).to.equal(dbResults[0]._id, 'did not return first row from cursor');
     });
-    it('queries for entries on the given date and before the given time');
   });
   describe('#summarizeByProjectAndTimeType', () => {
     it('sets the end date to the start date if the end date is not passed');
