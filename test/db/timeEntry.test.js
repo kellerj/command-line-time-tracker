@@ -1,6 +1,6 @@
 import { expect, assert } from 'chai';
 import sinon from 'sinon';
-import { format, isSameMinute } from 'date-fns';
+import { format, isSameMinute, parse as dateParse } from 'date-fns';
 import { DATE_FORMAT } from '../../src/constants';
 
 /* eslint-disable no-unused-vars,require-yield,arrow-body-style */
@@ -128,11 +128,58 @@ describe('db/timeEntry', () => {
     });
   });
   describe('#get', () => {
-    it('queries the collection using the start and end date criteria');
-    it('sets the end date to the start date if the end date is not passed');
-    it('orders the results by their insert time');
+    it('queries the collection using the start and end date criteria', async () => {
+      const startDate = dateParse('2018-02-11');
+      const endDate = new Date();
+      await lib.get(startDate, endDate);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      expect(findCall.args[0]).to.deep.include({
+        entryDate: { $gte: '2018-02-11', $lte: format(endDate, DATE_FORMAT) },
+      }, 'did not call the MongoDB find with the correct arguments');
+    });
+    it('optimizes the query when start and end dates are the same', async () => {
+      const startDate = dateParse('2018-02-11');
+      const endDate = startDate;
+      await lib.get(startDate, endDate);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      expect(findCall.args[0]).to.deep.include({
+        entryDate: '2018-02-11',
+      }, 'did not call the MongoDB find with the correct arguments');
+    });
+    it('sets the end date to the start date if the end date is not passed', async () => {
+      const startDate = dateParse('2018-02-11');
+      await lib.get(startDate);
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      expect(findCall.args[0]).to.deep.include({
+        entryDate: '2018-02-11',
+      }, 'did not call the MongoDB find with the correct arguments');
+    });
+    it('uses today\'s date if the start date and end date are not passed', async () => {
+      const today = new Date();
+      await lib.get();
+      expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
+      const findCall = collection.find.firstCall;
+      expect(findCall.args[0]).to.deep.include({
+        entryDate: format(today, DATE_FORMAT),
+      }, 'did not call the MongoDB find with the correct arguments');
+    });
+    it('orders the results by their insert time', async () => {
+      await lib.get();
+      expect(cursor.sort.callCount).to.equal(1, 'sort should have been called');
+      const findCall = cursor.sort.firstCall;
+      expect(findCall.args[0]).to.deep.include({
+        insertTime: 1,
+      }, 'did not call sort with the expected arguments');
+    });
     it('returns an array with the results');
-    it('opens and closes the database connection');
+    it('opens and closes the database connection', async () => {
+      await lib.get();
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
   });
   describe('#remove', () => {
     it('opens and closes the database connection');

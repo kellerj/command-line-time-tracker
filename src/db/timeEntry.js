@@ -72,18 +72,26 @@ module.exports = getConnection => ({
     LOG(`Get Time Entries: ${startDate} -- ${endDate}`);
     const db = await getConnection();
     const collection = db.collection(collectionName);
-
+    if (!startDate) {
+      // eslint-disable-next-line no-param-reassign
+      startDate = new Date();
+    }
     if (!endDate) {
       // eslint-disable-next-line no-param-reassign
       endDate = startDate;
     }
-
-    const r = await collection.find({
-      entryDate: {
-        $gte: moment(startDate).format(DATE_FORMAT),
-        $lte: moment(endDate).format(DATE_FORMAT),
-      },
-    }).sort({ insertTime: 1 }).toArray();
+    let query = {};
+    if (startDate === endDate) {
+      query = { entryDate: format(startDate, DATE_FORMAT) };
+    } else {
+      query = {
+        entryDate: {
+          $gte: format(startDate, DATE_FORMAT),
+          $lte: format(endDate, DATE_FORMAT),
+        },
+      };
+    }
+    const r = await collection.find(query).sort({ insertTime: 1 }).toArray();
     db.close();
     return r;
   },
