@@ -218,7 +218,7 @@ describe('db/timeEntry', () => {
       }, 'did not call the MongoDB find with the correct arguments');
     });
     it('uses the current time if no beforeDate passed', async () => {
-      const now = NOW;
+      const now = new Date();
       await lib.getMostRecentEntry('2018-02-11');
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
@@ -258,7 +258,7 @@ describe('db/timeEntry', () => {
       expect(result).to.equal(null, 'should have returned null');
     });
     it('resets to the current date if the user explicitly sends a null or undefined before time', async () => {
-      const now = NOW;
+      const now = new Date();
       await lib.getMostRecentEntry(null, null);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
