@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { format, isSameMinute, parse as dateParse } from 'date-fns';
 import { DATE_FORMAT } from '../../src/constants';
 
+const NOW = new Date();
+
 /* eslint-disable no-unused-vars,require-yield,arrow-body-style */
 // Mock object to simulate a MongoDB Cursor
 const cursor = {
@@ -10,10 +12,17 @@ const cursor = {
   limit: limitNum => cursor,
   async toArray() {
     return [
-      { _id: '1', entryDate: '2018-02-11', insertTime: new Date() },
-      { _id: '2', entryDate: '2018-02-11', insertTime: new Date() },
-      { _id: '3', entryDate: '2018-02-11', insertTime: new Date() },
-      { _id: '4', entryDate: '2018-02-11', insertTime: new Date() },
+      { _id: '1', entryDate: '2018-02-11', insertTime: NOW },
+      { _id: '2', entryDate: '2018-02-11', insertTime: NOW },
+      { _id: '3', entryDate: '2018-02-11', insertTime: NOW },
+      { _id: '4', entryDate: '2018-02-11', insertTime: NOW },
+    ];
+  },
+};
+
+const aggregationCursor = {
+  async toArray() {
+    return [
     ];
   },
 };
@@ -26,6 +35,7 @@ const collection = {
   async insertOne(obj) { return { insertedCount: 1 }; },
   async updateOne(obj) { return { result: { nModified: 1 } }; },
   async findAndRemove(queryObj) { return { ok: 1, value: {} }; },
+  aggregate(pipeline) { return aggregationCursor; },
 };
 
 // Mock object to simulate the MongoDB Database/connection object
@@ -73,7 +83,7 @@ describe('db/timeEntry', () => {
       lib.setDebug(true);
       await lib.insert(timeEntry);
       lib.setDebug(false);
-      expect(timeEntry, 'time Entry did not include today\'s date').to.include({ entryDate: format(new Date(), 'YYYY-MM-DD') });
+      expect(timeEntry, 'time Entry did not include today\'s date').to.include({ entryDate: format(NOW, 'YYYY-MM-DD') });
     });
     it('calls insertOne on the collection with the passed in object', async () => {
       const timeEntry = { entryDate: '2018-02-11' };
@@ -130,7 +140,7 @@ describe('db/timeEntry', () => {
   describe('#get', () => {
     it('queries the collection using the start and end date criteria', async () => {
       const startDate = dateParse('2018-02-11');
-      const endDate = new Date();
+      const endDate = NOW;
       await lib.get(startDate, endDate);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
@@ -158,7 +168,7 @@ describe('db/timeEntry', () => {
       }, 'did not call the MongoDB find with the correct arguments');
     });
     it('uses today\'s date if the start date and end date are not passed', async () => {
-      const today = new Date();
+      const today = NOW;
       await lib.get();
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
@@ -174,7 +184,12 @@ describe('db/timeEntry', () => {
         insertTime: 1,
       }, 'did not call sort with the expected arguments');
     });
-    it('returns an array with the results');
+    it('returns an array with the results', async () => {
+      const result = await lib.get();
+      expect(result).to.be.an('array', 'should have returned an array data type');
+      const dbResults = await cursor.toArray();
+      expect(result).to.deep.equal(dbResults, 'did not return result array from MongoDB');
+    });
     it('opens and closes the database connection', async () => {
       await lib.get();
       expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
@@ -182,14 +197,18 @@ describe('db/timeEntry', () => {
     });
   });
   describe('#remove', () => {
-    it('opens and closes the database connection');
+    it('opens and closes the database connection', async () => {
+      await lib.remove('123');
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
     it('calls findAndRemove using the entry ID passed in');
     it('returns true if able to delete the entry');
     it('returns false if unable to delete the entry and writes an error to stderr');
   });
   describe('#getMostRecentEntry', () => {
     it('queries for entries on the given date and before the given time', async () => {
-      const now = new Date();
+      const now = NOW;
       await lib.getMostRecentEntry('2018-02-11', now);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
@@ -199,7 +218,7 @@ describe('db/timeEntry', () => {
       }, 'did not call the MongoDB find with the correct arguments');
     });
     it('uses the current time if no beforeDate passed', async () => {
-      const now = new Date();
+      const now = NOW;
       await lib.getMostRecentEntry('2018-02-11');
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
@@ -207,7 +226,7 @@ describe('db/timeEntry', () => {
       expect(mongoQuery.insertTime.$lt).to.satisfy(insertTime => isSameMinute(insertTime, now));
     });
     it('uses the date from the before date for the entry date is null', async () => {
-      const now = new Date();
+      const now = NOW;
       await lib.getMostRecentEntry(null, now);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       expect(collection.find.firstCall.args[0]).to.deep.include({
@@ -216,7 +235,7 @@ describe('db/timeEntry', () => {
       }, 'did not set date when entry date was null');
     });
     it('uses the date from the before date for the entry date is undefined', async () => {
-      const now = new Date();
+      const now = NOW;
       await lib.getMostRecentEntry(undefined, now);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       expect(collection.find.firstCall.args[0]).to.deep.include({
@@ -225,7 +244,7 @@ describe('db/timeEntry', () => {
       }, 'did not set date when entry date was undefined');
     });
     it('uses the date from the before date for the entry date is empty', async () => {
-      const now = new Date();
+      const now = NOW;
       await lib.getMostRecentEntry('', now);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       expect(collection.find.firstCall.args[0]).to.deep.include({
@@ -239,7 +258,7 @@ describe('db/timeEntry', () => {
       expect(result).to.equal(null, 'should have returned null');
     });
     it('resets to the current date if the user explicitly sends a null or undefined before time', async () => {
-      const now = new Date();
+      const now = NOW;
       await lib.getMostRecentEntry(null, null);
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
@@ -262,6 +281,11 @@ describe('db/timeEntry', () => {
     it('summarizes minutes');
     it('projects properties into the results');
     it('returns the resultset');
+    it('opens and closes the database connection', async () => {
+      await lib.summarizeByProjectAndTimeType();
+      expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
+      expect(db.close.called).to.equal(true, 'db.close was not called');
+    });
   });
 
   // describe('remove', () => {
