@@ -129,6 +129,11 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
   LOG(`Summarize Time Entries: ${startDate} -- ${endDate}`);
   const collection = db.collection(collectionName);
 
+  if (!startDate) {
+    // eslint-disable-next-line no-param-reassign
+    startDate = new Date();
+  }
+
   if (!endDate) {
     // eslint-disable-next-line no-param-reassign
     endDate = startDate;
@@ -138,8 +143,8 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
     {
       $match: {
         entryDate: {
-          $gte: moment(startDate).format(DATE_FORMAT),
-          $lte: moment(endDate).format(DATE_FORMAT),
+          $gte: format(startDate, DATE_FORMAT),
+          $lte: format(endDate, DATE_FORMAT),
         },
       },
     },

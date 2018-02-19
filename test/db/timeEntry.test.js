@@ -65,6 +65,7 @@ describe('db/timeEntry', () => {
     sandbox.spy(collection, 'insertOne');
     sandbox.spy(collection, 'updateOne');
     sandbox.spy(collection, 'find');
+    sandbox.spy(collection, 'aggregate');
     sandbox.spy(cursor, 'sort');
     sandbox.spy(cursor, 'limit');
 
@@ -275,8 +276,44 @@ describe('db/timeEntry', () => {
     });
   });
   describe('#summarizeByProjectAndTimeType', () => {
-    it('sets the end date to the start date if the end date is not passed');
-    it('filters on the given start date and end date');
+    it('filters on the given start date and end date', async () => {
+      await lib.summarizeByProjectAndTimeType('2018-02-11', '2018-02-12');
+      expect(collection.aggregate.called).to.equal(true, 'collection.aggregate not called');
+      const call = collection.aggregate.firstCall;
+      const pipeline = call.args[0];
+      const matchEntry = pipeline.find(e => (e.$match));
+      expect(matchEntry).to.be.an('object', 'no $match entry present in the pipeline');
+      expect(matchEntry.$match).to.deep.include({
+        entryDate: {
+          $gte: '2018-02-11',
+          $lte: '2018-02-12',
+        },
+      });
+    });
+    it('sets the end date to the start date if the end date is not passed', async () => {
+      await lib.summarizeByProjectAndTimeType('2018-02-11');
+      const call = collection.aggregate.firstCall;
+      const pipeline = call.args[0];
+      const matchEntry = pipeline.find(e => (e.$match));
+      expect(matchEntry.$match).to.deep.include({
+        entryDate: {
+          $gte: '2018-02-11',
+          $lte: '2018-02-11',
+        },
+      });
+    });
+    it('uses today\'s date if no date passed in', async () => {
+      await lib.summarizeByProjectAndTimeType();
+      const call = collection.aggregate.firstCall;
+      const pipeline = call.args[0];
+      const matchEntry = pipeline.find(e => (e.$match));
+      expect(matchEntry.$match).to.deep.include({
+        entryDate: {
+          $gte: format(NOW, DATE_FORMAT),
+          $lte: format(NOW, DATE_FORMAT),
+        },
+      });
+    });
     it('groups by project and time type');
     it('summarizes minutes');
     it('projects properties into the results');
