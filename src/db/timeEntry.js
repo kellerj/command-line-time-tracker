@@ -88,7 +88,6 @@ async function get(db, startDate, endDate) {
     };
   }
   const r = await collection.find(query).sort({ insertTime: 1 }).toArray();
-  console.log(JSON.stringify(r));
   db.close();
   return r;
 }
