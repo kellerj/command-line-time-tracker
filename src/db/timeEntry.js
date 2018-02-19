@@ -24,6 +24,7 @@ function setDebug(enabled) {
   }
 }
 
+/* istanbul ignore if */
 if (LOG.enabled) {
   setMongoDBLoggingLevel('debug');
 }
@@ -94,23 +95,13 @@ async function get(db, startDate, endDate) {
 
 async function remove(db, entryId) {
   const collection = db.collection(collectionName);
-
-  if (LOG.enabled) {
-    // eslint-disable-next-line global-require
-    require('mongodb').Logger.setLevel('debug');
-  }
-
   const r = await collection.findAndRemove({ _id: entryId });
   LOG(JSON.stringify(r, null, 2));
-  if (r && r.ok === 1 && r.value !== null) {
-    db.close();
-    return true;
-  } else if (r && r.ok !== 1) {
-    console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(r)}`));
-  }
-
   db.close();
-  return false;
+  if (r && r.ok === 1 && r.value !== null) {
+    return true;
+  }
+  throw new Error(`Error deleting record: ${JSON.stringify(r)}`);
 }
 
 async function getMostRecentEntry(db, entryDateString, beforeTime) {

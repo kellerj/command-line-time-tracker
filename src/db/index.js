@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { MongoClient } from 'mongodb';
 import debug from 'debug';
 

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 const LOG = require('debug')('db:config');
 
 const host = 'localhost';
