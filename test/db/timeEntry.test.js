@@ -314,8 +314,39 @@ describe('db/timeEntry', () => {
         },
       });
     });
-    it('groups by project and time type');
-    it('summarizes minutes');
+    it('groups by project and time type', async () => {
+      await lib.summarizeByProjectAndTimeType('2018-02-11', '2018-02-12');
+      expect(collection.aggregate.called).to.equal(true, 'collection.aggregate not called');
+      const call = collection.aggregate.firstCall;
+      const pipeline = call.args[0];
+      const groupEntry = pipeline.find(e => (e.$group));
+      expect(groupEntry).to.be.an('object', 'no $group entry present in the pipeline');
+      const groupFields = groupEntry.$group._id;
+      let groupsByProject = false;
+      let groupsByTimeType = false;
+      Object.keys(groupFields).forEach((key) => {
+        if (groupFields[key] === '$project') {
+          groupsByProject = true;
+        }
+        if (groupFields[key] === '$timeType') {
+          groupsByTimeType = true;
+        }
+      });
+      expect(groupsByProject).to.equal(true, 'aggregation is not grouping by project');
+      expect(groupsByTimeType).to.equal(true, 'aggregation is not grouping by time type');
+    });
+    it('summarizes minutes', async () => {
+      await lib.summarizeByProjectAndTimeType('2018-02-11', '2018-02-12');
+      expect(collection.aggregate.called).to.equal(true, 'collection.aggregate not called');
+      const call = collection.aggregate.firstCall;
+      const pipeline = call.args[0];
+      const groupEntry = pipeline.find(e => (e.$group));
+      expect(groupEntry).to.be.an('object', 'no $group entry present in the pipeline');
+      const sumCommand = groupEntry.$group[Object.keys(groupEntry.$group)
+        .find(key => groupEntry.$group[key].$sum)];
+      expect(sumCommand).to.be.an('object', 'no $sum present in the group');
+      expect(sumCommand.$sum).to.equal('$minutes');
+    });
     it('projects properties into the results');
     it('returns the resultset');
     it('opens and closes the database connection', async () => {
