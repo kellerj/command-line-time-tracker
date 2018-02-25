@@ -99,7 +99,7 @@ async function remove(db, entryId) {
   LOG(JSON.stringify(r, null, 2));
   db.close();
   if (r && r.ok === 1 && r.value !== null) {
-    return true;
+    return r.value;
   }
   throw new Error(`Error deleting record: ${JSON.stringify(r)}`);
 }

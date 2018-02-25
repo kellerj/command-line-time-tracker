@@ -1,7 +1,10 @@
-import { expect, assert } from 'chai';
+import chai, { expect, assert } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import { format, isSameMinute, parse as dateParse } from 'date-fns';
 import { DATE_FORMAT } from '../../src/constants';
+
+chai.use(chaiAsPromised);
 
 const NOW = new Date();
 
@@ -27,6 +30,8 @@ const aggregationCursor = {
   },
 };
 
+const GOOD_DELETE_RESULT = { ok: 1, value: { _id: '123', entryDescription: 'abc' } };
+
 // Mock object to simulate the MongoDB Connection object
 const collection = {
   // This one is *not* async since it returns a cursor.  It's the Cursor.toArray() method which is async
@@ -34,7 +39,7 @@ const collection = {
   async findOne(queryObj) { return null; },
   async insertOne(obj) { return { insertedCount: 1 }; },
   async updateOne(obj) { return { result: { nModified: 1 } }; },
-  async findAndRemove(queryObj) { return { ok: 1, value: {} }; },
+  async findAndRemove(queryObj) { return GOOD_DELETE_RESULT; },
   aggregate(pipeline) { return aggregationCursor; },
 };
 
@@ -110,6 +115,8 @@ describe('db/timeEntry', () => {
       expect(db.close.called).to.equal(true, 'db.close was not called');
     });
   });
+
+
   describe('#update', () => {
     it('Calls updateOne on the collection with the passed in object using the _id of the object', async () => {
       const timeEntry = {
@@ -138,6 +145,8 @@ describe('db/timeEntry', () => {
       expect(db.close.called).to.equal(true, 'db.close was not called');
     });
   });
+
+
   describe('#get', () => {
     it('queries the collection using the start and end date criteria', async () => {
       const startDate = dateParse('2018-02-11');
@@ -197,16 +206,63 @@ describe('db/timeEntry', () => {
       expect(db.close.called).to.equal(true, 'db.close was not called');
     });
   });
+
+
   describe('#remove', () => {
     it('opens and closes the database connection', async () => {
       await lib.remove('123');
       expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
       expect(db.close.called).to.equal(true, 'db.close was not called');
     });
-    it('calls findAndRemove using the entry ID passed in');
-    it('returns true if able to delete the entry');
-    it('returns false if unable to delete the entry and writes an error to stderr');
+    it('calls findAndRemove using the entry ID passed in', async () => {
+      await lib.remove('123');
+      expect(collection.findAndRemove.callCount).to.equal(1, 'remove should have been called once');
+      expect(collection.findAndRemove.firstCall.args[0]).to.deep.include({ _id: '123' }, 'ID was not queried on properly');
+    });
+    it('returns the deleted record if able to delete the entry', async () => {
+      const result = await lib.remove('123');
+      expect(result).to.deep.equal(GOOD_DELETE_RESULT.value, 'deletion should have returned value from MongoDB');
+    });
+    it('throws an error if unable to delete the entry', async () => {
+      collection.findAndRemove.restore();
+      sandbox.stub(collection, 'findAndRemove').callsFake(async () => ({ r: 0 }));
+      try {
+        await lib.remove('123');
+        assert.fail('Should have errored out');
+      } catch (ex) {
+        // do nothing - this is what we expect
+      }
+    });
+    // should only return true if result is not null, r.ok = 1 and there is a value returned
+    it('only returns true when proper data structure returned from MongoDB', async () => {
+      collection.findAndRemove.restore();
+      sandbox.stub(collection, 'findAndRemove').callsFake(async () => (null));
+      try {
+        await lib.remove('123');
+        assert.fail('Should have errored out when null returned');
+      } catch (ex) {
+        // do nothing - this is what we expect
+      }
+      collection.findAndRemove.restore();
+      sandbox.stub(collection, 'findAndRemove').callsFake(async () => ({ r: 0 }));
+      try {
+        await lib.remove('123');
+        assert.fail('Should have errored out if r != 1');
+      } catch (ex) {
+        // do nothing - this is what we expect
+      }
+      collection.findAndRemove.restore();
+      sandbox.stub(collection, 'findAndRemove').callsFake(async () => ({ r: 1, value: {} }));
+      try {
+        await lib.remove('123');
+        assert.fail('Should have errored out if no value was returned');
+      } catch (ex) {
+        // do nothing - this is what we expect
+      }
+    });
   });
+
+
   describe('#getMostRecentEntry', () => {
     it('queries for entries on the given date and before the given time', async () => {
       const now = NOW;
