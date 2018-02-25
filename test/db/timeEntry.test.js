@@ -26,6 +26,7 @@ const cursor = {
 const aggregationCursor = {
   async toArray() {
     return [
+      { project: 'project1', timeType: 'Meeting', minutes: 10 },
     ];
   },
 };
@@ -403,8 +404,18 @@ describe('db/timeEntry', () => {
       expect(sumCommand).to.be.an('object', 'no $sum present in the group');
       expect(sumCommand.$sum).to.equal('$minutes');
     });
-    it('projects properties into the results');
-    it('returns the resultset');
+    it('projects properties into the results', async () => {
+      await lib.summarizeByProjectAndTimeType('2018-02-11', '2018-02-12');
+      expect(collection.aggregate.called).to.equal(true, 'collection.aggregate not called');
+      const pipeline = collection.aggregate.firstCall.args[0];
+      const projectEntry = pipeline.find(e => (e.$project)).$project;
+      expect(projectEntry).to.have.all.keys('project', 'timeType', 'minutes', '_id');
+      expect(projectEntry).to.include({ _id: 0 });
+    });
+    it('returns the resultset', async () => {
+      const result = await lib.summarizeByProjectAndTimeType('2018-02-11', '2018-02-12');
+      expect(result).to.deep.equal(await aggregationCursor.toArray());
+    });
     it('opens and closes the database connection', async () => {
       await lib.summarizeByProjectAndTimeType();
       expect(db.collection.called).to.equal(true, 'did not have db connection - did not obtain collection reference');
