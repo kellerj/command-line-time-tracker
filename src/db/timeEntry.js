@@ -104,15 +104,18 @@ async function remove(db, entryId) {
   throw new Error(`Error deleting record: ${JSON.stringify(r)}`);
 }
 
-async function getMostRecentEntry(db, entryDateString, beforeTime) {
+async function getMostRecentEntry(db, entryDate, beforeTime) {
   const collection = db.collection(collectionName);
   if (!beforeTime) {
     // eslint-disable-next-line no-param-reassign
     beforeTime = new Date();
   }
-  if (!entryDateString) {
+  let entryDateString = entryDate;
+  if (!entryDate) {
     // eslint-disable-next-line no-param-reassign
     entryDateString = format(beforeTime, Constants.DATE_FORMAT);
+  } else if (entryDate instanceof Date) {
+    entryDateString = format(entryDate, Constants.DATE_FORMAT);
   }
   const r = await collection.find({
     entryDate: entryDateString,

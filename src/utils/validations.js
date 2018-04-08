@@ -1,9 +1,11 @@
 // import moment from 'moment';
 import debug from 'debug';
 import parseTime from 'parse-loose-time';
-import { parse, startOfDay, isValid,
+import {
+  parse, startOfDay, isValid,
   startOfISOWeek, endOfISOWeek, subDays,
-  subWeeks, subMonths, startOfMonth, endOfMonth, isAfter } from 'date-fns';
+  subWeeks, subMonths, startOfMonth, endOfMonth, isAfter,
+} from 'date-fns';
 
 const LOG = debug('tt:validations');
 

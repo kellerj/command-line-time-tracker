@@ -1,16 +1,15 @@
-#!/usr/bin/env node -r babel-register
-
 import commander from 'commander';
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
+import { format } from 'date-fns';
 
 import db from '../db';
+import dateUtils from '../utils/date-utils';
 import displayUtils from '../utils/display-utils';
 import { deleteTimeEntries } from '../lib/timeEntry';
-import { DATE_FORMAT as ENTRY_DATE_FORMAT } from '../constants';
+import * as Constants from '../constants';
 
 const LOG = debug('tt:delete');
 
@@ -25,23 +24,12 @@ const deleteLast = commander.last;
 LOG(JSON.stringify(commander, null, 2));
 
 async function run() {
-  if (entryDate) {
-    const temp = moment(entryDate, 'YYYY-MM-DD');
-    if (!temp.isValid()) {
-      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
-    }
-    entryDate = temp;
-  } else if (commander.yesterday) {
-    entryDate = moment().subtract(1, 'day');
-  } else {
-    entryDate = moment();
-  }
+  entryDate = dateUtils.getEntryDate(entryDate, commander.yesterday);
 
   let entries = [];
   if (deleteLast) {
     LOG('Getting last entry');
-    const entry = await db.timeEntry
-      .getMostRecentEntry(moment(entryDate).format(ENTRY_DATE_FORMAT));
+    const entry = await db.timeEntry.getMostRecentEntry(entryDate);
     LOG('Got Last Entry');
     process.stdout.write(chalk.yellow(displayUtils.formatEntryChoice(entry)));
     process.stdout.write('\n');
@@ -56,7 +44,7 @@ async function run() {
         name: 'entries',
         type: 'checkbox',
         message: 'Select Time Entries to Remove',
-        pageSize: 15,
+        pageSize: Constants.LIST_DISPLAY_SIZE,
         when: () => (!deleteLast),
         choices: entries.map(item => ({
           value: item._id,
@@ -78,7 +66,7 @@ async function run() {
       await deleteTimeEntries(answer.entries);
     }
   } else {
-    process.stdout.write(chalk.yellow(`No Time Entries Entered for ${moment(entryDate).format('YYYY-MM-DD')}\n`));
+    throw new Error(chalk.yellow(`No Time Entries Entered for ${format(entryDate, Constants.DATE_FORMAT)}\n`));
   }
 }
 

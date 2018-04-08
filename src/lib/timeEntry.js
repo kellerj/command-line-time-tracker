@@ -123,9 +123,9 @@ export async function addTimeEntry(timeEntry) {
       timeEntry.project,
       timeEntry.timeType,
     );
-    console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} added`));
+    process.stdout.write(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} added\n`));
   } else {
-    console.log(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.`));
+    process.stdout.write(chalk.bgRed(`Failed to insert ${chalk.yellow.bold(JSON.stringify(timeEntry))}.\n`));
   }
   return insertSuceeded;
 }
@@ -136,9 +136,9 @@ export async function deleteTimeEntries(entries) {
     // eslint-disable-next-line no-await-in-loop
     const wasDeleted = await db.timeEntry.remove(entries[i]);
     if (wasDeleted) {
-      console.log(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed`));
+      process.stdout.write(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed\n`));
     } else {
-      console.log(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database`));
+      process.stdout.write(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database\n`));
     }
   }
 }
@@ -153,8 +153,8 @@ export async function updateTimeEntry(entry) {
       entry.project,
       entry.timeType,
     );
-    console.log(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} Updated`));
+    process.stdout.write(chalk.green(`Time Entry ${chalk.white.bold(timeEntrySummary)} Updated\n`));
   } else {
-    console.log(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update`));
+    process.stdout.write(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update\n`));
   }
 }
