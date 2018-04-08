@@ -1,10 +1,12 @@
 import { expect } from 'chai';
 import { stub, spy } from 'sinon';
-import { format, parse, subDays, subHours, addHours,
+import {
+  format, parse, subDays, subHours, addHours,
   subMinutes, setMilliseconds, setSeconds,
-  getYear, setYear, getMonth, setMonth, getDate, setDate } from 'date-fns';
+  getYear, setYear, getMonth, setMonth, getDate, setDate,
+} from 'date-fns';
 
-import { DATE_FORMAT, DEFAULT_MINUTES } from '../../src/constants';
+import * as Constants from '../../src/constants';
 import * as timeEntry from '../../src/lib/timeEntry';
 import validations from '../../src/utils/validations';
 import db from '../../src/db';
@@ -15,12 +17,12 @@ context('lib/timeEntry', () => {
       it('returns today\'s date', () => {
         const result = timeEntry.getEntryDate({});
         expect(result).to.be.a('string');
-        expect(result).to.equal(format(new Date(), DATE_FORMAT));
+        expect(result).to.equal(format(new Date(), Constants.DATE_FORMAT));
       });
       it('returns yesterday\'s date when --yesterday flag set', () => {
         const result = timeEntry.getEntryDate({ yesterday: true });
         expect(result).to.be.a('string');
-        expect(result).to.equal(format(subDays(new Date(), 1), DATE_FORMAT));
+        expect(result).to.equal(format(subDays(new Date(), 1), Constants.DATE_FORMAT));
       });
     });
 
@@ -78,7 +80,7 @@ context('lib/timeEntry', () => {
 
   describe('#getInsertTime', () => {
     const insertTime = new Date();
-    const entryDate = format(insertTime, DATE_FORMAT);
+    const entryDate = format(insertTime, Constants.DATE_FORMAT);
     beforeEach(() => {
       stub(validations, 'validateMinutes');
       stub(validations, 'validateTime');
@@ -131,7 +133,7 @@ context('lib/timeEntry', () => {
           .to.throw('Something is wrong with the date');
       });
       it('should always use the entry\'s date even when setting time on a different day', () => {
-        const yesterday = format(subDays(insertTime, 1), DATE_FORMAT);
+        const yesterday = format(subDays(insertTime, 1), Constants.DATE_FORMAT);
         let logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
         logTime = setYear(logTime, getYear(insertTime));
         logTime = setMonth(logTime, getMonth(insertTime));
@@ -142,7 +144,7 @@ context('lib/timeEntry', () => {
           { insertTime, entryDate: yesterday },
         );
         expect(result).to.be.a('Date');
-        expect(format(result, DATE_FORMAT)).to.equal(format(yesterday, DATE_FORMAT));
+        expect(format(result, Constants.DATE_FORMAT)).to.equal(format(yesterday, Constants.DATE_FORMAT));
       });
     });
     describe('when neither is set', () => {
@@ -158,31 +160,31 @@ context('lib/timeEntry', () => {
   describe('#addTimeEntry', () => {
     beforeEach(() => {
       stub(db.timeEntry, 'insert');
-      spy(console, 'log');
+      spy(process.stdout, 'write');
     });
     afterEach(() => {
       db.timeEntry.insert.restore();
-      console.log.restore();
+      process.stdout.write.restore();
     });
     it('returns true with a summary message when insert succeeds', async () => {
       db.timeEntry.insert.returns(true);
       const result = await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
       expect(result).to.be.true; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Time Entry.*added.*/);
-      expect(console.log.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
+      expect(process.stdout.write.getCall(0).args[0]).to.match(/.*Time Entry.*added.*/);
+      expect(process.stdout.write.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
     });
     it('returns false with a summary message when insert fails', async () => {
       db.timeEntry.insert.returns(false);
       const result = await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Failed.*/);
-      expect(console.log.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
+      expect(process.stdout.write.getCall(0).args[0]).to.match(/.*Failed.*/);
+      expect(process.stdout.write.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
     });
     it('returns false and does not blow up when null object passed', async () => {
       db.timeEntry.insert.returns(false);
       const result = await timeEntry.addTimeEntry(null);
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Failed.*/);
+      expect(process.stdout.write.getCall(0).args[0]).to.match(/.*Failed.*/);
     });
   });
 
@@ -248,14 +250,14 @@ context('lib/timeEntry', () => {
   describe('#getMinutesSinceLastEntry', () => {
     it('returns the default time when no prior entry is found', () => {
       const result = timeEntry.getMinutesSinceLastEntry({}, null);
-      expect(result).to.equal(DEFAULT_MINUTES);
+      expect(result).to.equal(Constants.DEFAULT_MINUTES);
     });
     it('returns the default time when the prior entry is not on the same day', () => {
       const result = timeEntry.getMinutesSinceLastEntry(
         { entryDate: '2017-11-11' },
         { entryDate: '2017-11-10' },
       );
-      expect(result).to.equal(DEFAULT_MINUTES);
+      expect(result).to.equal(Constants.DEFAULT_MINUTES);
     });
     it('returns zero when the given most recent entry is in the future', () => {
       const result = timeEntry.getMinutesSinceLastEntry(
