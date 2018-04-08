@@ -4,7 +4,7 @@ import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
 import { format } from 'date-fns';
 
-import { DATE_FORMAT } from '../constants';
+import * as Constants from '../constants';
 
 const LOG = debug('db:timeEntry');
 
@@ -39,7 +39,7 @@ async function insert(db, timeEntry) {
   // add the timing data to the object
   if (!timeEntry.entryDate) {
     // it's possible the date may be specified from the command line - if so, don't set
-    timeEntry.entryDate = moment().startOf('day').format(DATE_FORMAT);
+    timeEntry.entryDate = moment().startOf('day').format(Constants.DATE_FORMAT);
     LOG(`Defaulting entry date to ${timeEntry.entryDate}`);
   }
 
@@ -79,12 +79,12 @@ async function get(db, startDate, endDate) {
   }
   let query = {};
   if (startDate === endDate) {
-    query = { entryDate: format(startDate, DATE_FORMAT) };
+    query = { entryDate: format(startDate, Constants.DATE_FORMAT) };
   } else {
     query = {
       entryDate: {
-        $gte: format(startDate, DATE_FORMAT),
-        $lte: format(endDate, DATE_FORMAT),
+        $gte: format(startDate, Constants.DATE_FORMAT),
+        $lte: format(endDate, Constants.DATE_FORMAT),
       },
     };
   }
@@ -112,7 +112,7 @@ async function getMostRecentEntry(db, entryDateString, beforeTime) {
   }
   if (!entryDateString) {
     // eslint-disable-next-line no-param-reassign
-    entryDateString = format(beforeTime, DATE_FORMAT);
+    entryDateString = format(beforeTime, Constants.DATE_FORMAT);
   }
   const r = await collection.find({
     entryDate: entryDateString,
@@ -143,8 +143,8 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
     {
       $match: {
         entryDate: {
-          $gte: format(startDate, DATE_FORMAT),
-          $lte: format(endDate, DATE_FORMAT),
+          $gte: format(startDate, Constants.DATE_FORMAT),
+          $lte: format(endDate, Constants.DATE_FORMAT),
         },
       },
     },

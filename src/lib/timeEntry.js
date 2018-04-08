@@ -1,8 +1,10 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import parseTime from 'parse-loose-time';
-import { format, parse, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes,
-  getYear, getMonth, getDate, setYear, setMonth, setDate } from 'date-fns';
+import {
+  format, parse, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes,
+  getYear, getMonth, getDate, setYear, setMonth, setDate,
+} from 'date-fns';
 
 import db from '../db';
 import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';

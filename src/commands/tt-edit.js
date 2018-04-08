@@ -4,15 +4,16 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import { format, parse, subDays, isValid, setHours, setMinutes } from 'date-fns';
+import { format, setHours, setMinutes } from 'date-fns';
 import parseTime from 'parse-loose-time';
 import debug from 'debug';
 
-import { DATE_FORMAT } from '../constants';
+import * as Constants from '../constants';
 import db from '../db';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import { updateTimeEntry } from '../lib/timeEntry';
+import dateUtils from '../utils/date-utils';
 
 const LOG = debug('tt:edit');
 
@@ -34,7 +35,7 @@ async function getEntryToEdit(date) {
   if (r && r.length) {
     LOG(JSON.stringify(r, null, 2));
   } else {
-    throw new Error(chalk.yellow(`No Time Entries Entered for ${format(date, DATE_FORMAT)}\n`));
+    throw new Error(chalk.yellow(`No Time Entries Entered for ${format(date, Constants.DATE_FORMAT)}\n`));
   }
   const entryList = r.map(item => ({
     value: item._id,
@@ -46,7 +47,7 @@ async function getEntryToEdit(date) {
       name: 'entry',
       type: 'list',
       message: 'Select the Time Entry to Edit',
-      pageSize: 15,
+      pageSize: Constants.LIST_DISPLAY_SIZE,
       choices: entryList,
     },
   ]);
@@ -119,23 +120,15 @@ async function handleEntryChanges(entry) {
 
 async function run() {
   let entry = null;
-  if (entryDate) {
-    const temp = parse(entryDate);
-    if (!isValid(temp)) {
-      throw new Error(`-d, --date: Invalid Date: ${entryDate}`);
-    }
-    entryDate = temp;
-  } else if (commander.yesterday) {
-    entryDate = subDays(new Date(), 1);
-  } else {
-    entryDate = new Date();
-  }
+
+  entryDate = dateUtils.getEntryDate(entryDate, commander.yesterday);
+  LOG(`Using Entry Date: ${entryDate}`);
   if (!editLast) {
     entry = await getEntryToEdit(entryDate);
   } else {
-    entry = await db.timeEntry.getMostRecentEntry(format(entryDate, DATE_FORMAT));
+    entry = await db.timeEntry.getMostRecentEntry(format(entryDate, Constants.DATE_FORMAT));
     if (!entry) {
-      throw new Error(chalk.yellow(`No Time Entries Defined for ${format(entryDate, DATE_FORMAT)}`));
+      throw new Error(chalk.yellow(`No Time Entries Defined for ${format(entryDate, Constants.DATE_FORMAT)}`));
     }
   }
   LOG(`Entry Selected: ${JSON.stringify(entry)}`);
