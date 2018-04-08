@@ -34,27 +34,23 @@ async function getEntryToEdit(date) {
   if (r && r.length) {
     LOG(JSON.stringify(r, null, 2));
   } else {
-    console.log(chalk.yellow(`No Time Entries Defined for ${format(date, DATE_FORMAT)}`));
-    return null;
+    throw new Error(chalk.yellow(`No Time Entries Entered for ${format(date, DATE_FORMAT)}\n`));
   }
-  if (r) {
-    LOG(JSON.stringify(r, null, 2));
-    const answer = await inquirer.prompt([
-      {
-        name: 'entry',
-        type: 'list',
-        message: 'Select the Time Entry to Edit',
-        pageSize: 15,
-        choices: r.map(item => ({
-          value: item._id,
-          name: displayUtils.formatEntryChoice(item),
-        })),
-      },
-    ]);
-    return r.find(e => (e._id === answer.entry));
-  }
-  console.log(chalk.yellow(`No Time Entries Entered for ${format(date, DATE_FORMAT)}`));
-  return null;
+  const entryList = r.map(item => ({
+    value: item._id,
+    name: displayUtils.formatEntryChoice(item),
+  }));
+  entryList.push({ value: null, name: '(Cancel)' });
+  const answer = await inquirer.prompt([
+    {
+      name: 'entry',
+      type: 'list',
+      message: 'Select the Time Entry to Edit',
+      pageSize: 15,
+      choices: entryList,
+    },
+  ]);
+  return r.find(e => (e._id === answer.entry));
 }
 
 async function handleEntryChanges(entry) {
@@ -153,12 +149,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    process.stderr.write(chalk.red(err.message));
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  process.stderr.write(chalk.red(err.message));
   LOG(err);
   process.exitCode = 1;
 }
