@@ -39,34 +39,39 @@ async function run() {
   }
 
   if (entries && entries.length) {
-    const answer = await inquirer.prompt([
-      {
-        name: 'entries',
-        type: 'checkbox',
-        message: 'Select Time Entries to Remove',
-        pageSize: Constants.LIST_DISPLAY_SIZE,
-        when: () => (!deleteLast),
-        choices: entries.map(item => ({
-          value: item._id,
-          name: displayUtils.formatEntryChoice(item),
-        })),
-      },
-      {
-        name: 'confirm',
-        type: 'confirm',
-        message: 'Are you sure you want to delete these time entries?',
-        default: false,
-        when: answers => (deleteLast || (answers.entries && answers.entries.length)),
-      },
-    ]);
-    if (answer.confirm) {
-      if (deleteLast) {
-        answer.entries = [entries[0]._id];
-      }
-      await deleteTimeEntries(answer.entries);
-    }
+    LOG(JSON.stringify(entries, null, 2));
   } else {
     throw new Error(chalk.yellow(`No Time Entries Entered for ${format(entryDate, Constants.DATE_FORMAT)}\n`));
+  }
+  const entryList = entries.map(item => ({
+    value: item._id,
+    name: displayUtils.formatEntryChoice(item),
+  }));
+  entryList.push({ value: null, name: '(Cancel)' });
+
+  const answer = await inquirer.prompt([
+    {
+      name: 'entries',
+      type: 'checkbox',
+      message: 'Select Time Entries to Remove',
+      pageSize: Constants.LIST_DISPLAY_SIZE,
+      when: () => (!deleteLast),
+      choices: entryList,
+    },
+    {
+      name: 'confirm',
+      type: 'confirm',
+      message: 'Are you sure you want to delete these time entries?',
+      default: false,
+      when: answers => (deleteLast
+        || (answers.entries && answers.entries.length && answers.entries[0])),
+    },
+  ]);
+  if (answer.confirm) {
+    if (deleteLast) {
+      answer.entries = [entries[0]._id];
+    }
+    await deleteTimeEntries(answer.entries);
   }
 }
 
