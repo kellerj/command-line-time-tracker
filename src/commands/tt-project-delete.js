@@ -1,10 +1,9 @@
-#!/usr/bin/env node -r babel-register
-
 import commander from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import debug from 'debug';
 
+import displayUtils from '../utils/display-utils';
 import db from '../db';
 
 const LOG = debug('tt:project:delete');
@@ -22,9 +21,9 @@ async function performUpdate(names) {
     // eslint-disable-next-line no-await-in-loop
     const wasDeleted = await db.project.remove(names[i]);
     if (wasDeleted) {
-      console.log(chalk.green(`Project ${chalk.white(names[i])} Removed`));
+      process.stdout.write(chalk.green(`Project ${chalk.white(names[i])} Removed\n`));
     } else {
-      console.log(chalk.red(`Project ${chalk.white(names[i])} Not Present In database`));
+      process.stdout.write(chalk.red(`Project ${chalk.white(names[i])} Not Present In database\n`));
     }
   }
 }
@@ -58,18 +57,18 @@ async function run() {
       await performUpdate(answer.names);
     }
   } else {
-    console.log(chalk.yellow('No Projects Defined'));
+    process.stdout.write(chalk.yellow('No Projects Defined\n'));
   }
 }
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }

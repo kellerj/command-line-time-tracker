@@ -7,10 +7,12 @@ import db from '../db';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import { Table, ColumnInfo } from '../utils/table';
-import { buildTimeTypeHeadingsList,
+import {
+  buildTimeTypeHeadingsList,
   buildProjectByTimeTypeDataGrid,
   buildColumnInfo,
-  addTotalColumn } from '../lib/summarize';
+  addTotalColumn,
+} from '../lib/summarize';
 
 const LOG = debug('tt:report');
 
@@ -82,7 +84,7 @@ async function run() {
 
   const r = await db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
-    console.log(chalk.yellow('There are no time entries to summarize for the given period.'));
+    process.stdout.write(chalk.yellow('There are no time entries to summarize for the given period.\n'));
     return;
   }
 
@@ -187,12 +189,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    process.stderr.write(chalk.red(err.message));
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  process.stderr.write(chalk.red(err.message));
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }

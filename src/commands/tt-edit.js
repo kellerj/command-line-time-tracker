@@ -30,14 +30,14 @@ const editLast = commander.last;
 LOG(JSON.stringify(commander, null, 2));
 
 async function getEntryToEdit(date) {
-  const r = await db.timeEntry.get(date);
+  const entries = await db.timeEntry.get(date);
 
-  if (r && r.length) {
-    LOG(JSON.stringify(r, null, 2));
+  if (entries && entries.length) {
+    LOG(JSON.stringify(entries, null, 2));
   } else {
     throw new Error(chalk.yellow(`No Time Entries Entered for ${format(date, Constants.DATE_FORMAT)}\n`));
   }
-  const entryList = r.map(item => ({
+  const entryList = entries.map(item => ({
     value: item._id,
     name: displayUtils.formatEntryChoice(item),
   }));
@@ -51,7 +51,7 @@ async function getEntryToEdit(date) {
       choices: entryList,
     },
   ]);
-  return r.find(e => (e._id === answer.entry));
+  return entries.find(e => (e._id === answer.entry));
 }
 
 async function handleEntryChanges(entry) {
@@ -142,12 +142,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    process.stderr.write(chalk.red(err.message));
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  process.stderr.write(chalk.red(err.message));
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }

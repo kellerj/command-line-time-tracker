@@ -10,5 +10,6 @@ commander
   .alias('ls')
   .command('delete', 'Remove a time tracking project from the database')
   .alias('del')
-// .command('rename', 'Rename an existing project throughout the database.').alias('r')
+  // .command('rename', 'Rename an existing project throughout the database.').alias('r')
+  // .command('merge', 'Merge two projects.').alias('m')
   .parse(process.argv);

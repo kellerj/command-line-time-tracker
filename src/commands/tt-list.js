@@ -82,18 +82,18 @@ async function run() {
     t.setData(grid, columnInfo);
     t.write(process.stdout);
   } else {
-    process.stdout.write(chalk.yellow(`No Time Entries Defined for ${moment(startDate).format('YYYY-MM-DD')}\n`));
+    throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(startDate).format('YYYY-MM-DD')}`));
   }
 }
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }

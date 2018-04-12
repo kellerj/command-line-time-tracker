@@ -2,9 +2,9 @@
 
 import commander from 'commander';
 import inquirer from 'inquirer';
-import chalk from 'chalk';
 import debug from 'debug';
 
+import displayUtils from '../utils/display-utils';
 import { addNewProject } from '../lib/project';
 
 const LOG = debug('tt:commands:project:add');
@@ -33,12 +33,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }

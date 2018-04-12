@@ -1,8 +1,17 @@
 import moment from 'moment';
 // TODO: Convert to use date-fns
 import { sprintf } from 'sprintf-js';
+import chalk from 'chalk';
 
 module.exports = {
+
+  writeError: (message) => {
+    process.stderr.write(`${chalk.red(message)}\n`);
+  },
+
+  writeMessage: (message) => {
+    process.stdout.write(`${chalk.yellow(message)}\n`);
+  },
 
   // eslint-disable-next-line no-unused-vars
   datePrinter: (val, width) => {

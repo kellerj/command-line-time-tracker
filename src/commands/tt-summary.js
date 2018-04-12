@@ -6,10 +6,12 @@ import db from '../db';
 import { Table } from '../utils/table';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
-import { buildTimeTypeHeadingsList,
+import {
+  buildTimeTypeHeadingsList,
   buildProjectByTimeTypeDataGrid,
   buildColumnInfo,
-  addTotalColumn } from '../lib/summarize';
+  addTotalColumn,
+} from '../lib/summarize';
 
 const LOG = debug('tt:summary');
 
@@ -45,19 +47,13 @@ async function run() {
     if (commander.markdown) {
       process.stdout.write(`## ${reportHeader}\n\n`);
     } else {
-      // process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
-      process.stdout.write('\n');
-      process.stdout.write(chalk.greenBright.bold.underline(reportHeader));
-      process.stdout.write('\n');
-      // process.stdout.write(chalk.yellowBright('-'.repeat(reportHeader.length)));
-      process.stdout.write('\n');
+      displayUtils.writeHeader(reportHeader);
     }
   }
 
   const r = await db.timeEntry.summarizeByProjectAndTimeType(startDate, endDate);
   if (!r.length) {
-    process.stdout.write(chalk.yellow('There are no time entries to summarize for the given period.'));
-    process.stdout.write('\n');
+    displayUtils.writeMessage('There are no time entries to summarize for the given period.');
     return;
   }
   LOG(JSON.stringify(r, null, 2));
@@ -84,14 +80,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    process.stderr.write(chalk.red(err.message));
-    process.stderr.write('\n');
-    process.exitCode = 1;
+    displayUtils.writeError(err.message);
     LOG(err);
+    process.exitCode = 1;
   });
 } catch (err) {
-  process.stderr.write(chalk.red(err.message));
-  process.stderr.write('\n');
-  process.exitCode = 1;
+  displayUtils.writeError(err.message);
   LOG(err);
+  process.exitCode = 1;
 }

@@ -77,14 +77,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    process.stderr.write(chalk.red(err.message));
-    process.stderr.write('\n');
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  process.stderr.write(chalk.red(err.message));
-  process.stderr.write('\n');
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }

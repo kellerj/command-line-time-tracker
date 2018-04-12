@@ -4,8 +4,6 @@ import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-// import moment from 'moment'; // TODO: Convert to use date-fns
-import { format } from 'date-fns';
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
 import debug from 'debug';
@@ -14,9 +12,11 @@ import Table from 'easy-table';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import db from '../db';
-import { getEntryDate, getEntryMinutes, getInsertTime,
+import {
+  getEntryDate, getEntryMinutes, getInsertTime,
   getTimeType, getProjectName, getMinutesSinceLastEntry,
-  addTimeEntry } from '../lib/timeEntry';
+  addTimeEntry,
+} from '../lib/timeEntry';
 import { addNewProject } from '../lib/project';
 
 const LOG = debug('tt:add');
@@ -65,8 +65,8 @@ async function run() {
   newEntry.project = getProjectName(newEntry, projects);
   if (commander.project && !newEntry.project) {
     // If project option is not a valid project, reject with list of project names
-    console.log(chalk.red(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`));
-    console.log(chalk.yellow(Table.print(
+    displayUtils.writeError(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`);
+    displayUtils.writeError(chalk.yellow(Table.print(
       projects.map(e => ({ name: e })),
       { name: { name: chalk.white.bold('Project Name') } },
     )));
@@ -77,8 +77,8 @@ async function run() {
   newEntry.timeType = getTimeType(newEntry, timeTypes);
   if (commander.type && !newEntry.timeType) {
     // If time type option is not a valid project, reject with list of type names
-    console.log(chalk.red(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`));
-    console.log(chalk.yellow(Table.print(
+    displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
+    displayUtils.writeError(chalk.yellow(Table.print(
       timeTypes.map(e => ({ name: e })),
       { name: { name: chalk.white.bold('Time Type') } },
     )));
@@ -106,7 +106,8 @@ async function run() {
       }
     },
     (err) => {
-      console.log(chalk.bgRed(JSON.stringify(err)));
+      //console.log(chalk.bgRed(JSON.stringify(err)));
+      throw err;
     },
     async () => {
       LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
@@ -198,12 +199,12 @@ async function run() {
 
 try {
   run().catch((err) => {
-    console.log(chalk.red(err.message));
+    displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
   });
 } catch (err) {
-  console.log(chalk.red(err.message));
+  displayUtils.writeError(err.message);
   LOG(err);
   process.exitCode = 1;
 }
