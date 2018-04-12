@@ -71,7 +71,14 @@ async function run() {
     if (deleteLast) {
       answer.entries = [entries[0]._id];
     }
-    await deleteTimeEntries(answer.entries);
+    const results = await deleteTimeEntries(answer.entries);
+    results.forEach((result) => {
+      if (result.deleted) {
+        process.stdout.write(chalk.green(`Time Entry ${chalk.white(result.entry)} Removed\n`));
+      } else {
+        process.stdout.write(chalk.red(`Time Entry ${chalk.white(result.entry)} Not Present In database\n`));
+      }
+    });
   }
 }
 

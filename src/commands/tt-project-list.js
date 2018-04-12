@@ -1,6 +1,5 @@
 import commander from 'commander';
 import chalk from 'chalk';
-import Table from 'easy-table';
 import debug from 'debug';
 
 import displayUtils from '../utils/display-utils';
@@ -17,10 +16,7 @@ async function run() {
 
   if (r) {
     LOG(JSON.stringify(r, null, 2));
-    process.stdout.write(chalk.yellow(Table.print(
-      r.map((item) => { delete item._id; return item; }),
-      { name: { name: chalk.white.bold('Project Name') } },
-    )));
+    displayUtils.writeSimpleTable(r, null, 'Project Name');
   } else {
     process.stdout.write(chalk.yellow('No Projects Defined\n'));
   }

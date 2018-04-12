@@ -66,10 +66,7 @@ async function run() {
   if (commander.project && !newEntry.project) {
     // If project option is not a valid project, reject with list of project names
     displayUtils.writeError(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`);
-    displayUtils.writeError(chalk.yellow(Table.print(
-      projects.map(e => ({ name: e })),
-      { name: { name: chalk.white.bold('Project Name') } },
-    )));
+    displayUtils.writeSimpleTable(projects, null, 'Project Name');
     throw new Error();
   }
   const projectDefaulted = newEntry.project !== commander.project;
@@ -78,10 +75,7 @@ async function run() {
   if (commander.type && !newEntry.timeType) {
     // If time type option is not a valid project, reject with list of type names
     displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
-    displayUtils.writeError(chalk.yellow(Table.print(
-      timeTypes.map(e => ({ name: e })),
-      { name: { name: chalk.white.bold('Time Type') } },
-    )));
+    displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
     throw new Error();
   }
   const timeTypeDefaulted = newEntry.timeType !== commander.type;

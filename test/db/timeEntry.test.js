@@ -277,7 +277,7 @@ describe('db/timeEntry', () => {
     });
     it('uses the current time if no beforeDate passed', async () => {
       const now = new Date();
-      await lib.getMostRecentEntry('2018-02-11');
+      await lib.getMostRecentEntry(dateParse('2018-02-11'));
       expect(collection.find.callCount).to.equal(1, 'find should only have been called once');
       const findCall = collection.find.firstCall;
       const mongoQuery = findCall.args[0];

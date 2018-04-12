@@ -131,16 +131,14 @@ export async function addTimeEntry(timeEntry) {
 }
 
 export async function deleteTimeEntries(entries) {
+  const results = [];
   for (let i = 0; i < entries.length; i += 1) {
     LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
     // eslint-disable-next-line no-await-in-loop
     const wasDeleted = await db.timeEntry.remove(entries[i]);
-    if (wasDeleted) {
-      process.stdout.write(chalk.green(`Time Entry ${chalk.white(entries[i])} Removed\n`));
-    } else {
-      process.stdout.write(chalk.red(`Time Entry ${chalk.white(entries[i])} Not Present In database\n`));
-    }
+    results.push({ entry: entries[i], deleted: wasDeleted });
   }
+  return results;
 }
 
 export async function updateTimeEntry(entry) {

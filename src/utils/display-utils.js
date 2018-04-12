@@ -2,6 +2,7 @@ import moment from 'moment';
 // TODO: Convert to use date-fns
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
+import Table from 'easy-table';
 
 module.exports = {
 
@@ -11,6 +12,21 @@ module.exports = {
 
   writeMessage: (message) => {
     process.stdout.write(`${chalk.yellow(message)}\n`);
+  },
+
+  writeHeader: (message) => {
+    process.stdout.write(`\n${chalk.greenBright.bold.underline(message)}\n\n`);
+  },
+
+  writeSimpleTable: (list, propName, title) => {
+    let data = [];
+    if (propName) {
+      data = list.map(e => ({ name: e[propName] }));
+    } else {
+      data = list.map(e => ({ name: e }));
+    }
+    const header = { name: { name: chalk.white.bold(title) } };
+    process.stdout.write(chalk.yellow(Table.print(data, header)));
   },
 
   // eslint-disable-next-line no-unused-vars
