@@ -3,6 +3,7 @@ import moment from 'moment';
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import Table from 'easy-table';
+import fuzzy from 'fuzzy';
 
 module.exports = {
 
@@ -126,7 +127,13 @@ module.exports = {
     if (defaultValue && (!searchString || !searchString.trim())) {
       searchString = defaultValue;
     }
-    resolve(list.filter(e => !searchString || (typeof e === 'string' && e.toUpperCase().startsWith(searchString.toUpperCase().trim()))));
+    let result = list;
+    // process.stderr.write(`\nSearching for ${searchString}\n\n`);
+    if (searchString && typeof searchString === 'string') {
+      result = fuzzy.filter(searchString.trim(), list.filter(e => typeof e === 'string')).map(el => el.original);
+      // process.stderr.write(`\nResults:  ${JSON.stringify(result)}\n\n`);
+    }
+    resolve(result);
   }),
 
 };
