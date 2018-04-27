@@ -5,6 +5,16 @@ import chalk from 'chalk';
 import Table from 'easy-table';
 import fuzzy from 'fuzzy';
 
+function compareScore(a, b) {
+  if (a.score > b.score) {
+    return -1;
+  }
+  if (a.score < b.score) {
+    return 1;
+  }
+  return 0;
+}
+
 module.exports = {
 
   writeError: (message) => {
@@ -119,6 +129,7 @@ module.exports = {
     return left.localeCompare(right);
   },
 
+
   autocompleteListSearch: (list, input, defaultValue) => new Promise((resolve) => {
     let searchString = input;
     // if we have detected that we have a project name, either from defaulting or command line
@@ -130,8 +141,10 @@ module.exports = {
     let result = list;
     // process.stderr.write(`\nSearching for ${searchString}\n\n`);
     if (searchString && typeof searchString === 'string') {
-      result = fuzzy.filter(searchString.trim(), list.filter(e => typeof e === 'string')).map(el => el.original);
+      result = fuzzy.filter(searchString.trim(), list.filter(e => typeof e === 'string'));
+      result.sort(compareScore);
       // process.stderr.write(`\nResults:  ${JSON.stringify(result)}\n\n`);
+      result = result.map(el => el.original);
     }
     resolve(result);
   }),
