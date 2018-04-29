@@ -6,10 +6,10 @@
   "scripts": {
     "lint": "eslint src --ext .js",
     "test": "jest",
-    "test:verbose": "jest --verbose",
-    "coverage": "jest --coverage",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test:watch": "jest --watch",
+    "test:verbose": "jest --verbose",
+    "test:coverage": "jest --coverage",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "preversion": "npm run lint && npm test",
     "version": "git add src",
     "postversion": "git push && git push --tags",
@@ -78,7 +78,7 @@
       "global": {
         "lines": 90,
         "statements": 90,
-        "functions": 100,
+        "functions": 90,
         "branches": 75
       }
     },
