@@ -4,7 +4,7 @@ import { stub, spy } from 'sinon';
 import * as project from '../../src/lib/project';
 import db from '../../src/db';
 
-context('lib/timeEntry', () => {
+describe('lib/timeEntry', () => {
   describe('#addNewProject', () => {
     beforeEach(() => {
       stub(db.project, 'insert');
