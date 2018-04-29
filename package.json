@@ -71,6 +71,7 @@
     "sinon": "^4.1.2"
   },
   "jest": {
+    "roots": ["src", "test"],
     "verbose": false,
     "collectCoverage": false,
     "coverageThreshold": {
@@ -79,19 +80,20 @@
         "statements": 90,
         "functions": 100,
         "branches": 75
-      },
-      "testEnvironment": "node",
-      "coveragePathIgnorePatterns": [
-        "src/commands",
-        "coverage",
-        "dist"
-      ],
-      "coverageReporters": [
-        "lcov",
-        "text-summary",
-        "text",
-        "html"
-      ]
-    }
+      }
+    },
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "src/commands",
+      "coverage",
+      "dist",
+      "node_modules"
+    ],
+    "coverageReporters": [
+      "lcov",
+      "text-summary",
+      "text",
+      "html"
+    ]
   }
 }
