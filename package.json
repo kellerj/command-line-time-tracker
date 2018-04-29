@@ -5,13 +5,10 @@
   "main": "./src/commands/tt.js",
   "scripts": {
     "lint": "eslint src --ext .js",
-    "test": "cross-env NODE_ENV=test jest",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "test:mocha": "mocha --require babel-register --reporter spec 'test/**/*.test.js'",
-    "test:watch": "mocha --require babel-register --reporter min 'test/**/*.test.js' --watch",
-    "mocha": "mocha --require babel-register",
+    "test": "jest",
+    "coveralls": "jest --coverage",
+    "test:watch": "jest --watch",
     "eslint": "eslint",
-    "nyc": "nyc",
     "preversion": "npm run lint && npm test",
     "version": "git add src",
     "postversion": "git push && git push --tags",
@@ -74,7 +71,7 @@
   },
   "jest": {
     "verbose": false,
-    "collectCoverage": true,
+    "collectCoverage": false,
     "coverageThreshold": {
       "global": {
         "lines": 90,
@@ -87,6 +84,12 @@
         "src/commands",
         "coverage",
         "dist"
+      ],
+      "coverageReporters": [
+        "lcov",
+        "text-summary",
+        "text",
+        "html"
       ]
     }
   }
