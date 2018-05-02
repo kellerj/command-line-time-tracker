@@ -7,7 +7,6 @@ import chalk from 'chalk';
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
 import debug from 'debug';
-import Table from 'easy-table';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
