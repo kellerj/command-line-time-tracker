@@ -11,7 +11,7 @@ import * as timeEntry from '../../src/lib/timeEntry';
 import validations from '../../src/utils/validations';
 import db from '../../src/db';
 
-context('lib/timeEntry', () => {
+describe('lib/timeEntry', () => {
   describe('#getEntryDate', () => {
     describe('no "date" parameter', () => {
       it('returns today\'s date', () => {

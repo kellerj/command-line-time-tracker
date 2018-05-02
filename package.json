@@ -5,13 +5,11 @@
   "main": "./src/commands/tt.js",
   "scripts": {
     "lint": "eslint src --ext .js",
-    "test": "cross-env NODE_ENV=test nyc mocha --reporter spec 'test/**/*.test.js'",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "test:mocha": "mocha --require babel-register --reporter spec 'test/**/*.test.js'",
-    "test:watch": "mocha --require babel-register --reporter min 'test/**/*.test.js' --watch",
-    "mocha": "mocha --require babel-register",
-    "eslint": "eslint",
-    "nyc": "nyc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:verbose": "jest --verbose",
+    "test:coverage": "jest --coverage",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "preversion": "npm run lint && npm test",
     "version": "git add src",
     "postversion": "git push && git push --tags",
@@ -53,7 +51,8 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-plugin-istanbul": "^4.1.5",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^22.4.3",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
     "babel-watch": "^2.0.7",
@@ -65,54 +64,36 @@
     "eslint": "^4.12.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^4.0.1",
-    "nyc": "^11.4.0",
+    "istanbul-api": "1.2.2",
+    "istanbul-reports": "1.1.4",
+    "jest": "^22.4.3",
+    "regenerator-runtime": "^0.11.1",
     "sinon": "^4.1.2"
   },
-  "nyc": {
-    "exclude": [
-      "src/commands/**",
-      "coverage/**",
-      "test/**",
-      "dist/**"
+  "coverageThreshold-temp": {
+    "global": {
+      "lines": 90,
+      "statements": 90,
+      "functions": 90,
+      "branches": 75
+    }
+  },
+  "jest": {
+    "roots": ["src", "test"],
+    "verbose": false,
+    "collectCoverage": false,
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "src/commands",
+      "coverage",
+      "dist",
+      "node_modules"
     ],
-    "check-coverage": false,
-    "sourceMap": false,
-    "instrument": false,
-    "lines": 90,
-    "statements": 90,
-    "functions": 100,
-    "branches": 75,
-    "reporter": [
+    "coverageReporters": [
       "lcov",
       "text-summary",
       "text",
       "html"
-    ],
-    "require": [
-      "babel-register"
-    ],
-    "watermarks": {
-      "lines": [
-        75,
-        90
-      ],
-      "functions": [
-        90,
-        100
-      ],
-      "branches": [
-        50,
-        75
-      ],
-      "statements": [
-        75,
-        90
-      ]
-    },
-    "cache": true,
-    "all": true,
-    "report-dir": "./coverage"
+    ]
   }
 }

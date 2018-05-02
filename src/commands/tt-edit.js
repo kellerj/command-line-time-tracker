@@ -1,4 +1,4 @@
-#!/usr/bin/env node -r babel-register
+#!/usr/bin/env node
 
 import commander from 'commander';
 import inquirer from 'inquirer';
