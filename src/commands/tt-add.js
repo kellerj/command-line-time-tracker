@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import { sprintf } from 'sprintf-js';
 import Rx from 'rx';
 import debug from 'debug';
+import dateFns from 'date-fns';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
@@ -29,6 +30,7 @@ commander
   .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
   .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
   .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
+  .option('--fill', 'Set the log time to fill time since the previous entry.')
   .option('-y, --yesterday', 'Set the logging date to yesterday.')
   .parse(process.argv);
 
@@ -58,6 +60,10 @@ async function run() {
   newEntry.insertTime = getInsertTime(commander, newEntry);
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate, newEntry.insertTime);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
+  if (commander.fill && !lastEntry) {
+    displayUtils.writeError('There are no prior entries today, the --fill option may not be used.');
+    throw new Error();
+  }
 
   const minutesSinceLastEntry = getMinutesSinceLastEntry(newEntry, lastEntry);
 
@@ -86,6 +92,9 @@ async function run() {
 
   const ui = new inquirer.ui.BottomBar();
   const prompts = new Rx.Subject();
+  const writeHeaderLine = (label, value) => {
+    ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
+  };
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   inquirer.prompt(prompts).ui.process.subscribe(
@@ -94,6 +103,10 @@ async function run() {
       LOG(JSON.stringify(lastAnswer));
       // for each answer, update the newEntry object
       newEntry[lastAnswer.name] = lastAnswer.answer;
+      if (lastAnswer.name === 'minutes' && commander.fill) {
+        newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, newEntry.minutes);
+        writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
+      }
       if (lastAnswer.name === 'wasteOfTime') {
         prompts.onCompleted();
       }
@@ -166,9 +179,6 @@ async function run() {
     message: 'Waste of Time?',
     default: false,
   });
-  const writeHeaderLine = (label, value) => {
-    ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
-  };
 
   if (lastEntry) {
     writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
