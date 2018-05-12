@@ -12,12 +12,12 @@ import dateFns from 'date-fns';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import db from '../db';
-import {
+import entryLib, {
   getEntryDate, getEntryMinutes, getInsertTime,
   getTimeType, getProjectName, getMinutesSinceLastEntry,
   addTimeEntry,
 } from '../lib/timeEntry';
-import { addNewProject } from '../lib/project';
+import projectLib, { addNewProject } from '../lib/project';
 
 const LOG = debug('tt:add');
 
@@ -36,23 +36,35 @@ commander
 
 LOG(`Parsed Commander Object: ${JSON.stringify(commander, null, 2)}`);
 
-// Build the new entry object with command line arguments
-const newEntry = {
-  entryDescription: commander.args.join(' ').trim(),
+const commandArgs = {
+  description: commander.args.join(' ').trim(),
   project: commander.project,
-  timeType: commander.type,
-  minutes: commander.time,
-  insertTime: new Date(),
-  entryDate: commander.date,
-  wasteOfTime: false,
+  type: commander.type,
+  time: commander.time,
+  date: commander.date,
+  backTime: commander.backTime,
+  logTime: commander.logTime,
+  fill: commander.fill,
+  yesterday: commander.yesterday,
 };
 
-LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
+async function run(args) {
+  // Build the new entry object with command line arguments
+  const newEntry = entryLib.createEntryFromArguments(args);
+  const newEntry = {
+    entryDescription: commander.args.join(' ').trim(),
+    project: commander.project,
+    timeType: commander.type,
+    minutes: commander.time,
+    insertTime: new Date(),
+    entryDate: commander.date,
+    wasteOfTime: false,
+  };
 
-newEntry.entryDate = getEntryDate(commander);
-newEntry.minutes = getEntryMinutes(commander);
+  LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
-async function run() {
+  newEntry.entryDate = getEntryDate(args);
+  newEntry.minutes = getEntryMinutes(args);
   // pull the lists of projects and time types from MongoDB
   const projects = (await db.project.getAll()).map(item => (item.name));
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
@@ -201,7 +213,7 @@ async function run() {
 }
 
 try {
-  run().catch((err) => {
+  run(commandArgs).catch((err) => {
     displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;

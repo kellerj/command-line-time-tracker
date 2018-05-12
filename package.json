@@ -17,6 +17,7 @@
     "tt-debug": "DEBUG=tt:* node -r babel-register src/commands/tt.js",
     "compile": "babel -d dist/ src/",
     "prepare": "npm run compile",
+    "doc": "jsdoc -r --private -d doc --readme README.md src",
     "watch": "babel --watch -d dist/ src/"
   },
   "author": {
@@ -68,6 +69,7 @@
     "istanbul-reports": "^1.1.4",
     "jest": "^22.4.3",
     "jest-runner-eslint": "^0.5.0",
+    "jsdoc": "^3.5.5",
     "regenerator-runtime": "^0.11.1",
     "sinon": "^5.0.7"
   },
