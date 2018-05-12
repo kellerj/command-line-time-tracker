@@ -12,12 +12,8 @@ import dateFns from 'date-fns';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import db from '../db';
-import entryLib, {
-  getEntryDate, getEntryMinutes, getInsertTime,
-  getTimeType, getProjectName, getMinutesSinceLastEntry,
-  addTimeEntry,
-} from '../lib/timeEntry';
-import projectLib, { addNewProject } from '../lib/project';
+import entryLib from '../lib/timeEntry';
+import projectLib from '../lib/project';
 
 const LOG = debug('tt:add');
 
@@ -51,35 +47,32 @@ const commandArgs = {
 async function run(args) {
   // Build the new entry object with command line arguments
   const newEntry = entryLib.createEntryFromArguments(args);
-
   LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
-  newEntry.entryDate = getEntryDate(args);
-  newEntry.minutes = getEntryMinutes(args);
   // pull the lists of projects and time types from MongoDB
+  // TODO: move to lib as get names method
   const projects = (await db.project.getAll()).map(item => (item.name));
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
-  newEntry.insertTime = getInsertTime(commander, newEntry);
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate, newEntry.insertTime);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
-  if (commander.fill && !lastEntry) {
+  if (args.fill && !lastEntry) {
     displayUtils.writeError('There are no prior entries today, the --fill option may not be used.');
     throw new Error();
   }
 
-  const minutesSinceLastEntry = getMinutesSinceLastEntry(newEntry, lastEntry);
+  const minutesSinceLastEntry = entryLib.getMinutesSinceLastEntry(newEntry, lastEntry);
 
-  newEntry.project = getProjectName(newEntry, projects);
-  if (commander.project && !newEntry.project) {
+  newEntry.project = entryLib.getProjectName(newEntry, projects);
+  if (args.project && !newEntry.project) {
     // If project option is not a valid project, reject with list of project names
-    displayUtils.writeError(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`);
+    displayUtils.writeError(`Project ${chalk.yellow(args.project)} does not exist.  Known Projects:`);
     displayUtils.writeSimpleTable(projects, null, 'Project Name');
     throw new Error();
   }
   const projectDefaulted = newEntry.project !== commander.project;
 
-  newEntry.timeType = getTimeType(newEntry, timeTypes);
+  newEntry.timeType = entryLib.getTimeType(newEntry, timeTypes);
   if (commander.type && !newEntry.timeType) {
     // If time type option is not a valid project, reject with list of type names
     displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
@@ -122,12 +115,12 @@ async function run(args) {
       LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
       // if they answered the newProject question, create that project first
       if (newEntry.newProject) {
-        await addNewProject(newEntry.newProject);
+        await entryLib.addNewProject(newEntry.newProject);
         newEntry.project = newEntry.newProject;
         delete newEntry.newProject;
       }
       // write the time entry to the database
-      await addTimeEntry(newEntry);
+      await entryLib.addTimeEntry(newEntry);
       LOG('TimeEntry added');
     },
   );

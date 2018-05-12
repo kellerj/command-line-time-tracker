@@ -6,27 +6,27 @@ import {
   getYear, getMonth, getDate, setYear, setMonth, setDate,
 } from 'date-fns';
 
+import Entry from '../model/Entry';
 import db from '../db';
-import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
+import constants from '../constants';
 import validations from '../utils/validations';
 
 const LOG = require('debug')('tt:lib:timeEntry');
 
-
-export function getEntryDate({ date, yesterday }) {
+function getEntryDate({ date, yesterday }) {
   if (date) {
     const parsedDate = parse(date);
     if (!isValid(parsedDate)) {
       throw new Error(`-d, --date: Invalid Date: ${date}`);
     }
-    return format(parsedDate, DATE_FORMAT);
+    return format(parsedDate, constants.DATE_FORMAT);
   } else if (yesterday) {
-    return format(subDays(new Date(), 1), DATE_FORMAT);
+    return format(subDays(new Date(), 1), constants.DATE_FORMAT);
   }
-  return format(new Date(), DATE_FORMAT);
+  return format(new Date(), constants.DATE_FORMAT);
 }
 
-export function getEntryMinutes({ time }) {
+function getEntryMinutes({ time }) {
   if (time) {
     const minutes = Number.parseInt(time, 10);
     const validationMessage = validations.validateMinutes(minutes);
@@ -39,7 +39,7 @@ export function getEntryMinutes({ time }) {
   return null;
 }
 
-export function getInsertTime({ backTime, logTime }, newEntry) {
+function getInsertTime({ backTime, logTime }, newEntry) {
   let { insertTime } = newEntry;
   const entryDate = parse(newEntry.entryDate);
   insertTime = setYear(insertTime, getYear(entryDate));
@@ -73,7 +73,7 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
   return insertTime;
 }
 
-export function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
+function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
   if (inputTimeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
@@ -85,7 +85,7 @@ export function getTimeType({ timeType: inputTimeType, entryDescription }, timeT
   return timeType || null;
 }
 
-export function getProjectName({ project: inputProjectName, entryDescription }, projects) {
+function getProjectName({ project: inputProjectName, entryDescription }, projects) {
   if (inputProjectName) {
     LOG(`Input Project Name: ${inputProjectName}, checking project list.`);
     // perform a case insensitive match on the name - and use the name
@@ -98,10 +98,10 @@ export function getProjectName({ project: inputProjectName, entryDescription }, 
   return projectName || null;
 }
 
-export function getMinutesSinceLastEntry(newEntry, lastEntry) {
+function getMinutesSinceLastEntry(newEntry, lastEntry) {
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
-  let minutesSinceLastEntry = DEFAULT_MINUTES;
+  let minutesSinceLastEntry = constants.DEFAULT_MINUTES;
   if (lastEntry && lastEntry.entryDate === newEntry.entryDate) {
     minutesSinceLastEntry = differenceInMinutes(newEntry.insertTime, lastEntry.insertTime);
     if (minutesSinceLastEntry < 0) {
@@ -113,7 +113,7 @@ export function getMinutesSinceLastEntry(newEntry, lastEntry) {
   return minutesSinceLastEntry;
 }
 
-export async function addTimeEntry(timeEntry) {
+async function addTimeEntry(timeEntry) {
   LOG(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
   const insertSuceeded = await db.timeEntry.insert(timeEntry);
   if (insertSuceeded) {
@@ -130,7 +130,7 @@ export async function addTimeEntry(timeEntry) {
   return insertSuceeded;
 }
 
-export async function deleteTimeEntries(entries) {
+async function deleteTimeEntries(entries) {
   const results = [];
   for (let i = 0; i < entries.length; i += 1) {
     LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
@@ -141,7 +141,7 @@ export async function deleteTimeEntries(entries) {
   return results;
 }
 
-export async function updateTimeEntry(entry) {
+async function updateTimeEntry(entry) {
   LOG(`Updating ${JSON.stringify(entry, null, 2)}`);
   const wasUpdated = await db.timeEntry.update(entry);
   if (wasUpdated) {
@@ -156,3 +156,24 @@ export async function updateTimeEntry(entry) {
     process.stdout.write(chalk.red(`Time Entry ${chalk.white(JSON.stringify(entry))} failed to update\n`));
   }
 }
+
+function createEntryFromArguments(args) {
+  const entry = new Entry(args);
+  entry.entryDate = getEntryDate(args);
+  entry.minutes = getEntryMinutes(args);
+  entry.insertTime = getInsertTime(args, entry);
+  return entry;
+}
+
+module.exports = {
+  createEntryFromArguments,
+  getEntryDate,
+  getEntryMinutes,
+  getInsertTime,
+  getTimeType,
+  getProjectName,
+  getMinutesSinceLastEntry,
+  addTimeEntry,
+  deleteTimeEntries,
+  updateTimeEntry,
+};
