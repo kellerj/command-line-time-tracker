@@ -51,15 +51,6 @@ const commandArgs = {
 async function run(args) {
   // Build the new entry object with command line arguments
   const newEntry = entryLib.createEntryFromArguments(args);
-  const newEntry = {
-    entryDescription: commander.args.join(' ').trim(),
-    project: commander.project,
-    timeType: commander.type,
-    minutes: commander.time,
-    insertTime: new Date(),
-    entryDate: commander.date,
-    wasteOfTime: false,
-  };
 
   LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
