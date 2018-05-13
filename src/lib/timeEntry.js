@@ -1,3 +1,6 @@
+/**
+ * @module lib/timeEntry
+ */
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import parseTime from 'parse-loose-time';
@@ -13,6 +16,15 @@ import validations from '../utils/validations';
 
 const LOG = require('debug')('tt:lib:timeEntry');
 
+/**
+ * getEntryDate - Derive the entry date from the properties of the given Entry object.
+ *
+ * @param {Object}    Args Arguments entry built from the comment line
+ * @param {String}    Args.date Parsable date from the command line for the entry
+ * @param {boolean}   Args.yesterday flag as to whether to use yesterday's date if no date is specified
+ *
+ * @returns {String} The derived date
+ */
 function getEntryDate({ date, yesterday }) {
   if (date) {
     const parsedDate = parse(date);

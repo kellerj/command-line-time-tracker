@@ -13,9 +13,11 @@ import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import db from '../db';
 import entryLib from '../lib/timeEntry';
-import projectLib from '../lib/project';
+// import projectLib from '../lib/project';
 
 const LOG = debug('tt:add');
+
+inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
 
 commander
   .description('Record a time entry')
@@ -49,17 +51,16 @@ async function run(args) {
   const newEntry = entryLib.createEntryFromArguments(args);
   LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
-  // pull the lists of projects and time types from MongoDB
-  // TODO: move to lib as get names method
-  const projects = (await db.project.getAll()).map(item => (item.name));
-  const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
-
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate, newEntry.insertTime);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
   if (args.fill && !lastEntry) {
     displayUtils.writeError('There are no prior entries today, the --fill option may not be used.');
     throw new Error();
   }
+
+  // pull the lists of projects and time types from MongoDB
+  const projects = (await db.project.getAll()).map(item => (item.name));
+  const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
   const minutesSinceLastEntry = entryLib.getMinutesSinceLastEntry(newEntry, lastEntry);
 
@@ -92,7 +93,6 @@ async function run(args) {
     ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
   };
 
-  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   inquirer.prompt(prompts).ui.process.subscribe(
     // handle each answer
     (lastAnswer) => {
