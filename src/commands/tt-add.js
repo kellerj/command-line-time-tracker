@@ -46,6 +46,26 @@ const commandArgs = {
   yesterday: commander.yesterday,
 };
 
+function handleProjectInput(args, projects, newEntry) {
+  newEntry.project = entryLib.getProjectName(newEntry, projects);
+  if (args.project && !newEntry.project) {
+    // If project option is not a valid project, reject with list of project names
+    displayUtils.writeError(`Project ${chalk.yellow(args.project)} does not exist.  Known Projects:`);
+    displayUtils.writeSimpleTable(projects, null, 'Project Name');
+    throw new Error();
+  }
+}
+
+function handleTimeTypeInput(args, timeTypes, newEntry) {
+  newEntry.timeType = entryLib.getTimeType(newEntry, timeTypes);
+  if (commander.type && !newEntry.timeType) {
+    // If time type option is not a valid project, reject with list of type names
+    displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
+    displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
+    throw new Error();
+  }
+}
+
 async function run(args) {
   // Build the new entry object with command line arguments
   const newEntry = entryLib.createEntryFromArguments(args);
@@ -64,22 +84,10 @@ async function run(args) {
 
   const minutesSinceLastEntry = entryLib.getMinutesSinceLastEntry(newEntry, lastEntry);
 
-  newEntry.project = entryLib.getProjectName(newEntry, projects);
-  if (args.project && !newEntry.project) {
-    // If project option is not a valid project, reject with list of project names
-    displayUtils.writeError(`Project ${chalk.yellow(args.project)} does not exist.  Known Projects:`);
-    displayUtils.writeSimpleTable(projects, null, 'Project Name');
-    throw new Error();
-  }
-  const projectDefaulted = newEntry.project !== commander.project;
+  handleProjectInput(args, projects, newEntry);
+  handleTimeTypeInput(args, timeTypes, newEntry);
 
-  newEntry.timeType = entryLib.getTimeType(newEntry, timeTypes);
-  if (commander.type && !newEntry.timeType) {
-    // If time type option is not a valid project, reject with list of type names
-    displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
-    displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
-    throw new Error();
-  }
+  const projectDefaulted = newEntry.project !== commander.project;
   const timeTypeDefaulted = newEntry.timeType !== commander.type;
 
   // Add the new project option to the end of the list
