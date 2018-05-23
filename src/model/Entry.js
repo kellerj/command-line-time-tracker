@@ -6,7 +6,7 @@ class Entry {
   /**
    * Create an Entry
    * @constructor
-   * @param {any} args - argument object to Initialize object with
+   * @param {AddCommandArguments} args - argument object to Initialize object with
    */
   constructor(args) {
     /** description of the time entry
@@ -38,6 +38,10 @@ class Entry {
      */
     this.wasteOfTime = args.wasteOfTime || false;
   }
+
+  // TODO: Add a natural toString to the object
+  // TODO: Add the list format as a standard method of viewing the object
+  // TODO: Reformat the entry date on the record?
 }
 
 module.exports = Entry;
