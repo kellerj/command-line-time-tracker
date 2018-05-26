@@ -1,3 +1,7 @@
+/**
+ * @namespace Db.timetype
+ * @memberof Db
+ */
 import assert from 'assert';
 import chalk from 'chalk';
 
@@ -5,8 +9,9 @@ const collectionName = 'timetype';
 
 module.exports = getConnection => ({
   /**
-   * Get all project entries.
-   * Generator function - must be used with co module or next().value.
+   * Get all time type entries.
+   *
+   * @memberof Db.timetype
    */
   async getAll() {
     const db = await getConnection();
@@ -20,7 +25,9 @@ module.exports = getConnection => ({
 
   /**
    * Insert the given project into the database.  Return false if the project
-   * aready exists.  Comparison is case-insensitive.
+   * already exists.  Comparison is case-insensitive.
+   *
+   * @memberof Db.timetype
    */
   async insert(name) {
     const db = await getConnection();
@@ -39,6 +46,12 @@ module.exports = getConnection => ({
     return true;
   },
 
+  /**
+   * Remove the given time type from the database.  Return false if the project
+   * does not exist.
+   *
+   * @memberof Db.timetype
+   */
   async remove(name) {
     const db = await getConnection();
     const collection = db.collection(collectionName);

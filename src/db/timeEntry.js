@@ -1,3 +1,6 @@
+/**
+ * @module db/timeEntry
+ */
 import assert from 'assert';
 import chalk from 'chalk';
 import moment from 'moment'; // TODO: Convert to use date-fns

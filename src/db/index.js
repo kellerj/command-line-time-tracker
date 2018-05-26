@@ -1,4 +1,7 @@
 /* istanbul ignore file */
+/**
+ * @namespace Db
+ */
 import { MongoClient } from 'mongodb';
 import debug from 'debug';
 

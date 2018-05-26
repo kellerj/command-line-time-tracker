@@ -1,3 +1,7 @@
+/**
+ * @namespace Db.project
+ * @memberof Db
+ */
 import assert from 'assert';
 import debug from 'debug';
 
@@ -8,7 +12,7 @@ const collectionName = 'projects';
 module.exports = getConnection => ({
   /**
    * Get all project entries.
-   * Generator function - must be used with co module or next().value.
+   * @memberof Db.project
    */
   async getAll() {
     const db = await getConnection();
@@ -29,7 +33,8 @@ module.exports = getConnection => ({
 
   /**
    * Insert the given project into the database.  Return false if the project
-   * aready exists.  Comparison is case-insensitive.
+   * already exists.  Comparison is case-insensitive.
+   * @memberof Db.project
    */
   async insert(name) {
     const db = await getConnection();
@@ -54,6 +59,14 @@ module.exports = getConnection => ({
     return true;
   },
 
+  /**
+   * Delete the given project from the database.  Return false if the project
+   * does not exist.
+   *
+   * @memberof Db.project
+   * @param {string} name name of the project to delete
+   * @returns {boolean} Whether the project was removed successfully.
+   */
   async remove(name) {
     const db = await getConnection();
     const collection = db.collection(collectionName);

@@ -16,8 +16,8 @@ import dateFns from 'date-fns';
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
 import db from '../db';
-import entryLib from '../lib/timeEntry';
-import projectLib, { addNewProject } from '../lib/project';
+import * as entryLib from '../lib/timeEntry';
+import * as projectLib from '../lib/project';
 
 const LOG = debug('tt:add');
 
@@ -63,21 +63,22 @@ const commandArgs = {
   yesterday: commander.yesterday,
 };
 
-function handleProjectInput(args, projects, newEntry) {
-  newEntry.project = entryLib.getProjectName(newEntry, projects);
-  if (args.project && !newEntry.project) {
+function handleProjectInput(inputProject, inputDescription, projects) {
+  const projectName = entryLib.getProjectName(inputProject, inputDescription, projects);
+  if (inputProject && !projectName) {
     // If project option is not a valid project, reject with list of project names
-    displayUtils.writeError(`Project ${chalk.yellow(args.project)} does not exist.  Known Projects:`);
+    displayUtils.writeError(`Project ${chalk.yellow(inputProject)} does not exist.  Known Projects:`);
     displayUtils.writeSimpleTable(projects, null, 'Project Name');
     throw new Error();
   }
+  return projectName;
 }
 
 function handleTimeTypeInput(args, timeTypes, newEntry) {
   newEntry.timeType = entryLib.getTimeType(newEntry, timeTypes);
-  if (commander.type && !newEntry.timeType) {
+  if (args.type && !newEntry.timeType) {
     // If time type option is not a valid project, reject with list of type names
-    displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
+    displayUtils.writeError(`Time Type ${chalk.yellow(args.type)} does not exist.  Known Time Types:`);
     displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
     throw new Error();
   }
@@ -110,22 +111,10 @@ async function run(args) {
   const projects = (await db.project.getAll()).map(item => (item.name));
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
-  newEntry.project = entryLib.getProjectName(newEntry, projects);
-  if (commander.project && !newEntry.project) {
-    // If project option is not a valid project, reject with list of project names
-    displayUtils.writeError(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`);
-    displayUtils.writeSimpleTable(projects, null, 'Project Name');
-    throw new Error();
-  }
+  newEntry.project = handleProjectInput(args.project, projects);
   const projectDefaulted = newEntry.project !== commander.project;
 
-  newEntry.timeType = entryLib.getTimeType(newEntry, timeTypes);
-  if (commander.type && !newEntry.timeType) {
-    // If time type option is not a valid project, reject with list of type names
-    displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
-    displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
-    throw new Error();
-  }
+  handleTimeTypeInput(args.type, timeTypes, newEntry);
   const timeTypeDefaulted = newEntry.timeType !== commander.type;
 
   // Add the new project option to the end of the list

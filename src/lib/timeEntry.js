@@ -1,4 +1,6 @@
 /**
+ * Helper commands related to creating, editing, and retrieving time entry records.
+ *
  * @module lib/timeEntry
  */
 import { sprintf } from 'sprintf-js';
@@ -17,15 +19,16 @@ import validations from '../utils/validations';
 const LOG = require('debug')('tt:lib:timeEntry');
 
 /**
- * getEntryDate - Derive the entry date from the properties of the given Entry object.
+ * Derive the entry date from the properties of the given Entry object.
  *
+ * @public
  * @param {Object}    Args Arguments entry built from the comment line
- * @param {String}    Args.date Parsable date from the command line for the entry
+ * @param {string}    Args.date Parsable date from the command line for the entry
  * @param {boolean}   Args.yesterday flag as to whether to use yesterday's date if no date is specified
  *
- * @returns {String} The derived date
+ * @returns {string} The derived date in YYYY-MM-DD format.
  */
-function getEntryDate({ date, yesterday }) {
+export function getEntryDate({ date, yesterday }) {
   if (date) {
     const parsedDate = parse(date);
     if (!isValid(parsedDate)) {
@@ -38,7 +41,7 @@ function getEntryDate({ date, yesterday }) {
   return format(new Date(), constants.DATE_FORMAT);
 }
 
-function getEntryMinutes({ time }) {
+export function getEntryMinutes({ time }) {
   if (time) {
     const minutes = Number.parseInt(time, 10);
     const validationMessage = validations.validateMinutes(minutes);
@@ -51,7 +54,7 @@ function getEntryMinutes({ time }) {
   return null;
 }
 
-function getInsertTime({ backTime, logTime }, newEntry) {
+export function getInsertTime({ backTime, logTime }, newEntry) {
   let { insertTime } = newEntry;
   const entryDate = parse(newEntry.entryDate);
   insertTime = setYear(insertTime, getYear(entryDate));
@@ -85,7 +88,7 @@ function getInsertTime({ backTime, logTime }, newEntry) {
   return insertTime;
 }
 
-function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
+export function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
   if (inputTimeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
@@ -97,20 +100,30 @@ function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
   return timeType || null;
 }
 
-function getProjectName({ project: inputProjectName, entryDescription }, projects) {
-  if (inputProjectName) {
-    LOG(`Input Project Name: ${inputProjectName}, checking project list.`);
+/**
+ * Get the project name by matching against the project list to correct the case.
+ * If no project name is specified, then attempt to find a project name in the given description.
+ *
+ * @param {string} inputProject     Project name from the command line
+ * @param {string} inputDescription Entry description from the command line
+ * @param {string[]} projects         Complete list of project names
+ *
+ * @returns {string} matching project name from the projects list or null if no match
+ */
+export function getProjectName(inputProject, inputDescription, projects) {
+  if (inputProject) {
+    LOG(`Input Project Name: ${inputProject}, checking project list.`);
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    const projectName = projects.find(p => (p.match(new RegExp(`^${inputProjectName.trim()}$`, 'i'))));
+    const projectName = projects.find(p => (p.match(new RegExp(`^${inputProject.trim()}$`, 'i'))));
     return projectName || null;
   }
   // see if we can find a name in the description
-  const projectName = projects.find(p => (entryDescription.match(new RegExp(p, 'i'))));
+  const projectName = projects.find(p => (inputDescription.match(new RegExp(p, 'i'))));
   return projectName || null;
 }
 
-function getMinutesSinceLastEntry(newEntry, lastEntry) {
+export function getMinutesSinceLastEntry(newEntry, lastEntry) {
   // use the minutes since the last entry was added as the default time
   // default to 60 in the case there is no entry yet today
   let minutesSinceLastEntry = constants.DEFAULT_MINUTES;
@@ -125,7 +138,7 @@ function getMinutesSinceLastEntry(newEntry, lastEntry) {
   return minutesSinceLastEntry;
 }
 
-async function addTimeEntry(timeEntry) {
+export async function addTimeEntry(timeEntry) {
   LOG(`Request to add timeEntry "${JSON.stringify(timeEntry, null, 2)}"`);
   const insertSuceeded = await db.timeEntry.insert(timeEntry);
   if (insertSuceeded) {
@@ -142,7 +155,7 @@ async function addTimeEntry(timeEntry) {
   return insertSuceeded;
 }
 
-async function deleteTimeEntries(entries) {
+export async function deleteTimeEntries(entries) {
   const results = [];
   for (let i = 0; i < entries.length; i += 1) {
     LOG(`Deleting ${JSON.stringify(entries[i], null, 2)}`);
@@ -153,7 +166,7 @@ async function deleteTimeEntries(entries) {
   return results;
 }
 
-async function updateTimeEntry(entry) {
+export async function updateTimeEntry(entry) {
   LOG(`Updating ${JSON.stringify(entry, null, 2)}`);
   const wasUpdated = await db.timeEntry.update(entry);
   if (wasUpdated) {
@@ -169,23 +182,10 @@ async function updateTimeEntry(entry) {
   }
 }
 
-function createEntryFromArguments(args) {
+export function createEntryFromArguments(args) {
   const entry = new Entry(args);
   entry.entryDate = getEntryDate(args);
   entry.minutes = getEntryMinutes(args);
   entry.insertTime = getInsertTime(args, entry);
   return entry;
 }
-
-module.exports = {
-  createEntryFromArguments,
-  getEntryDate,
-  getEntryMinutes,
-  getInsertTime,
-  getProjectName,
-  getTimeType,
-  getMinutesSinceLastEntry,
-  addTimeEntry,
-  deleteTimeEntries,
-  updateTimeEntry,
-};
