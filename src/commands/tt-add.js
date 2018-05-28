@@ -63,6 +63,16 @@ const commandArgs = {
   yesterday: commander.yesterday,
 };
 
+
+/**
+ * @summary Return the project name based on the input values.
+ * @param {string} inputProject     Project name from the command line
+ * @param {string} inputDescription Entry description from the command line
+ * @param {string[]} projects       List of the project names from the database
+ *
+ * @returns {string} The project name, adjusted to match the case of the database if needed.
+ * @throws Throws an error if the input project did not match an existing project.
+ */
 function handleProjectInput(inputProject, inputDescription, projects) {
   const projectName = entryLib.getProjectName(inputProject, inputDescription, projects);
   if (inputProject && !projectName) {
@@ -74,11 +84,20 @@ function handleProjectInput(inputProject, inputDescription, projects) {
   return projectName;
 }
 
-function handleTimeTypeInput(args, timeTypes, newEntry) {
-  newEntry.timeType = entryLib.getTimeType(newEntry, timeTypes);
-  if (args.type && !newEntry.timeType) {
+/**
+ * @summary Return the type type based on the input values.
+ * @param {string} inputTimeType     Time type from the command line
+ * @param {string} inputDescription Entry description from the command line
+ * @param {string[]} timeTypes       List of the time types from the database
+ *
+ * @returns {string} The time type, adjusted to match the case of the database if needed.
+ * @throws Throws an error if the input time type did not match an existing project.
+ */
+function handleTimeTypeInput(inputTimeType, inputDescription, timeTypes) {
+  const timeType = entryLib.getTimeType(inputTimeType, inputDescription, timeTypes);
+  if (inputTimeType && !timeType) {
     // If time type option is not a valid project, reject with list of type names
-    displayUtils.writeError(`Time Type ${chalk.yellow(args.type)} does not exist.  Known Time Types:`);
+    displayUtils.writeError(`Time Type ${chalk.yellow(inputTimeType)} does not exist.  Known Time Types:`);
     displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
     throw new Error();
   }

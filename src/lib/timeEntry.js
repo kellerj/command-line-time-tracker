@@ -87,7 +87,17 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
   return insertTime;
 }
 
-export function getTimeType({ timeType: inputTimeType, entryDescription }, timeTypes) {
+/**
+ * Get the time type by matching against the list to correct the case.
+ * If no time type is specified, then attempt to find a time type in the given description.
+ *
+ * @param {string} inputTimeType     Time type from the command line
+ * @param {string} inputDescription Entry description from the command line
+ * @param {string[]} projects         Complete list of time types
+ *
+ * @returns {string} matching time type from the list or null if no match
+ */
+export function getTimeType(inputTimeType, inputDescription, timeTypes) {
   if (inputTimeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
@@ -95,7 +105,7 @@ export function getTimeType({ timeType: inputTimeType, entryDescription }, timeT
     return timeType || null;
   }
   // see if we can find a name in the description
-  const timeType = timeTypes.find(t => (entryDescription.match(new RegExp(t, 'i'))));
+  const timeType = timeTypes.find(t => (inputDescription.match(new RegExp(t, 'i'))));
   return timeType || null;
 }
 

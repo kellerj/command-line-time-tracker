@@ -1,6 +1,5 @@
 /**
- * Module for interating with the timeEntry collection in MongoDB.
- *
+ * @summary Module for interating with the timeEntry collection in MongoDB.
  * @namespace Db.timeEntry
  * @memberof Db
  */

@@ -6,8 +6,6 @@ module.exports = {
   },
   plugins: [
     'plugins/markdown',
-    'plugins/summarize',
-    'plugins/escapeHtml',
     'node_modules/jsdoc-memberof-namespace',
   ],
   templates: {
