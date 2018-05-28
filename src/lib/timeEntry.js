@@ -1,7 +1,7 @@
 /**
  * Helper commands related to creating, editing, and retrieving time entry records.
  *
- * @module lib/timeEntry
+ * @namespace lib.timeEntry
  */
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
@@ -21,7 +21,6 @@ const LOG = require('debug')('tt:lib:timeEntry');
 /**
  * Derive the entry date from the properties of the given Entry object.
  *
- * @public
  * @param {Object}    Args Arguments entry built from the comment line
  * @param {string}    Args.date Parsable date from the command line for the entry
  * @param {boolean}   Args.yesterday flag as to whether to use yesterday's date if no date is specified

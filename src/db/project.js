@@ -1,4 +1,6 @@
 /**
+ * Module for interacting with the projects collection in MongoDB.
+ *
  * @namespace Db.project
  * @memberof Db
  */

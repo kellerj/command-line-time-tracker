@@ -1,4 +1,6 @@
 /**
+ * Module for interacting with the timetype collection in MongoDB.
+ *
  * @namespace Db.timetype
  * @memberof Db
  */

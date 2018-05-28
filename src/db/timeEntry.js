@@ -1,5 +1,8 @@
 /**
- * @module db/timeEntry
+ * Module for interating with the timeEntry collection in MongoDB.
+ *
+ * @namespace Db.timeEntry
+ * @memberof Db
  */
 import assert from 'assert';
 import chalk from 'chalk';
