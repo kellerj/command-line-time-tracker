@@ -105,9 +105,9 @@ function handleTimeTypeInput(inputTimeType, inputDescription, timeTypes) {
 }
 
 
-const writeHeaderLine = (label, value) => {
+function writeHeaderLine(label, value) {
   ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
-};
+}
 
 /**
  * Wrapper block for the tt-add logic.
@@ -147,9 +147,6 @@ async function run(args) {
   projects.push('(New Project)');
   projects.push(new inquirer.Separator());
 
-  // TODO: eliminate the Rx method of using tool - deprecated/changed in 5.x release
-  // TODO: just skip inclusion of elements in the array if not needed - don't need when clause
-
   if (lastEntry) {
     writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
   }
@@ -183,84 +180,78 @@ async function run(args) {
     });
   }
   if (newEntry.minutes === undefined || newEntry.minutes === null) {
+    const timeValidate = (val) => {
+      const valInt = Number.parseInt(val, 10);
+      if (commander.fill) {
+        newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, newEntry.minutes);
+        writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
+      }
+      return valInt;
+    };
     prompts.push({
       name: 'minutes',
       type: 'input',
       message: 'Minutes:',
       default: minutesSinceLastEntry,
       validate: validations.validateMinutes,
-      filter: val => (Number.parseInt(val, 10)),
-      when: () => (newEntry.minutes === undefined || newEntry.minutes === null),
+      filter: timeValidate,
     });
   }
+  if (newEntry.project === undefined || projectDefaulted) {
+    prompts.push({
+      name: 'project',
+      type: 'autocomplete',
+      message: 'Project:',
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
+      pageSize: 10,
+    });
+    prompts.push({
+      name: 'newProject',
+      type: 'input',
+      message: 'New Project Name:',
+      validate: validations.validateProjectName,
+      filter: input => (input.trim()),
+      when: () => (newEntry.project === '(New Project)'),
+    });
+  }
+  if (newEntry.timeType === undefined || timeTypeDefaulted) {
+    prompts.push({
+      name: 'timeType',
+      type: 'autocomplete',
+      message: 'Type of Type:',
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
+      pageSize: 10,
+    });
+  }
+  prompts.push({
+    name: 'wasteOfTime',
+    type: 'confirm',
+    message: 'Waste of Time?',
+    default: false,
+  });
   const answer = await inquirer.prompt(prompts);
-  console.dir(answer);
-  // const onEachAnswer = (lastAnswer) => {
-  //   LOG(JSON.stringify(lastAnswer));
-  //   // for each answer, update the newEntry object
-  //   newEntry[lastAnswer.name] = lastAnswer.answer;
-  //   if (lastAnswer.name === 'minutes' && commander.fill) {
-  //     newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, newEntry.minutes);
-  //     writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
-  //   }
-  // };
-  // TODO: Try object.assign
-  const onComplete = async () => {
-    LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
-    // if they answered the newProject question, create that project first
-    if (newEntry.newProject) {
-      await projectLib.addNewProject(newEntry.newProject);
-      newEntry.project = newEntry.newProject;
-      delete newEntry.newProject;
-    }
-    // write the time entry to the database
-    await entryLib.addTimeEntry(newEntry);
-    LOG('TimeEntry added');
-  };
-  // prompts.onNext({
-  //   name: 'project',
-  //   type: 'autocomplete',
-  //   message: 'Project:',
-  //   source: (answers, input) =>
-  //     (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
-  //   when: () => (newEntry.project === undefined || projectDefaulted),
-  //   pageSize: 10,
-  // });
-  // prompts.onNext({
-  //   name: 'newProject',
-  //   type: 'input',
-  //   message: 'New Project Name:',
-  //   validate: validations.validateProjectName,
-  //   filter: input => (input.trim()),
-  //   when: () => (newEntry.project === '(New Project)'),
-  // });
-  // prompts.onNext({
-  //   name: 'timeType',
-  //   type: 'autocomplete',
-  //   message: 'Type of Type:',
-  //   source: (answers, input) =>
-  //     (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
-  //   when: () => (newEntry.timeType === undefined || timeTypeDefaulted),
-  //   pageSize: 10,
-  // });
-  // prompts.onNext({
-  //   name: 'wasteOfTime',
-  //   type: 'confirm',
-  //   message: 'Waste of Time?',
-  //   default: false,
-  // });
+  // console.dir(answer);
+  // copy all values from the answer object to the newEntry
+  Object.assign(newEntry, answer);
+  // console.dir(newEntry);
+  LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
+  // if they answered the newProject question, create that project first
+  if (newEntry.newProject) {
+    await projectLib.addNewProject(newEntry.newProject);
+    newEntry.project = newEntry.newProject;
+    delete newEntry.newProject;
+  }
+  // write the time entry to the database
+  await entryLib.addTimeEntry(newEntry);
 }
 
-try {
-  run(commandArgs).then(() => {
-    console.log('Completed run method');
-  }).catch((err) => {
-    displayUtils.writeError(err.message);
-    LOG(err);
-    process.exitCode = 1;
-  });
-} catch (err) {
+// try {
+run(commandArgs).then(() => {
+  LOG('TimeEntry added');
+}).catch((err) => {
   displayUtils.writeError(err.message);
   LOG(err);
-  process.exitCode = 1;
-}
+  process.exit(1);
+});

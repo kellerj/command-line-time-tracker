@@ -15,6 +15,7 @@
     "postversion": "git push && git push --tags",
     "tt": "node -r babel-register src/commands/tt.js",
     "tt-debug": "DEBUG=tt:* node -r babel-register src/commands/tt.js",
+    "tt-inspect": "DEBUG=tt:* node --inspect=127.0.0.1:9300 -r babel-register src/commands/tt.js",
     "compile": "babel -d dist/ src/",
     "prepare": "npm run compile",
     "doc": "jsdoc -c ./jsdoc.config.js",
