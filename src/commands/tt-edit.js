@@ -141,7 +141,9 @@ async function run() {
 }
 
 try {
-  run().catch((err) => {
+  run().then(() => {
+    console.log('Run Completed');
+  }).catch((err) => {
     displayUtils.writeError(err.message);
     LOG(err);
     process.exitCode = 1;
