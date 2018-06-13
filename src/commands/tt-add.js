@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Handles the tt-add command.
- * @module commands/tt-add
+ * @module tt-add
  * @author Jonathan Keller <keller.jonathan@gmail.com>
  */
 import commander from 'commander';
@@ -40,7 +40,7 @@ LOG(`Parsed Commander Object: ${JSON.stringify(commander, null, 2)}`);
 
 /**
  * Arguments passed into the tt-add command
- * @typedef {Object} AddCommandArguments
+ * @typedef {Object} module:tt-add.AddCommandArguments
  * @property {string} description - Description of the new time entry
  * @property {string} project - project name of the new time entry
  * @property {string} type - time type of the new time entry
@@ -66,9 +66,9 @@ const commandArgs = {
 
 /**
  * @summary Return the project name based on the input values.
- * @param {string} inputProject     Project name from the command line
- * @param {string} inputDescription Entry description from the command line
- * @param {string[]} projects       List of the project names from the database
+ * @param {string} inputProject     - Project name from the command line.
+ * @param {string} inputDescription - Entry description from the command line.
+ * @param {string[]} projects       - List of the project names from the database.
  *
  * @returns {string} The project name, adjusted to match the case of the database if needed.
  * @throws Throws an error if the input project did not match an existing project.
@@ -86,9 +86,9 @@ function handleProjectInput(inputProject, inputDescription, projects) {
 
 /**
  * @summary Return the type type based on the input values.
- * @param {string} inputTimeType     Time type from the command line
- * @param {string} inputDescription Entry description from the command line
- * @param {string[]} timeTypes       List of the time types from the database
+ * @param {string} inputTimeType     - Time type from the command line.
+ * @param {string} inputDescription - Entry description from the command line.
+ * @param {string[]} timeTypes       - List of the time types from the database.
  *
  * @returns {string} The time type, adjusted to match the case of the database if needed.
  * @throws Throws an error if the input time type did not match an existing project.
@@ -108,14 +108,17 @@ function handleTimeTypeInput(inputTimeType, inputDescription, timeTypes) {
 /**
  * Writes a header line via the inquirer UI library.
  *
- * @param {string} label Header label, will be padded to 25 characters
- * @param {string} value value to right align to 29 characters
+ * @param {string} label - Header label, will be padded to 25 characters.
+ * @param {string} value - Value to right align to 29 characters.
  */
 function writeHeaderLine(label, value) {
   ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
 }
 
-function outputInitialHeader(lastEntry, newEntry, minutesSinceLastEntry, projectDefaulted, timeTypeDefaulted) {
+function outputInitialHeader(
+  lastEntry, newEntry, minutesSinceLastEntry,
+  projectDefaulted, timeTypeDefaulted,
+) {
   if (lastEntry) {
     writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
   }
@@ -139,7 +142,7 @@ function outputInitialHeader(lastEntry, newEntry, minutesSinceLastEntry, project
 /**
  * Wrapper block for the tt-add logic.
  *
- * @param {AddCommandArguments} args - Input arguments from the command line
+ * @param {AddCommandArguments} args - Input arguments from the command line.
  */
 async function run(args) {
   // Build the new entry object with command line arguments

@@ -4,9 +4,10 @@
  */
 class Entry {
   /**
-   * Create an Entry
-   * @constructor
-   * @param {AddCommandArguments} args - argument object to Initialize object with
+   * Create an Entry.
+   *
+   * @constructs
+   * @param {module:tt-add.AddCommandArguments} args - Argument object to Initialize object with.
    */
   constructor(args) {
     /** description of the time entry

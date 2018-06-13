@@ -21,9 +21,9 @@ const LOG = require('debug')('tt:lib:timeEntry');
 /**
  * Derive the entry date from the properties of the given Entry object.
  *
- * @param {Object}    Args Arguments entry built from the comment line
- * @param {string}    Args.date Parsable date from the command line for the entry
- * @param {boolean}   Args.yesterday flag as to whether to use yesterday's date if no date is specified
+ * @param {Object}    Args - Arguments entry built from the comment line.
+ * @param {string}    Args.date - Parsable date from the command line for the entry.
+ * @param {boolean}   Args.yesterday - Flag as to whether to use yesterday's date if no date is specified.
  *
  * @returns {string} The derived date in YYYY-MM-DD format.
  */
@@ -91,11 +91,11 @@ export function getInsertTime({ backTime, logTime }, newEntry) {
  * Get the time type by matching against the list to correct the case.
  * If no time type is specified, then attempt to find a time type in the given description.
  *
- * @param {string} inputTimeType     Time type from the command line
- * @param {string} inputDescription Entry description from the command line
- * @param {string[]} projects         Complete list of time types
+ * @param {string} inputTimeType     - Time type from the command line.
+ * @param {string} inputDescription - Entry description from the command line.
+ * @param {string[]} timeTypes         - Complete list of time types.
  *
- * @returns {string} matching time type from the list or null if no match
+ * @returns {string} Matching time type from the list or null if no match.
  */
 export function getTimeType(inputTimeType, inputDescription, timeTypes) {
   if (inputTimeType) {
@@ -113,11 +113,11 @@ export function getTimeType(inputTimeType, inputDescription, timeTypes) {
  * Get the project name by matching against the project list to correct the case.
  * If no project name is specified, then attempt to find a project name in the given description.
  *
- * @param {string} inputProject     Project name from the command line
- * @param {string} inputDescription Entry description from the command line
- * @param {string[]} projects         Complete list of project names
+ * @param {string} inputProject     - Project name from the command line.
+ * @param {string} inputDescription - Entry description from the command line.
+ * @param {string[]} projects         - Complete list of project names.
  *
- * @returns {string} matching project name from the projects list or null if no match
+ * @returns {string} Matching project name from the projects list or null if no match.
  */
 export function getProjectName(inputProject, inputDescription, projects) {
   if (inputProject) {

@@ -142,7 +142,7 @@ async function run() {
 
 try {
   run().then(() => {
-    console.log('Run Completed');
+    LOG('Run Completed');
   }).catch((err) => {
     displayUtils.writeError(err.message);
     LOG(err);
