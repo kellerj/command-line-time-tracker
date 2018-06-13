@@ -105,8 +105,35 @@ function handleTimeTypeInput(inputTimeType, inputDescription, timeTypes) {
 }
 
 
+/**
+ * Writes a header line via the inquirer UI library.
+ *
+ * @param {string} label Header label, will be padded to 25 characters
+ * @param {string} value value to right align to 29 characters
+ */
 function writeHeaderLine(label, value) {
   ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
+}
+
+function outputInitialHeader(lastEntry, newEntry, minutesSinceLastEntry, projectDefaulted, timeTypeDefaulted) {
+  if (lastEntry) {
+    writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
+  }
+  if (newEntry.entryDescription !== '') {
+    writeHeaderLine('Description', newEntry.entryDescription);
+  }
+  writeHeaderLine('Log Time', displayUtils.timePrinter(newEntry.insertTime));
+  if (!newEntry.minutes) {
+    writeHeaderLine('Minutes Since Last Entry', minutesSinceLastEntry);
+  } else {
+    writeHeaderLine('Minutes', newEntry.minutes);
+  }
+  if (newEntry.project && !projectDefaulted) {
+    writeHeaderLine('Project Name', newEntry.project);
+  }
+  if (newEntry.timeType && !timeTypeDefaulted) {
+    writeHeaderLine('Time Type', newEntry.timeType);
+  }
 }
 
 /**
@@ -147,24 +174,10 @@ async function run(args) {
   projects.push('(New Project)');
   projects.push(new inquirer.Separator());
 
-  if (lastEntry) {
-    writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
-  }
-  if (newEntry.entryDescription !== '') {
-    writeHeaderLine('Description', newEntry.entryDescription);
-  }
-  writeHeaderLine('Log Time', displayUtils.timePrinter(newEntry.insertTime));
-  if (!newEntry.minutes) {
-    writeHeaderLine('Minutes Since Last Entry', minutesSinceLastEntry);
-  } else {
-    writeHeaderLine('Minutes', newEntry.minutes);
-  }
-  if (newEntry.project && !projectDefaulted) {
-    writeHeaderLine('Project Name', newEntry.project);
-  }
-  if (newEntry.timeType && !timeTypeDefaulted) {
-    writeHeaderLine('Time Type', newEntry.timeType);
-  }
+  outputInitialHeader(
+    lastEntry, newEntry,
+    minutesSinceLastEntry, projectDefaulted, timeTypeDefaulted,
+  );
 
   // console.dir(inquirer.prompt(prompts).ui.process.subscribe(onEachAnswer, onError, onComplete));
   // console.dir(prompts);
