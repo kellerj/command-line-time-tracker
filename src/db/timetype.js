@@ -28,6 +28,8 @@ module.exports = getConnection => ({
    * Insert the given project into the database.  Return false if the project
    * already exists.  Comparison is case-insensitive.
    *
+   * @param {string} name - Name of the time type to insert into the database.
+   *
    * @memberof Db.timetype
    */
   async insert(name) {
@@ -51,6 +53,8 @@ module.exports = getConnection => ({
    * Remove the given time type from the database.  Return false if the project
    * does not exist.
    *
+   * @param {string} name - Name of the time type to delete from the database.
+   *
    * @memberof Db.timetype
    */
   async remove(name) {
@@ -58,12 +62,12 @@ module.exports = getConnection => ({
     const collection = db.collection(collectionName);
 
     const r = await collection.findAndRemove({ name });
+    db.close();
     // console.log(JSON.stringify(r));
     if (r && r.ok === 1 && r.value !== null) {
-      db.close();
       return true;
     } else if (r && r.ok !== 1) {
-      console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(r)}`));
+      throw new Error(`Error deleting record: ${JSON.stringify(r)}`);
     }
 
     db.close();

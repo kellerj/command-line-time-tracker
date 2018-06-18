@@ -142,7 +142,7 @@ function outputInitialHeader(
 /**
  * Wrapper block for the tt-add logic.
  *
- * @param {AddCommandArguments} args - Input arguments from the command line.
+ * @param {module:tt-add.AddCommandArguments} args - Input arguments from the command line.
  */
 async function run(args) {
   // Build the new entry object with command line arguments
