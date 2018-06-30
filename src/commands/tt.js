@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+import 'module-alias/register';
 import commander from 'commander';
 
 import { version } from '../../package.json';

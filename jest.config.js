@@ -18,4 +18,12 @@ module.exports = {
     '<rootDir>/src/commands', '<rootDir>/coverage', '<rootDir>/dist', '<rootDir>/node_modules',
   ],
   coverageReporters: ['lcov', 'text-summary', 'text', 'html'],
+  moduleNameMapper: {
+    '^@root(.*)$': '<rootDir>/src/$1',
+    '^@commands(.*)$': '<rootDir>/src/commands/$1',
+    '^@db(.*)$': '<rootDir>/db/$1',
+    '^@lib(.*)$': '<rootDir>/src/lib/$1',
+    '^@model(.*)$': '<rootDir>/src/model/$1',
+    '^@utils(.*)$': '<rootDir>/src/utils/$1',
+  },
 };

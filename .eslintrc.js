@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   extends: 'airbnb-base',
   plugins: [
@@ -34,5 +36,17 @@ module.exports = {
   env: {
     node: true,
     mocha: true,
+  },
+  settings: {
+    'import/resolver': {
+      alias: [
+        ['@root', path.resolve(__dirname, 'src')],
+        ['@commands', path.resolve(__dirname, 'src/commands')],
+        ['@db', path.resolve(__dirname, 'src/db')],
+        ['@lib', path.resolve(__dirname, 'src/lib')],
+        ['@model', path.resolve(__dirname, 'src/model')],
+        ['@utils', path.resolve(__dirname, 'src/utils')],
+      ],
+    }
   }
 }

@@ -4,6 +4,7 @@
  * @module tt-add
  * @author Jonathan Keller <keller.jonathan@gmail.com>
  */
+import 'module-alias/register';
 import commander from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
@@ -12,11 +13,12 @@ import { sprintf } from 'sprintf-js';
 import debug from 'debug';
 import dateFns from 'date-fns';
 
-import validations from '../utils/validations';
-import displayUtils from '../utils/display-utils';
-import db from '../db';
-import * as entryLib from '../lib/timeEntry';
-import * as projectLib from '../lib/project';
+import validations from '@utils/validations';
+import displayUtils from '@utils/display-utils';
+import db from '@db';
+import * as entryLib from '@lib/timeEntry';
+import * as projectLib from '@lib/project';
+
 
 const LOG = debug('tt:commands:add');
 
