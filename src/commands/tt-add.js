@@ -4,9 +4,9 @@
  * @module tt-add
  * @author Jonathan Keller <keller.jonathan@gmail.com>
  */
-import commander from 'commander';
-import inquirer from 'inquirer';
-import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
+// import commander from 'commander';
+// import inquirer from 'inquirer';
+// import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
 import { sprintf } from 'sprintf-js';
 import debug from 'debug';
@@ -20,49 +20,27 @@ import * as projectLib from '../lib/project';
 
 const LOG = debug('tt:commands:add');
 
-inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
-const ui = new inquirer.ui.BottomBar();
+const vorpal = null;
+let ui = null;
+let Separator = null;
 
-commander
-  .description('Record a time entry')
-  .usage('[options] [entryDescription]')
-  .option('-t, --time <minutes>', 'Minutes spent on the activity.')
-  .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
-  .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
-  .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
-  .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
-  .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
-  .option('--fill', 'Set the log time to fill time since the previous entry.')
-  .option('-y, --yesterday', 'Set the logging date to yesterday.')
-  .parse(process.argv);
+// inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
+// const ui = new inquirer.ui.BottomBar();
 
-LOG(`Parsed Commander Object: ${JSON.stringify(commander, null, 2)}`);
-
-/**
- * Arguments passed into the tt-add command
- * @typedef {Object} module:tt-add.AddCommandArguments
- * @property {string} description - Description of the new time entry
- * @property {string} project - project name of the new time entry
- * @property {string} type - time type of the new time entry
- * @property {number} time - Time in minutes of the new time entry
- * @property {string} date - Entry date in YYYY-MM-DD of the new time entry
- * @property {number} backTime - number of minutes back from the current time for the entry
- * @property {string} logTime - time of day for the new entry in HH:MM format
- * @property {boolean} fill - whether to push the insert time back to fill available time
- * @property {boolean} yesterday - whether to log the entry to yesterday instead of today
- */
-const commandArgs = {
-  description: commander.args.join(' ').trim(),
-  project: commander.project,
-  type: commander.type,
-  time: commander.time,
-  date: commander.date,
-  backTime: commander.backTime,
-  logTime: commander.logTime,
-  fill: commander.fill,
-  yesterday: commander.yesterday,
-};
-
+// commander
+//   .description('Record a time entry')
+//   .usage('[options] [entryDescription]')
+//   .option('-t, --time <minutes>', 'Minutes spent on the activity.')
+//   .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
+//   .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
+//   .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
+//   .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
+//   .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
+//   .option('--fill', 'Set the log time to fill time since the previous entry.')
+//   .option('-y, --yesterday', 'Set the logging date to yesterday.')
+//   .parse(process.argv);
+//
+// LOG(`Parsed Commander Object: ${JSON.stringify(commander, null, 2)}`);
 
 /**
  * @summary Return the project name based on the input values.
@@ -144,7 +122,7 @@ function outputInitialHeader(
  *
  * @param {AddCommandArguments} args - Input arguments from the command line.
  */
-async function run(args) {
+async function run(args, vorpal) {
   // Build the new entry object with command line arguments
   // simple copy logic only - derivations happen below
   const newEntry = entryLib.createEntryFromArguments(args);
@@ -167,15 +145,16 @@ async function run(args) {
   const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
 
   newEntry.project = handleProjectInput(args.project, args.description, projects);
-  const projectDefaulted = newEntry.project !== commander.project;
+  const projectDefaulted = newEntry.project !== args.project;
 
   newEntry.timeType = handleTimeTypeInput(args.type, args.description, timeTypes);
-  const timeTypeDefaulted = newEntry.timeType !== commander.type;
+  const timeTypeDefaulted = newEntry.timeType !== args.type;
 
   // Add the new project option to the end of the list
-  projects.push(new inquirer.Separator());
+  // console.dir(vorpal);
+  projects.push(new Separator());
   projects.push('(New Project)');
-  projects.push(new inquirer.Separator());
+  projects.push(new Separator());
 
   outputInitialHeader(
     lastEntry, newEntry,
@@ -185,71 +164,74 @@ async function run(args) {
   // console.dir(inquirer.prompt(prompts).ui.process.subscribe(onEachAnswer, onError, onComplete));
   // console.dir(prompts);
   // Initialize all the prompts
-  const prompts = [];
-  if (newEntry.entryDescription === '') {
-    prompts.push({
-      name: 'entryDescription',
-      type: 'input',
-      message: 'Entry Description:',
-      filter: input => (input.trim()),
-      validate: validations.validateEntryDescription,
-    });
-  }
+  // const prompts = [];
+  // if (newEntry.entryDescription === '') {
+  //   prompts.push({
+  //     name: 'entryDescription',
+  //     type: 'input',
+  //     message: 'Entry Description:',
+  //     filter: input => (input.trim()),
+  //     validate: validations.validateEntryDescription,
+  //   });
+  // }
   if (newEntry.minutes === undefined || newEntry.minutes === null) {
     const timeValidate = (val) => {
       const valInt = Number.parseInt(val, 10);
-      if (commander.fill) {
+      if (args.fill) {
         newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, newEntry.minutes);
         writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
       }
       return valInt;
     };
-    prompts.push({
+    LOG('doing prompt');
+    console.log(await vorpal.prompt({
       name: 'minutes',
       type: 'input',
       message: 'Minutes:',
       default: minutesSinceLastEntry,
       validate: validations.validateMinutes,
       filter: timeValidate,
-    });
+    }));
+    LOG('completed prompt');
   }
-  if (newEntry.project === undefined || projectDefaulted) {
-    prompts.push({
-      name: 'project',
-      type: 'autocomplete',
-      message: 'Project:',
-      source: (answers, input) =>
-        (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
-      pageSize: 10,
-    });
-    prompts.push({
-      name: 'newProject',
-      type: 'input',
-      message: 'New Project Name:',
-      validate: validations.validateProjectName,
-      filter: input => (input.trim()),
-      when: () => (newEntry.project === '(New Project)'),
-    });
-  }
-  if (newEntry.timeType === undefined || timeTypeDefaulted) {
-    prompts.push({
-      name: 'timeType',
-      type: 'autocomplete',
-      message: 'Type of Type:',
-      source: (answers, input) =>
-        (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
-      pageSize: 10,
-    });
-  }
-  prompts.push({
-    name: 'wasteOfTime',
-    type: 'confirm',
-    message: 'Waste of Time?',
-    default: false,
-  });
-  const answer = await inquirer.prompt(prompts);
+  // if (newEntry.project === undefined || projectDefaulted) {
+  //   prompts.push({
+  //     name: 'project',
+  //     type: 'autocomplete',
+  //     message: 'Project:',
+  //     source: (answers, input) =>
+  //       (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
+  //     pageSize: 10,
+  //   });
+  //   prompts.push({
+  //     name: 'newProject',
+  //     type: 'input',
+  //     message: 'New Project Name:',
+  //     validate: validations.validateProjectName,
+  //     filter: input => (input.trim()),
+  //     when: () => (newEntry.project === '(New Project)'),
+  //   });
+  // }
+  // if (newEntry.timeType === undefined || timeTypeDefaulted) {
+  //   prompts.push({
+  //     name: 'timeType',
+  //     type: 'autocomplete',
+  //     message: 'Type of Type:',
+  //     source: (answers, input) =>
+  //       (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
+  //     pageSize: 10,
+  //   });
+  // }
+  // prompts.push({
+  //   name: 'wasteOfTime',
+  //   type: 'confirm',
+  //   message: 'Waste of Time?',
+  //   default: false,
+  // });
+  // const answer = await vorpal.prompt(prompts);
   // console.dir(answer);
   // copy all values from the answer object to the newEntry
+  const answer = {};
   Object.assign(newEntry, answer);
   // console.dir(newEntry);
   LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
@@ -263,11 +245,60 @@ async function run(args) {
   await entryLib.addTimeEntry(newEntry);
 }
 
-// try {
-run(commandArgs).then(() => {
-  LOG('TimeEntry added');
-}).catch((err) => {
-  displayUtils.writeError(err.message);
-  LOG(err);
-  process.exit(1);
-});
+
+function doCommand(args, callback) {
+  console.log(JSON.stringify(args, null, 2));
+  /**
+   * Arguments passed into the tt-add command
+   * @typedef {Object} module:tt-add.AddCommandArguments
+   * @property {string} description - Description of the new time entry
+   * @property {string} project - project name of the new time entry
+   * @property {string} type - time type of the new time entry
+   * @property {number} time - Time in minutes of the new time entry
+   * @property {string} date - Entry date in YYYY-MM-DD of the new time entry
+   * @property {number} backTime - number of minutes back from the current time for the entry
+   * @property {string} logTime - time of day for the new entry in HH:MM format
+   * @property {boolean} fill - whether to push the insert time back to fill available time
+   * @property {boolean} yesterday - whether to log the entry to yesterday instead of today
+   */
+  const commandArgs = {
+    description: args.entryDescription.join(' ').trim(),
+    project: args.options.project,
+    type: args.options.type,
+    time: args.options.time,
+    date: args.options.date,
+    backTime: args.options.backTime,
+    logTime: args.options.logTime,
+    fill: args.options.fill,
+    yesterday: args.options.yesterday,
+  };
+  run(commandArgs, this).then(() => {
+    LOG('TimeEntry added');
+    callback();
+  }).catch((err) => {
+    displayUtils.writeError(err.message);
+    LOG(err);
+    callback();
+  });
+}
+
+// eslint-disable-next-line
+export function addVorpalCommand(vorpal) {
+  vorpal
+    .command('add [entryDescription...]')
+    .alias('a')
+    .description('Record a time entry')
+    .option('-t, --time <minutes>', 'Minutes spent on the activity.')
+    .option('-e, --type <timeType>', 'Name of the time type - must be existing.')
+    .option('-p, --project <projectName>', 'Project to assign to the time entry - must already exist.')
+    .option('-d, --date <YYYY-MM-DD>', 'Date to which to assign the entry, defaults to today.')
+    .option('-b, --backTime <backMinutes>', 'Number of minutes by which to back date the entry.')
+    .option('-l, --logTime <loggingTime>', 'The time (in hh:mm format) at which to report the entry as having been logged.')
+    .option('--fill', 'Set the log time to fill time since the previous entry.')
+    .option('-y, --yesterday', 'Set the logging date to yesterday.')
+    .action(doCommand);
+  // eslint-disable-next-line
+  ui = new vorpal.ui.inquirer.ui.BottomBar();
+  // eslint-disable-next-line
+  Separator = vorpal.ui.inquirer.Separator;
+}
