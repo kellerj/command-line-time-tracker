@@ -199,7 +199,7 @@ async function run(args) {
     const timeValidate = (val) => {
       const valInt = Number.parseInt(val, 10);
       if (commander.fill) {
-        newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, newEntry.minutes);
+        newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, valInt);
         writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
       }
       return valInt;
