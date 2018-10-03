@@ -81,6 +81,8 @@
   "peerDependencies": {
     "@utils/validations": "*",
     "@utils/display-utils": "*",
+    "@lib/timeEntry": "*",
+    "@lib/project": "*",
     "@lib": "*"
   },
   "coverageThreshold-temp": {
