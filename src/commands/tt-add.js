@@ -151,10 +151,8 @@ async function run(args) {
   // simple copy logic only - derivations happen below
   const newEntry = entryLib.createEntryFromArguments(args);
 
-  newEntry.entryDate = entryLib.getEntryDate(args);
-  newEntry.minutes = entryLib.getEntryMinutes(args);
-  newEntry.insertTime = entryLib.getInsertTime(args, newEntry);
-
+  // pull the last entry from the database for use in
+  // defaulting length or log time depending on the arguments
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate, newEntry.insertTime);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
   if (args.fill && !lastEntry) {
