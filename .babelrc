@@ -12,5 +12,18 @@
     "test": {
       "plugins": [ "istanbul" ]
     }
-  }
+  },
+  "plugins": [
+    ["module-resolver", {
+      "root": ["./src"],
+      "alias": {
+        "@root": "./src",
+        "@commands": "./src/commands",
+        "@db": "./src/db",
+        "@lib": "./src/lib",
+        "@model": "./src/model",
+        "@utils": "./src/utils"
+      }
+    }]
+  ]
 }
