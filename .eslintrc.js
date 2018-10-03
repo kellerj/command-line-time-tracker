@@ -18,7 +18,7 @@ module.exports = {
       ignoreTemplateLiterals: true,
     }],
     // disabling this as an error due to lint and module-alias not working right together
-    'import/no-extraneous-dependencies': 'warn',
+    'import/no-extraneous-dependencies': 'off',
     'jsdoc/check-param-names': 'warn',
     'jsdoc/check-tag-names': 'warn',
     'jsdoc/check-types': 'warn',

@@ -228,7 +228,7 @@ async function run(args) {
       message: 'New Project Name:',
       validate: validations.validateProjectName,
       filter: input => (input.trim()),
-      when: () => (newEntry.project === '(New Project)'),
+      when: answers => (answers.project === '(New Project)'),
     });
   }
   if (newEntry.timeType === undefined || timeTypeDefaulted) {
