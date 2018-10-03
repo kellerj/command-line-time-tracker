@@ -17,6 +17,8 @@ module.exports = {
       ignoreStrings: true,
       ignoreTemplateLiterals: true,
     }],
+    // disabling this as an error due to lint and module-alias not working right together
+    'import/no-extraneous-dependencies': 'warn',
     'jsdoc/check-param-names': 'warn',
     'jsdoc/check-tag-names': 'warn',
     'jsdoc/check-types': 'warn',
@@ -39,14 +41,7 @@ module.exports = {
   },
   settings: {
     'import/resolver': {
-      alias: [
-        ['@root', path.resolve(__dirname, 'src')],
-        ['@commands', path.resolve(__dirname, 'src/commands')],
-        ['@db', path.resolve(__dirname, 'src/db')],
-        ['@lib', path.resolve(__dirname, 'src/lib')],
-        ['@model', path.resolve(__dirname, 'src/model')],
-        ['@utils', path.resolve(__dirname, 'src/utils')],
-      ],
+      "babel-module": {},
     }
   }
 }
