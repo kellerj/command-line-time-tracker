@@ -151,7 +151,6 @@ async function run(args, vorpal) {
   const timeTypeDefaulted = newEntry.timeType !== args.type;
 
   // Add the new project option to the end of the list
-  // console.dir(vorpal);
   projects.push(new Separator());
   projects.push('(New Project)');
   projects.push(new Separator());
@@ -164,16 +163,17 @@ async function run(args, vorpal) {
   // console.dir(inquirer.prompt(prompts).ui.process.subscribe(onEachAnswer, onError, onComplete));
   // console.dir(prompts);
   // Initialize all the prompts
-  // const prompts = [];
-  // if (newEntry.entryDescription === '') {
-  //   prompts.push({
-  //     name: 'entryDescription',
-  //     type: 'input',
-  //     message: 'Entry Description:',
-  //     filter: input => (input.trim()),
-  //     validate: validations.validateEntryDescription,
-  //   });
-  // }
+  const prompts = [];
+  if (newEntry.entryDescription === '') {
+    prompts.push({
+      name: 'entryDescription',
+      type: 'input',
+      message: 'Entry Description:',
+      filter: input => (input.trim()),
+      validate: validations.validateEntryDescription,
+    });
+  }
+  // console.log('newEntry', newEntry);
   if (newEntry.minutes === undefined || newEntry.minutes === null) {
     const timeValidate = (val) => {
       const valInt = Number.parseInt(val, 10);
@@ -183,17 +183,17 @@ async function run(args, vorpal) {
       }
       return valInt;
     };
-    LOG('doing prompt');
-    console.log(await vorpal.prompt({
+    // LOG('doing prompt');
+    prompts.push({
       name: 'minutes',
       type: 'input',
       message: 'Minutes:',
       default: minutesSinceLastEntry,
       validate: validations.validateMinutes,
       filter: timeValidate,
-    }));
-    LOG('completed prompt');
+    });
   }
+  return vorpal.prompt(prompts);
   // if (newEntry.project === undefined || projectDefaulted) {
   //   prompts.push({
   //     name: 'project',
@@ -247,7 +247,7 @@ async function run(args, vorpal) {
 
 
 function doCommand(args, callback) {
-  console.log(JSON.stringify(args, null, 2));
+  LOG(JSON.stringify(args, null, 2));
   /**
    * Arguments passed into the tt-add command
    * @typedef {Object} module:tt-add.AddCommandArguments
@@ -262,7 +262,7 @@ function doCommand(args, callback) {
    * @property {boolean} yesterday - whether to log the entry to yesterday instead of today
    */
   const commandArgs = {
-    description: args.entryDescription.join(' ').trim(),
+    description: args.entryDescription ? args.entryDescription.join(' ').trim() : '',
     project: args.options.project,
     type: args.options.type,
     time: args.options.time,

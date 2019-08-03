@@ -43,5 +43,5 @@ if (process.argv.length < 3) {
     .delimiter('tt>')
     .show();
 } else {
-  const result = vorpal.parse(process.argv);
+  const result = vorpal.show().parse(process.argv);
 }
