@@ -6,6 +6,7 @@ import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import * as addCommand from './tt-add';
 
 import { version } from '../../package.json';
+import { lastDayOfISOWeek } from 'date-fns';
 
 const vorpal = Vorpal();
 
@@ -40,8 +41,8 @@ addCommand.addVorpalCommand(vorpal);
 // console.log(JSON.stringify(process.argv));
 if (process.argv.length < 3) {
   vorpal
-    .delimiter('tt>')
+    .delimiter('time-tracker>')
     .show();
 } else {
-  const result = vorpal.show().parse(process.argv);
+  const result = vorpal.delimiter('time-tracker>').show().parse(process.argv);
 }

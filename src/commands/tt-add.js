@@ -160,8 +160,6 @@ async function run(args, vorpal) {
     minutesSinceLastEntry, projectDefaulted, timeTypeDefaulted,
   );
 
-  // console.dir(inquirer.prompt(prompts).ui.process.subscribe(onEachAnswer, onError, onComplete));
-  // console.dir(prompts);
   // Initialize all the prompts
   const prompts = [];
   if (newEntry.entryDescription === '') {
@@ -193,45 +191,50 @@ async function run(args, vorpal) {
       filter: timeValidate,
     });
   }
-  return vorpal.prompt(prompts);
-  // if (newEntry.project === undefined || projectDefaulted) {
-  //   prompts.push({
-  //     name: 'project',
-  //     type: 'autocomplete',
-  //     message: 'Project:',
-  //     source: (answers, input) =>
-  //       (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
-  //     pageSize: 10,
-  //   });
-  //   prompts.push({
-  //     name: 'newProject',
-  //     type: 'input',
-  //     message: 'New Project Name:',
-  //     validate: validations.validateProjectName,
-  //     filter: input => (input.trim()),
-  //     when: () => (newEntry.project === '(New Project)'),
-  //   });
-  // }
-  // if (newEntry.timeType === undefined || timeTypeDefaulted) {
-  //   prompts.push({
-  //     name: 'timeType',
-  //     type: 'autocomplete',
-  //     message: 'Type of Type:',
-  //     source: (answers, input) =>
-  //       (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
-  //     pageSize: 10,
-  //   });
-  // }
-  // prompts.push({
-  //   name: 'wasteOfTime',
-  //   type: 'confirm',
-  //   message: 'Waste of Time?',
-  //   default: false,
-  // });
-  // const answer = await vorpal.prompt(prompts);
-  // console.dir(answer);
+  if (newEntry.project === undefined || projectDefaulted) {
+    prompts.push({
+      name: 'project',
+      type: 'list',
+      // type: 'autocomplete',
+      message: 'Project:',
+      // source: (answers, input) =>
+      //   (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
+      choices: projects,
+      pageSize: 10,
+      validate: (input) => {
+        LOG(input);
+        return true;
+      },
+    });
+    prompts.push({
+      name: 'newProject',
+      type: 'input',
+      message: 'New Project Name:',
+      validate: validations.validateProjectName,
+      filter: input => (input.trim()),
+      when: () => (newEntry.project === '(New Project)'),
+    });
+  }
+  if (newEntry.timeType === undefined || timeTypeDefaulted) {
+    prompts.push({
+      name: 'timeType',
+      type: 'autocomplete',
+      message: 'Type of Type:',
+      source: (answers, input) =>
+        (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
+      pageSize: 10,
+    });
+  }
+  prompts.push({
+    name: 'wasteOfTime',
+    type: 'confirm',
+    message: 'Waste of Time?',
+    default: false,
+  });
+  const answer = await vorpal.prompt(prompts);
+  LOG(answer);
   // copy all values from the answer object to the newEntry
-  const answer = {};
+  // const answer = {};
   Object.assign(newEntry, answer);
   // console.dir(newEntry);
   LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
