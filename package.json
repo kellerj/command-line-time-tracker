@@ -2,12 +2,12 @@
   "name": "command-line-time-tracker",
   "version": "3.0.0-0",
   "description": "Time Tracker",
-  "main": "dist/main.js",
+  "main": "dist/tt.js",
   "scripts": {
     "build": "tsc",
     "lint": "eslint . --ext .ts",
-    "start": "tsc && node dist/main.js",
-    "run": "ts-node src/main.ts",
+    "start": "tsc && node dist/tt.js",
+    "run": "ts-node src/tt.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": {
@@ -20,9 +20,10 @@
     "url": "https://github.com/kellerj/command-line-time-tracker.git"
   },
   "bin": {
-    "tt": "./dist/main.js"
+    "tt": "./dist/tt.js"
   },
   "dependencies": {
+    "@commander-js/extra-typings": "^11.0.0",
     "@types/commander": "^2.12.2",
     "chalk": "^5.3.0",
     "commander": "^11.0.0",
@@ -40,6 +41,11 @@
     "supports-color": "^9.4.0"
   },
   "devDependencies": {
+    "@types/date-fns": "^2.6.0",
+    "@types/debug": "^4.1.8",
+    "@types/inquirer": "^9.0.3",
+    "@types/inquirer-autocomplete-prompt": "^3.0.0",
+    "@types/sprintf-js": "^1.1.2",
     "@typescript-eslint/eslint-plugin": "^6.6.0",
     "eslint": "^8.49.0",
     "eslint-config-standard-with-typescript": "^39.0.0",
