@@ -1,20 +1,26 @@
 module.exports = {
-  extends: "airbnb-base",
-  rules: {
-    "spaced-comment": "off",
-    "no-underscore-dangle": "off",
-    "no-param-reassign": ["error", { "props": false }],
-    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
-    "max-len": ["warn", 100, 2, {
-      ignoreUrls: true,
-      ignoreComments: true,
-      ignoreRegExpLiterals: true,
-      ignoreStrings: true,
-      ignoreTemplateLiterals: true,
-    }]
-  },
-  env: {
-    node: true,
-    mocha: true,
-  }
+    "env": {
+        "browser": false,
+        "es2021": true
+    },
+    "extends": "standard-with-typescript",
+    "overrides": [
+        {
+            "env": {
+                "node": true
+            },
+            "files": [
+                ".eslintrc.{js,cjs}"
+            ],
+            "parserOptions": {
+                "sourceType": "script"
+            }
+        }
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "rules": {
+    }
 }
