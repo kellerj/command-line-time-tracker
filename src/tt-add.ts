@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import { Command } from '@commander-js/extra-typings';
-const inquirer = require('inquirer');
+import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
-import { sprintf } from 'sprintf-js'; ``
+import { sprintf } from 'sprintf-js';
 // import Rx from 'rx';
 import debug from 'debug';
 import dateFns from 'date-fns';
