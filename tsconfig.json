@@ -5,10 +5,16 @@
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": true,
     // "outFile": "../../built/local/tsc.js",
     "sourceMap": true,
-    "target": "es2022",
+    "target": "ESNext",
     "outDir": "./dist",
+    "esModuleInterop": true
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": [
     "src/**/*"
