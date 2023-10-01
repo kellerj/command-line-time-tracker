@@ -8,3 +8,6 @@ export interface ConfigOption {
   defaultValue?: string | number | boolean | Date;
 }
 
+export interface TtConfig {
+  [key: string]: string | number | boolean | Date;
+}
