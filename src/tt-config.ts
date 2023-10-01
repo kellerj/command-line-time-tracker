@@ -20,6 +20,8 @@ const ttConfig = new Command()
 // const options = ttConfig.opts();
 // LOG(`Parsed ttConfig Object: ${JSON.stringify(ttConfig, null, 2)}`);
 
+// TODO: Add option which accepts a config option - then go directly to editing that option
+
 const currentConfig = getCurrentConfig();
 LOG(currentConfig);
 
