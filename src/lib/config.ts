@@ -1,7 +1,10 @@
 import fs from 'fs';
+import debug from 'debug';
 
 import { CONFIG_DIR, CONFIG_FILE_LOCATION, DEFAULT_DB_LOCATION } from "../constants.js";
 import { ConfigOption } from "../types/config.js";
+
+const LOG = debug('tt:lib:config');
 
 export const configOptions: ConfigOption[] = [
   {
@@ -43,4 +46,11 @@ export function getCurrentConfig() {
   }
   const currentConfig = JSON.parse(fs.readFileSync(CONFIG_FILE_LOCATION, 'utf8'));
   return currentConfig;
+}
+
+export function updateConfigValue(configId: string, newValue: string | number | boolean | Date) {
+  const currentConfig = getCurrentConfig();
+  currentConfig[configId] = newValue;
+  fs.writeFileSync(CONFIG_FILE_LOCATION, JSON.stringify(currentConfig, null, 2), {});
+  LOG(`Updated config value for ${configId} to ${newValue}`);
 }

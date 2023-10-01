@@ -3,16 +3,14 @@
 import fs from 'fs';
 import { Command } from '@commander-js/extra-typings';
 import inquirer from 'inquirer';
+import debug from 'debug';
 // import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 // import chalk from 'chalk';
 // import { sprintf } from 'sprintf-js';
 // import Rx from 'rx';
-import debug from 'debug';
 // import dateFns from 'date-fns';
 
-import { CONFIG_DIR, CONFIG_FILE_LOCATION, DEFAULT_DB_LOCATION } from './constants.js';
-import { ConfigOption } from './types/config.js';
-import { configOptions, getCurrentConfig } from './lib/config.js';
+import { configOptions, getCurrentConfig, updateConfigValue } from './lib/config.js';
 
 const LOG = debug('tt:config');
 
@@ -46,9 +44,6 @@ async function askMenuPrompt() {
   return answer;
 }
 
-// TODO: validate entered path
-// TODO: validate not existing non-directory path
-// TODO: Replace ~ with $HOME
 async function handleDbPath() {
   const dbPath = await inquirer.prompt([
     {
@@ -56,17 +51,43 @@ async function handleDbPath() {
       type: 'input',
       message: 'Enter the path to the database file:',
       default: currentConfig.dbPath,
-      // validate: (value) => {
-      //   if (value.startsWith('~')) {
-      //     return 'Path cannot start with ~';
-      //   }
-      //   return true;
-      // },
+      validate: (value) => {
+        value = value.trim();
+        // Node paths do not support ~, replace with $HOME
+        if (value.startsWith('~')) {
+          value = value.replace('~', process.env.HOME);
+        }
+        // no relative paths
+        if (value.startsWith('.')) {
+          return 'Relative paths are not allowed';
+        }
+        // check that given path does not exist or is a directory
+        if (fs.existsSync(value)) {
+          const stat = fs.statSync(value);
+          console.dir(stat);
+          if (!stat.isDirectory()) {
+            return 'Path is an existing file, must be a directory.';
+          }
+        }
+
+        return true;
+      },
     },
   ]);
   // console.dir(dbPath);
+  let dbPathValue = dbPath.dbPath.trim();
+  if (dbPathValue.startsWith('~')) {
+    dbPathValue = dbPathValue.replace('~', process.env.HOME);
+  }
+  if (dbPathValue === currentConfig.dbPath) {
+    return; // skip making updates to configuration file
+  }
+  fs.mkdirSync(dbPathValue, { recursive: true });
+  // update the configuration file
+  updateConfigValue('dbPath', dbPathValue);
 }
 
+// Loop until the user selects the exit option
 while (true) {
   const selectedItem = await askMenuPrompt();
   // blank means exit
