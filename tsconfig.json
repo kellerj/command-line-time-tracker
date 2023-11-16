@@ -1,8 +1,14 @@
 {
   "compilerOptions": {
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
@@ -11,7 +17,8 @@
     "sourceMap": true,
     "target": "ESNext",
     "outDir": "./dist",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "useUnknownInCatchVariables": true
   },
   "ts-node": {
     "esm": true

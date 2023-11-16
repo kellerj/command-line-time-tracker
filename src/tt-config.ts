@@ -13,7 +13,7 @@ import debug from 'debug';
 import { configOptions, getCurrentConfig, updateConfigValue } from './lib/config.js';
 
 const LOG = debug('tt:config');
-
+LOG('Starting tt-config');
 const ttConfig = new Command()
   .description('Configure options for the time tracker tool')
   .parse();

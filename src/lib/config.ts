@@ -13,12 +13,12 @@ export const configOptions: ConfigOption[] = [
     configId: 'dbPath',
     valueType: 'path',
   },
-  {
-    name: 'Projects',
-    description: 'Configure project options',
-    configId: 'projects',
-    valueType: 'array',
-  },
+  // {
+  //   name: 'Projects',
+  //   description: 'Configure project options',
+  //   configId: 'projects',
+  //   valueType: 'array',
+  // },
   {
     name: 'Time Types',
     description: 'Configure time type options',
@@ -35,7 +35,7 @@ export const configOptions: ConfigOption[] = [
 
 const defaultConfig = {
   dbPath: DEFAULT_DB_LOCATION,
-  projects: ['Time Tracker Development'],
+  // projects: ['Time Tracker Development'],
   timetypes: ['Email', 'Meeting', 'Coding', 'Research', 'Writing', 'Reading', 'Other'],
 };
 

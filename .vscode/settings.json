@@ -1,0 +1,22 @@
+{
+    "sqltools.connections": [
+        {
+            "connectString": "AIT_INT_PROD",
+            "connectionTimeout": 10,
+            "dialect": "OracleDB",
+            "name": "AIT_INT",
+            "username": "KELLERJ",
+            "askForPassword": true,
+            "databaseFilter": null,
+            "previewLimit": 100,
+            "driver": "OracleDB"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "tt",
+            "group": "SQLite",
+            "database": "/Users/kellerj/.config/tt/tt.sqlite"
+        }
+    ]
+}
