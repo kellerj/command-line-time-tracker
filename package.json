@@ -32,6 +32,7 @@
     "tt": "./dist/commands/tt.js"
   },
   "dependencies": {
+    "better-sqlite3": "^9.4.3",
     "chalk": "^2.3.0",
     "commander": "^2.12.2",
     "d3-scale-chromatic": "^1.1.1",
@@ -42,7 +43,6 @@
     "inquirer": "^4.0.1",
     "inquirer-autocomplete-prompt": "^0.12.0",
     "moment": "2.24.x",
-    "mongodb": "^2.2.31",
     "parse-loose-time": "^1.0.1",
     "rx": "4.1.x",
     "sprintf-js": "1.1.x",
@@ -53,6 +53,7 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-jest": "^22.4.3",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
     "babel-watch": "^2.0.7",

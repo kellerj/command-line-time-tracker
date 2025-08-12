@@ -93,7 +93,8 @@ async function run() {
   const ui = new inquirer.ui.BottomBar();
   const prompts = new Rx.Subject();
   const writeHeaderLine = (label, value) => {
-    ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${process.stdout.columns - 29}s`, label, value)));
+    const columns = process.stdout.columns || 80; // Default to 80 if columns is undefined
+    ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${columns - 29}s`, label, value)));
   };
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);

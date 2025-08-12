@@ -1,58 +1,65 @@
 import assert from 'assert';
 import chalk from 'chalk';
+import debug from 'debug';
 
-const collectionName = 'timetype';
+const LOG = debug('db:timetype');
 
 module.exports = getConnection => ({
   /**
-   * Get all project entries.
-   * Generator function - must be used with co module or next().value.
+   * Get all timetype entries.
    */
   async getAll() {
-    const db = await getConnection();
-    const collection = db.collection(collectionName);
-    const r = await collection.find({}).sort({ name: 1 }).toArray();
-    // Close the connection
-    db.close();
+    const db = getConnection();
 
-    return r;
+    const stmt = db.prepare('SELECT id as _id, name FROM timetype ORDER BY name');
+    const timetypes = stmt.all();
+
+    LOG(`Retrieved ${timetypes.length} time types`);
+    return timetypes;
   },
 
   /**
-   * Insert the given project into the database.  Return false if the project
-   * aready exists.  Comparison is case-insensitive.
+   * Insert the given timetype into the database.  Return false if the timetype
+   * already exists.  Comparison is case-insensitive.
    */
   async insert(name) {
-    const db = await getConnection();
-    const collection = db.collection(collectionName);
+    const db = getConnection();
 
-    let r = await collection.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
-    // console.log(JSON.stringify(r));
-    if (r) {
-      db.close();
-      return false;
+    try {
+      const stmt = db.prepare('INSERT INTO timetype (name) VALUES (?)');
+      const result = stmt.run(name);
+
+      LOG(`Inserted timetype: ${name} with ID: ${result.lastInsertRowid}`);
+      assert.equal(1, result.changes, chalk.bgRed('Unable to insert the timetype.'));
+
+      return true;
+    } catch (err) {
+      if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        LOG(`Timetype already exists: ${name}`);
+        return false;
+      }
+      throw err;
     }
-    r = await collection.insertOne({ name });
-    db.close();
-    assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the project.'));
-
-    return true;
   },
 
   async remove(name) {
-    const db = await getConnection();
-    const collection = db.collection(collectionName);
+    const db = getConnection();
 
-    const r = await collection.findAndRemove({ name });
-    // console.log(JSON.stringify(r));
-    if (r && r.ok === 1 && r.value !== null) {
-      db.close();
+    try {
+      const stmt = db.prepare('DELETE FROM timetype WHERE name = ?');
+      const result = stmt.run(name);
+
+      LOG(`Remove result for ${name}: ${result.changes} rows affected`);
+
+      if (result.changes === 0) {
+        console.log(chalk.bgRed(`Error deleting record: timetype '${name}' not found`));
+        return false;
+      }
+
       return true;
-    } else if (r && r.ok !== 1) {
-      console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(r)}`));
+    } catch (err) {
+      console.log(chalk.bgRed(`Error deleting record: ${JSON.stringify(err)}`));
+      return false;
     }
-
-    db.close();
-    return false;
   },
 });

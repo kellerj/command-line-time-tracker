@@ -16,7 +16,7 @@ async function run() {
 
   if (r) {
     LOG(JSON.stringify(r, null, 2));
-    displayUtils.writeSimpleTable(r, null, 'Project Name');
+    displayUtils.writeSimpleTable(r, 'name', 'Project Name');
   } else {
     process.stdout.write(chalk.yellow('No Projects Defined\n'));
   }

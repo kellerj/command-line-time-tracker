@@ -8,34 +8,19 @@ import * as Constants from '../constants';
 
 const LOG = debug('db:timeEntry');
 
-const collectionName = 'timeEntry';
-
-function setMongoDBLoggingLevel(loggingLevel) {
-  // eslint-disable-next-line global-require
-  require('mongodb').Logger.setLevel(loggingLevel);
-}
-
 function setDebug(enabled) {
   LOG.enabled = enabled;
-  if (enabled) {
-    setMongoDBLoggingLevel('debug');
-  } else {
-    setMongoDBLoggingLevel('info');
-  }
 }
 
 /* istanbul ignore if */
 if (LOG.enabled) {
-  setMongoDBLoggingLevel('debug');
+  LOG('SQLite timeEntry module debugging enabled');
 }
 
 /**
- * Insert the given project into the database.  Return false if the project
- * aready exists.  Comparison is case-insensitive.
+ * Insert the given timeEntry into the database.
  */
 async function insert(db, timeEntry) {
-  const collection = db.collection(collectionName);
-
   // add the timing data to the object
   if (!timeEntry.entryDate) {
     // it's possible the date may be specified from the command line - if so, don't set
@@ -43,32 +28,57 @@ async function insert(db, timeEntry) {
     LOG(`Defaulting entry date to ${timeEntry.entryDate}`);
   }
 
-  LOG(`Inserting ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
+  LOG(`Inserting ${JSON.stringify(timeEntry, null, 2)} into SQLite`);
 
-  const r = await collection.insertOne(timeEntry);
-  db.close();
-  LOG(`Result: ${JSON.stringify(r)}`);
-  assert.equal(1, r.insertedCount, chalk.bgRed('Unable to insert the timeEntry.'));
+  const stmt = db.prepare(`
+    INSERT INTO timeEntry (entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const result = stmt.run(
+    timeEntry.entryDescription,
+    timeEntry.project,
+    timeEntry.timeType,
+    timeEntry.minutes,
+    timeEntry.entryDate,
+    timeEntry.insertTime.toISOString(),
+    timeEntry.wasteOfTime ? 1 : 0,
+  );
+
+  LOG(`Result: Inserted with ID ${result.lastInsertRowid}`);
+  assert.equal(1, result.changes, chalk.bgRed('Unable to insert the timeEntry.'));
 
   return true;
 }
 
 async function update(db, timeEntry) {
-  const collection = db.collection(collectionName);
+  LOG(`Updating ${JSON.stringify(timeEntry, null, 2)} into SQLite`);
 
-  LOG(`Updating ${JSON.stringify(timeEntry, null, 2)} into MongoDB`);
+  const stmt = db.prepare(`
+    UPDATE timeEntry 
+    SET entryDescription = ?, project = ?, timeType = ?, minutes = ?, entryDate = ?, wasteOfTime = ?
+    WHERE id = ?
+  `);
 
-  const r = await collection.updateOne({ _id: timeEntry._id }, timeEntry);
-  db.close();
-  LOG(`Result: ${JSON.stringify(r.result)}`);
-  assert.equal(1, r.result.nModified, `Unable to update the timeEntry: ${JSON.stringify(r.result)}`);
+  const result = stmt.run(
+    timeEntry.entryDescription,
+    timeEntry.project,
+    timeEntry.timeType,
+    timeEntry.minutes,
+    timeEntry.entryDate,
+    timeEntry.wasteOfTime ? 1 : 0,
+    timeEntry._id || timeEntry.id,
+  );
+
+  LOG(`Result: Updated ${result.changes} rows`);
+  assert.equal(1, result.changes, `Unable to update the timeEntry: only ${result.changes} rows affected`);
 
   return true;
 }
 
 async function get(db, startDate, endDate) {
   LOG(`Get Time Entries: ${startDate} -- ${endDate}`);
-  const collection = db.collection(collectionName);
+
   if (!startDate) {
     // eslint-disable-next-line no-param-reassign
     startDate = new Date();
@@ -77,35 +87,71 @@ async function get(db, startDate, endDate) {
     // eslint-disable-next-line no-param-reassign
     endDate = startDate;
   }
-  let query = {};
+
+  let stmt;
+  let entries;
   if (startDate === endDate) {
-    query = { entryDate: format(startDate, Constants.DATE_FORMAT) };
+    const entryDate = format(startDate, Constants.DATE_FORMAT);
+    stmt = db.prepare(`
+      SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime
+      FROM timeEntry 
+      WHERE entryDate = ? 
+      ORDER BY insertTime
+    `);
+    entries = stmt.all(entryDate);
   } else {
-    query = {
-      entryDate: {
-        $gte: format(startDate, Constants.DATE_FORMAT),
-        $lte: format(endDate, Constants.DATE_FORMAT),
-      },
-    };
+    const startDateStr = format(startDate, Constants.DATE_FORMAT);
+    const endDateStr = format(endDate, Constants.DATE_FORMAT);
+    stmt = db.prepare(`
+      SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime
+      FROM timeEntry 
+      WHERE entryDate >= ? AND entryDate <= ? 
+      ORDER BY insertTime
+    `);
+    entries = stmt.all(startDateStr, endDateStr);
   }
-  const r = await collection.find(query).sort({ insertTime: 1 }).toArray();
-  db.close();
-  return r;
+
+  // Convert wasteOfTime from integer back to boolean and parse insertTime
+  const processedEntries = entries.map(entry => ({
+    ...entry,
+    wasteOfTime: entry.wasteOfTime === 1,
+    insertTime: new Date(entry.insertTime),
+  }));
+
+  LOG(`Retrieved ${processedEntries.length} entries`);
+  return processedEntries;
 }
 
 async function remove(db, entryId) {
-  const collection = db.collection(collectionName);
-  const r = await collection.findAndRemove({ _id: entryId });
-  LOG(JSON.stringify(r, null, 2));
-  db.close();
-  if (r && r.ok === 1 && r.value !== null) {
-    return r.value;
+  // First get the entry to return it
+  const selectStmt = db.prepare('SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime FROM timeEntry WHERE id = ?');
+  const entry = selectStmt.get(entryId);
+
+  if (!entry) {
+    throw new Error(`Error deleting record: entry with ID ${entryId} not found`);
   }
-  throw new Error(`Error deleting record: ${JSON.stringify(r)}`);
+
+  // Now delete it
+  const deleteStmt = db.prepare('DELETE FROM timeEntry WHERE id = ?');
+  const result = deleteStmt.run(entryId);
+
+  LOG(`Delete result: ${result.changes} rows affected`);
+
+  if (result.changes === 0) {
+    throw new Error(`Error deleting record: no rows affected for ID ${entryId}`);
+  }
+
+  // Process the entry to match expected format
+  const processedEntry = {
+    ...entry,
+    wasteOfTime: entry.wasteOfTime === 1,
+    insertTime: new Date(entry.insertTime),
+  };
+
+  return processedEntry;
 }
 
 async function getMostRecentEntry(db, entryDate, beforeTime) {
-  const collection = db.collection(collectionName);
   if (!beforeTime) {
     // eslint-disable-next-line no-param-reassign
     beforeTime = new Date();
@@ -117,20 +163,30 @@ async function getMostRecentEntry(db, entryDate, beforeTime) {
   } else if (entryDate instanceof Date) {
     entryDateString = format(entryDate, Constants.DATE_FORMAT);
   }
-  const r = await collection.find({
-    entryDate: entryDateString,
-    insertTime: { $lt: beforeTime },
-  }).sort({ insertTime: -1 }).limit(1).toArray();
-  db.close();
-  if (r.length) {
-    return r[0];
+
+  const stmt = db.prepare(`
+    SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime
+    FROM timeEntry 
+    WHERE entryDate = ? AND insertTime < ?
+    ORDER BY insertTime DESC 
+    LIMIT 1
+  `);
+
+  const entry = stmt.get(entryDateString, beforeTime.toISOString());
+
+  if (entry) {
+    // Process the entry to match expected format
+    return {
+      ...entry,
+      wasteOfTime: entry.wasteOfTime === 1,
+      insertTime: new Date(entry.insertTime),
+    };
   }
   return null;
 }
 
 async function summarizeByProjectAndTimeType(db, startDate, endDate) {
   LOG(`Summarize Time Entries: ${startDate} -- ${endDate}`);
-  const collection = db.collection(collectionName);
 
   if (!startDate) {
     // eslint-disable-next-line no-param-reassign
@@ -142,32 +198,24 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
     endDate = startDate;
   }
 
-  const cursor = collection.aggregate([
-    {
-      $match: {
-        entryDate: {
-          $gte: format(startDate, Constants.DATE_FORMAT),
-          $lte: format(endDate, Constants.DATE_FORMAT),
-        },
-      },
-    },
-    {
-      $group: {
-        _id: { project: '$project', timeType: '$timeType' },
-        minutes: { $sum: '$minutes' },
-      },
-    },
-    {
-      $project: {
-        project: '$_id.project', timeType: '$_id.timeType', minutes: '$minutes', _id: 0,
-      },
-    },
-    { $sort: { project: 1, timeType: 1 } },
-  ]);
-  const r = await cursor.toArray();
-  db.close();
-  LOG(`Summary Data: ${JSON.stringify(r, null, 2)}`);
-  return r;
+  const startDateStr = format(startDate, Constants.DATE_FORMAT);
+  const endDateStr = format(endDate, Constants.DATE_FORMAT);
+
+  const stmt = db.prepare(`
+    SELECT 
+      project, 
+      timeType, 
+      SUM(minutes) as minutes
+    FROM timeEntry 
+    WHERE entryDate >= ? AND entryDate <= ?
+    GROUP BY project, timeType
+    ORDER BY project, timeType
+  `);
+
+  const results = stmt.all(startDateStr, endDateStr);
+
+  LOG(`Summary Data: ${JSON.stringify(results, null, 2)}`);
+  return results;
 }
 
 /*
@@ -176,27 +224,27 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
  */
 module.exports = getConnection => ({
   async insert(timeEntry) {
-    return insert(await getConnection(), timeEntry);
+    return insert(getConnection(), timeEntry);
   },
 
   async update(timeEntry) {
-    return update(await getConnection(), timeEntry);
+    return update(getConnection(), timeEntry);
   },
 
   async get(startDate, endDate) {
-    return get(await getConnection(), startDate, endDate);
+    return get(getConnection(), startDate, endDate);
   },
 
   async remove(entryId) {
-    return remove(await getConnection(), entryId);
+    return remove(getConnection(), entryId);
   },
 
   async getMostRecentEntry(entryDateString, beforeTime) {
-    return getMostRecentEntry(await getConnection(), entryDateString, beforeTime);
+    return getMostRecentEntry(getConnection(), entryDateString, beforeTime);
   },
 
   async summarizeByProjectAndTimeType(startDate, endDate) {
-    return summarizeByProjectAndTimeType(await getConnection(), startDate, endDate);
+    return summarizeByProjectAndTimeType(getConnection(), startDate, endDate);
   },
   setDebug,
 });

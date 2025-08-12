@@ -3,78 +3,62 @@ import debug from 'debug';
 
 const LOG = debug('db:project');
 
-const collectionName = 'projects';
-
 module.exports = getConnection => ({
   /**
    * Get all project entries.
-   * Generator function - must be used with co module or next().value.
    */
   async getAll() {
-    const db = await getConnection();
-    const collection = db.collection(collectionName);
+    const db = getConnection();
 
-    /* istanbul ignore if */
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
-    }
+    const stmt = db.prepare('SELECT id as _id, name FROM projects ORDER BY name');
+    const projects = stmt.all();
 
-    const r = await collection.find({}).sort({ name: 1 }).toArray();
-    // Close the connection
-    db.close();
-
-    return r;
+    LOG(`Retrieved ${projects.length} projects`);
+    return projects;
   },
 
   /**
    * Insert the given project into the database.  Return false if the project
-   * aready exists.  Comparison is case-insensitive.
+   * already exists.  Comparison is case-insensitive.
    */
   async insert(name) {
-    const db = await getConnection();
-    const collection = db.collection(collectionName);
+    const db = getConnection();
 
-    /* istanbul ignore if */
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
+    try {
+      const stmt = db.prepare('INSERT INTO projects (name) VALUES (?)');
+      const result = stmt.run(name);
+
+      LOG(`Inserted project: ${name} with ID: ${result.lastInsertRowid}`);
+      assert.equal(1, result.changes, 'Unable to insert the project.');
+
+      return true;
+    } catch (err) {
+      if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        LOG(`Project already exists: ${name}`);
+        return false;
+      }
+      throw err;
     }
-
-    let r = await collection.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
-    // console.log(JSON.stringify(r));
-    if (r) {
-      db.close();
-      return false;
-    }
-    r = await collection.insertOne({ name });
-    db.close();
-    assert.equal(1, r.insertedCount, 'Unable to insert the project.');
-
-    return true;
   },
 
   async remove(name) {
-    const db = await getConnection();
-    const collection = db.collection(collectionName);
+    const db = getConnection();
 
-    /* istanbul ignore if */
-    if (LOG.enabled) {
-      // eslint-disable-next-line global-require
-      require('mongodb').Logger.setLevel('debug');
-    }
-
-    const r = await collection.findAndRemove({ name });
-    LOG(JSON.stringify(r, null, 2));
     try {
-      assert.ok(r, 'Empty Result from Mongo findAndRemove command');
-      assert.ok(r.ok === 1 && r.value !== null, `Unexpected result from MongoDB: ${JSON.stringify(r)}`);
+      const stmt = db.prepare('DELETE FROM projects WHERE name = ?');
+      const result = stmt.run(name);
+
+      LOG(`Remove result for ${name}: ${result.changes} rows affected`);
+
+      if (result.changes === 0) {
+        LOG(`Project not found: ${name}`);
+        return false;
+      }
+
+      return true;
     } catch (err) {
-      db.close();
       LOG(`Remove Failed: ${JSON.stringify(err, null, 2)}`);
       return false;
     }
-    db.close();
-    return true;
   },
 });

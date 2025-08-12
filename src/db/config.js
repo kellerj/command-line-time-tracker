@@ -1,15 +1,14 @@
 /* istanbul ignore file */
+const path = require('path');
+const os = require('os');
 const LOG = require('debug')('db:config');
 
-const host = 'localhost';
-const port = 27017;
-const database = 'tt';
+const dbPath = path.join(os.homedir(), '.tt', 'time-tracker.db');
 
-LOG(`Using ${database} on ${host}:${port}`);
+LOG(`Using SQLite database at: ${dbPath}`);
 
 module.exports = {
   db: {
-    baseUrl: `mongodb://${host}:${port}`,
-    url: `mongodb://${host}:${port}/${database}`,
+    path: dbPath,
   },
 };
