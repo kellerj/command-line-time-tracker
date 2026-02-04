@@ -1,8 +1,8 @@
 #!/usr/bin/env node --harmony
 
-import commander from 'commander';
+import { program } from 'commander';
 
-commander
+program
   .description('Manage current projects for time tracking.')
   .command('add', 'Add a time tracking project to the database')
   .alias('a')

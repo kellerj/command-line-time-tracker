@@ -14,7 +14,7 @@ export function buildTimeTypeHeadingsList(data) {
 
 export function buildProjectByTimeTypeDataGrid(data) {
   const grid = data.reduce((acc, item) => {
-    let projectRow = acc.find(i => (i.Project === item.project));
+    let projectRow = acc.find((i) => (i.Project === item.project));
     if (!projectRow) {
       projectRow = { Project: item.project };
       acc.push(projectRow);

@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
-import commander from 'commander';
+import { program } from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
 import { sprintf } from 'sprintf-js';
-import Rx from 'rx';
 import debug from 'debug';
-import dateFns from 'date-fns';
+import { addMinutes } from 'date-fns';
 
 import validations from '../utils/validations';
 import displayUtils from '../utils/display-utils';
@@ -21,7 +20,7 @@ import { addNewProject } from '../lib/project';
 
 const LOG = debug('tt:add');
 
-commander
+program
   .description('Record a time entry')
   .usage('[options] [entryDescription]')
   .option('-t, --time <minutes>', 'Minutes spent on the activity.')
@@ -34,33 +33,35 @@ commander
   .option('-y, --yesterday', 'Set the logging date to yesterday.')
   .parse(process.argv);
 
-LOG(`Parsed Commander Object: ${JSON.stringify(commander, null, 2)}`);
+const opts = program.opts();
+
+LOG(`Parsed Commander Object: ${JSON.stringify(opts, null, 2)}`);
 
 // Build the new entry object with command line arguments
 const newEntry = {
-  entryDescription: commander.args.join(' ').trim(),
-  project: commander.project,
-  timeType: commander.type,
-  minutes: commander.time,
+  entryDescription: program.args.join(' ').trim(),
+  project: opts.project,
+  timeType: opts.type,
+  minutes: opts.time,
   insertTime: new Date(),
-  entryDate: commander.date,
+  entryDate: opts.date,
   wasteOfTime: false,
 };
 
 LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 
-newEntry.entryDate = getEntryDate(commander);
-newEntry.minutes = getEntryMinutes(commander);
+newEntry.entryDate = getEntryDate(opts);
+newEntry.minutes = getEntryMinutes(opts);
 
 async function run() {
-  // pull the lists of projects and time types from MongoDB
-  const projects = (await db.project.getAll()).map(item => (item.name));
-  const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
+  // pull the lists of projects and time types from the database
+  const projects = (await db.project.getAll()).map((item) => (item.name));
+  const timeTypes = (await db.timetype.getAll()).map((item) => (item.name));
 
-  newEntry.insertTime = getInsertTime(commander, newEntry);
+  newEntry.insertTime = getInsertTime(opts, newEntry);
   const lastEntry = await db.timeEntry.getMostRecentEntry(newEntry.entryDate, newEntry.insertTime);
   LOG(`Last Entry: ${JSON.stringify(lastEntry, null, 2)}`);
-  if (commander.fill && !lastEntry) {
+  if (opts.fill && !lastEntry) {
     displayUtils.writeError('There are no prior entries today, the --fill option may not be used.');
     throw new Error();
   }
@@ -68,22 +69,22 @@ async function run() {
   const minutesSinceLastEntry = getMinutesSinceLastEntry(newEntry, lastEntry);
 
   newEntry.project = getProjectName(newEntry, projects);
-  if (commander.project && !newEntry.project) {
+  if (opts.project && !newEntry.project) {
     // If project option is not a valid project, reject with list of project names
-    displayUtils.writeError(`Project ${chalk.yellow(commander.project)} does not exist.  Known Projects:`);
+    displayUtils.writeError(`Project ${chalk.yellow(opts.project)} does not exist.  Known Projects:`);
     displayUtils.writeSimpleTable(projects, null, 'Project Name');
     throw new Error();
   }
-  const projectDefaulted = newEntry.project !== commander.project;
+  const projectDefaulted = newEntry.project !== opts.project;
 
   newEntry.timeType = getTimeType(newEntry, timeTypes);
-  if (commander.type && !newEntry.timeType) {
+  if (opts.type && !newEntry.timeType) {
     // If time type option is not a valid project, reject with list of type names
-    displayUtils.writeError(`Time Type ${chalk.yellow(commander.type)} does not exist.  Known Time Types:`);
+    displayUtils.writeError(`Time Type ${chalk.yellow(opts.type)} does not exist.  Known Time Types:`);
     displayUtils.writeSimpleTable(timeTypes, null, 'Time Type');
     throw new Error();
   }
-  const timeTypeDefaulted = newEntry.timeType !== commander.type;
+  const timeTypeDefaulted = newEntry.timeType !== opts.type;
 
   // Add the new project option to the end of the list
   projects.push(new inquirer.Separator());
@@ -91,98 +92,17 @@ async function run() {
   projects.push(new inquirer.Separator());
 
   const ui = new inquirer.ui.BottomBar();
-  const prompts = new Rx.Subject();
   const writeHeaderLine = (label, value) => {
     const columns = process.stdout.columns || 80; // Default to 80 if columns is undefined
     ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${columns - 29}s`, label, value)));
   };
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
-  inquirer.prompt(prompts).ui.process.subscribe(
-    // handle each answer
-    (lastAnswer) => {
-      LOG(JSON.stringify(lastAnswer));
-      // for each answer, update the newEntry object
-      newEntry[lastAnswer.name] = lastAnswer.answer;
-      if (lastAnswer.name === 'minutes' && commander.fill) {
-        newEntry.insertTime = dateFns.addMinutes(lastEntry.insertTime, newEntry.minutes);
-        writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
-      }
-      if (lastAnswer.name === 'wasteOfTime') {
-        prompts.onCompleted();
-      }
-    },
-    (err) => {
-      //console.log(chalk.bgRed(JSON.stringify(err)));
-      throw err;
-    },
-    async () => {
-      LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
-      // if they answered the newProject question, create that project first
-      if (newEntry.newProject) {
-        await addNewProject(newEntry.newProject);
-        newEntry.project = newEntry.newProject;
-        delete newEntry.newProject;
-      }
-      // write the time entry to the database
-      await addTimeEntry(newEntry);
-      LOG('TimeEntry added');
-    },
-  );
 
-  // Initialize all the prompts
-  prompts.onNext({
-    name: 'entryDescription',
-    type: 'input',
-    message: 'Entry Description:',
-    filter: input => (input.trim()),
-    validate: validations.validateEntryDescription,
-    when: () => (newEntry.entryDescription === ''),
-  });
-  prompts.onNext({
-    name: 'minutes',
-    type: 'input',
-    message: 'Minutes:',
-    default: minutesSinceLastEntry,
-    validate: validations.validateMinutes,
-    filter: val => (Number.parseInt(val, 10)),
-    when: () => (newEntry.minutes === undefined || newEntry.minutes === null),
-  });
-  prompts.onNext({
-    name: 'project',
-    type: 'autocomplete',
-    message: 'Project:',
-    source: (answers, input) =>
-      (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
-    when: () => (newEntry.project === undefined || projectDefaulted),
-    pageSize: 10,
-  });
-  prompts.onNext({
-    name: 'newProject',
-    type: 'input',
-    message: 'New Project Name:',
-    validate: validations.validateProjectName,
-    filter: input => (input.trim()),
-    when: () => (newEntry.project === '(New Project)'),
-  });
-  prompts.onNext({
-    name: 'timeType',
-    type: 'autocomplete',
-    message: 'Type of Type:',
-    source: (answers, input) =>
-      (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
-    when: () => (newEntry.timeType === undefined || timeTypeDefaulted),
-    pageSize: 10,
-  });
-  prompts.onNext({
-    name: 'wasteOfTime',
-    type: 'confirm',
-    message: 'Waste of Time?',
-    default: false,
-  });
-
+  // Display initial status information
   if (lastEntry) {
-    writeHeaderLine('Last Entry', `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`);
+    const lastEntryInfo = `${displayUtils.timePrinter(lastEntry.insertTime)} : ${lastEntry.entryDescription}`;
+    writeHeaderLine('Last Entry', lastEntryInfo);
   }
   if (newEntry.entryDescription !== '') {
     writeHeaderLine('Description', newEntry.entryDescription);
@@ -199,6 +119,98 @@ async function run() {
   if (newEntry.timeType && !timeTypeDefaulted) {
     writeHeaderLine('Time Type', newEntry.timeType);
   }
+
+  // Build questions array based on what's needed
+  const questions = [];
+
+  if (newEntry.entryDescription === '') {
+    questions.push({
+      name: 'entryDescription',
+      type: 'input',
+      message: 'Entry Description:',
+      filter: (input) => (input.trim()),
+      validate: validations.validateEntryDescription,
+    });
+  }
+
+  if (newEntry.minutes === undefined || newEntry.minutes === null) {
+    questions.push({
+      name: 'minutes',
+      type: 'input',
+      message: 'Minutes:',
+      default: minutesSinceLastEntry,
+      validate: validations.validateMinutes,
+      filter: (val) => (Number.parseInt(val, 10)),
+    });
+  }
+
+  if (newEntry.project === undefined || projectDefaulted) {
+    questions.push({
+      name: 'project',
+      type: 'autocomplete',
+      message: 'Project:',
+      source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
+      pageSize: 10,
+    });
+  }
+
+  // Ask all the initial questions
+  const initialAnswers = await inquirer.prompt(questions);
+
+  // Update newEntry with answers
+  Object.assign(newEntry, initialAnswers);
+
+  // Handle fill option - update insert time after we know minutes
+  if (initialAnswers.minutes && opts.fill) {
+    newEntry.insertTime = addMinutes(lastEntry.insertTime, newEntry.minutes);
+    writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
+  }
+
+  // If they selected (New Project), ask for new project name
+  if (newEntry.project === '(New Project)') {
+    const newProjectAnswer = await inquirer.prompt([{
+      name: 'newProject',
+      type: 'input',
+      message: 'New Project Name:',
+      validate: validations.validateProjectName,
+      filter: (input) => (input.trim()),
+    }]);
+    newEntry.newProject = newProjectAnswer.newProject;
+  }
+
+  // Ask for time type if needed
+  if (newEntry.timeType === undefined || timeTypeDefaulted) {
+    const timeTypeAnswer = await inquirer.prompt([{
+      name: 'timeType',
+      type: 'autocomplete',
+      message: 'Type of Time:',
+      source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
+      pageSize: 10,
+    }]);
+    newEntry.timeType = timeTypeAnswer.timeType;
+  }
+
+  // Always ask waste of time question
+  const wasteAnswer = await inquirer.prompt([{
+    name: 'wasteOfTime',
+    type: 'confirm',
+    message: 'Waste of Time?',
+    default: false,
+  }]);
+  newEntry.wasteOfTime = wasteAnswer.wasteOfTime;
+
+  LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
+
+  // if they answered the newProject question, create that project first
+  if (newEntry.newProject) {
+    await addNewProject(newEntry.newProject);
+    newEntry.project = newEntry.newProject;
+    delete newEntry.newProject;
+  }
+
+  // write the time entry to the database
+  await addTimeEntry(newEntry);
+  LOG('TimeEntry added');
 }
 
 try {

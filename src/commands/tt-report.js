@@ -1,7 +1,7 @@
-import commander from 'commander';
+import { program } from 'commander';
 import chalk from 'chalk';
 import debug from 'debug';
-import moment from 'moment'; // TODO: Convert to use date-fns
+import { format } from 'date-fns';
 
 import db from '../db';
 import validations from '../utils/validations';
@@ -16,7 +16,7 @@ import {
 
 const LOG = debug('tt:report');
 
-commander
+program
   .description('Generate report of time entries')
   .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
   .option('-s, --startDate <YYYY-MM-DD>')
@@ -30,11 +30,12 @@ commander
   .option('--fullSummary', 'Include the full summary table in the output.')
   .parse(process.argv);
 
-LOG(JSON.stringify(commander, null, 2));
+const opts = program.opts();
+LOG(JSON.stringify(opts, null, 2));
 
 function buildProjectTable(r, totalTime) {
   const projectGrid = r.reduce((p, item) => {
-    const projectRow = p.find(e => (e.Name === item.project));
+    const projectRow = p.find((e) => (e.Name === item.project));
     if (!projectRow) {
       p.push({ Name: item.project, Time: item.minutes, Percent: item.minutes / totalTime });
     } else {
@@ -56,7 +57,7 @@ function buildProjectTable(r, totalTime) {
 
 function buildTimeTypeTable(r, totalTime) {
   const timeTypeGrid = r.reduce((p, item) => {
-    const row = p.find(e => (e.Name === item.timeType));
+    const row = p.find((e) => (e.Name === item.timeType));
     if (!row) {
       p.push({ Name: item.timeType, Time: item.minutes, Percent: item.minutes / totalTime });
     } else {
@@ -77,7 +78,7 @@ function buildTimeTypeTable(r, totalTime) {
 }
 
 async function run() {
-  const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+  const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(opts);
   if (errorMessage) {
     throw new Error(errorMessage);
   }
@@ -90,10 +91,10 @@ async function run() {
 
   LOG(JSON.stringify(r, null, 2));
   let reportOutput = '# Work Log:';
-  if (commander.week) {
-    reportOutput = `# Weekly Summary: Week starting ${moment(startDate).format('MMMM Do, YYYY')}`;
-  } else if (commander.month) {
-    reportOutput = `# Monthly Summary: ${moment(startDate).format('MMMM, YYYY')}`;
+  if (opts.week) {
+    reportOutput = `# Weekly Summary: Week starting ${format(startDate, 'MMMM do, yyyy')}`;
+  } else if (opts.month) {
+    reportOutput = `# Monthly Summary: ${format(startDate, 'MMMM, yyyy')}`;
   } else if (startDate.getTime() === endDate.getTime()) {
     reportOutput = `${reportOutput} ${displayUtils.datePrinter(startDate)}`;
   } else { // arbitrary date range
@@ -104,7 +105,7 @@ async function run() {
   // eslint-disable-next-line no-param-reassign
   const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
 
-  if (!commander.noSummary) {
+  if (!opts.noSummary) {
     reportOutput += '## Projects\n\n';
 
     reportOutput += buildProjectTable(r, totalTime);
@@ -116,8 +117,7 @@ async function run() {
     reportOutput += '\n';
   }
 
-
-  if (commander.fullSummary) {
+  if (opts.fullSummary) {
     reportOutput += '## Summary\n\n';
     // and build a record with keys for each time type
     const headings = buildTimeTypeHeadingsList(r);
@@ -133,8 +133,8 @@ async function run() {
     reportOutput += '\n';
   }
 
-  if (!commander.noDetails) {
-    if (!commander.noSummary) {
+  if (!opts.noDetails) {
+    if (!opts.noSummary) {
       reportOutput += '## Details\n\n';
     }
 
@@ -164,10 +164,10 @@ async function run() {
       for (let j = 0; j < timeTypeNames.length; j++) {
         const detailEntries = entries
           // get only details for the current project and time type
-          .filter(entry => (entry.project === projectNames[i]
+          .filter((entry) => (entry.project === projectNames[i]
             && entry.timeType === timeTypeNames[j]))
           // convert to descriptions
-          .map(entry => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
+          .map((entry) => (entry.entryDescription + (entry.wasteOfTime ? ' 💩' : '')))
           .sort()
           // eliminate dupes
           .filter((entry, k, array) => (k === 0 || entry !== array[k - 1]));

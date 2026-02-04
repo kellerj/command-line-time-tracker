@@ -1,4 +1,4 @@
-import commander from 'commander';
+import { program } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import debug from 'debug';
@@ -8,11 +8,11 @@ import db from '../db';
 
 const LOG = debug('tt:project:delete');
 
-commander
+program
   .arguments('[projectName]', 'Remove time tracking projects from the database')
   .parse(process.argv);
 
-const inputName = commander.args.join(' ');
+const inputName = program.args.join(' ');
 
 async function performUpdate(names) {
   LOG(JSON.stringify(names, null, 2));
@@ -37,7 +37,7 @@ async function run() {
         name: 'names',
         type: 'checkbox',
         message: 'Select Projects to Remove',
-        choices: r.map(item => (item.name)),
+        choices: r.map((item) => (item.name)),
         pageSize: 15,
         when: () => (inputName === ''),
       },
@@ -46,7 +46,7 @@ async function run() {
         type: 'confirm',
         message: 'Are you sure you want to delete this project?',
         default: false,
-        when: answers => ((answers.names && answers.names.length) || inputName),
+        when: (answers) => ((answers.names && answers.names.length) || inputName),
       },
     ]);
     if (answer.confirm) {

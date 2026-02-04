@@ -4,7 +4,7 @@ import debug from 'debug';
 
 const LOG = debug('db:timetype');
 
-module.exports = getConnection => ({
+module.exports = (getConnection) => ({
   /**
    * Get all timetype entries.
    */

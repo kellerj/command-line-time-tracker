@@ -1,4 +1,4 @@
-import { parse, subDays, isValid } from 'date-fns';
+import { parseISO, subDays, isValid } from 'date-fns';
 // import debug from 'debug';
 // import parseTime from 'parse-loose-time';
 // , startOfDay,
@@ -18,7 +18,7 @@ module.exports = {
   getEntryDate: (entryDateString, useYesterday = false) => {
     let entryDate = new Date();
     if (entryDateString) {
-      entryDate = parse(entryDateString);
+      entryDate = parseISO(entryDateString);
       if (!isValid(entryDate)) {
         throw new Error(`-d, --date: Invalid Date: ${entryDateString}`);
       }

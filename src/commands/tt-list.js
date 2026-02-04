@@ -1,6 +1,6 @@
-import commander from 'commander';
+import { program } from 'commander';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
+import { format } from 'date-fns';
 import debug from 'debug';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 
@@ -11,7 +11,7 @@ import displayUtils from '../utils/display-utils';
 
 const LOG = debug('tt:list');
 
-commander
+program
   .description('List time entries in a tabular format.')
   //.option('--csv', 'Output in a CSV format instead of ASCII table.')
   .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
@@ -21,7 +21,7 @@ commander
   .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
   .parse(process.argv);
 
-const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(program.opts());
 LOG(`Running for Dates: ${startDate} through ${endDate}`);
 if (errorMessage) {
   throw new Error(errorMessage);
@@ -32,7 +32,7 @@ async function run() {
 
   if (r && r.length) {
     LOG(JSON.stringify(r, null, 2));
-    const grid = r.map(item => ({
+    const grid = r.map((item) => ({
       Date: item.entryDate,
       Logged: item.insertTime,
       Project: item.project,
@@ -82,7 +82,7 @@ async function run() {
     t.setData(grid, columnInfo);
     t.write(process.stdout);
   } else {
-    throw new Error(chalk.yellow(`No Time Entries Defined for ${moment(startDate).format('YYYY-MM-DD')}`));
+    throw new Error(chalk.yellow(`No Time Entries Defined for ${format(startDate, 'yyyy-MM-dd')}`));
   }
 }
 

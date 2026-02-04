@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import commander from 'commander';
+import { program } from 'commander';
 import inquirer from 'inquirer';
 import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
 import chalk from 'chalk';
@@ -17,7 +17,7 @@ import dateUtils from '../utils/date-utils';
 
 const LOG = debug('tt:edit');
 
-commander
+program
   .description('Edit an existing time entry from the current day.')
   .usage('[options]')
   .option('-d, --date <YYYY-MM-DD>', 'Date for which to edit an entry.')
@@ -25,9 +25,10 @@ commander
   .option('--last', 'Edit the last entry added without displaying a list first.')
   .parse(process.argv);
 
-let entryDate = commander.date;
-const editLast = commander.last;
-LOG(JSON.stringify(commander, null, 2));
+const opts = program.opts();
+let entryDate = opts.date;
+const editLast = opts.last;
+LOG(JSON.stringify(opts, null, 2));
 
 async function getEntryToEdit(date) {
   const entries = await db.timeEntry.get(date);
@@ -37,7 +38,7 @@ async function getEntryToEdit(date) {
   } else {
     throw new Error(chalk.yellow(`No Time Entries Entered for ${format(date, Constants.DATE_FORMAT)}\n`));
   }
-  const entryList = entries.map(item => ({
+  const entryList = entries.map((item) => ({
     value: item._id,
     name: displayUtils.formatEntryChoice(item),
   }));
@@ -51,13 +52,13 @@ async function getEntryToEdit(date) {
       choices: entryList,
     },
   ]);
-  return entries.find(e => (e._id === answer.entry));
+  return entries.find((e) => (e._id === answer.entry));
 }
 
 async function handleEntryChanges(entry) {
   LOG(`Starting Edit for Entry: ${JSON.stringify(entry, null, 2)}`);
-  const projects = (await db.project.getAll()).map(item => (item.name));
-  const timeTypes = (await db.timetype.getAll()).map(item => (item.name));
+  const projects = (await db.project.getAll()).map((item) => (item.name));
+  const timeTypes = (await db.timetype.getAll()).map((item) => (item.name));
 
   inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
   const answer = await inquirer.prompt([
@@ -66,7 +67,7 @@ async function handleEntryChanges(entry) {
       type: 'input',
       message: 'Entry Description:',
       default: entry.entryDescription,
-      filter: input => (input.trim()),
+      filter: (input) => (input.trim()),
       validate: validations.validateEntryDescription,
     },
     {
@@ -75,7 +76,7 @@ async function handleEntryChanges(entry) {
       message: 'Minutes:',
       default: entry.minutes,
       validate: validations.validateMinutes,
-      filter: val => (Number.parseInt(val, 10)),
+      filter: (val) => (Number.parseInt(val, 10)),
     },
     {
       name: 'insertTime',
@@ -89,16 +90,14 @@ async function handleEntryChanges(entry) {
       name: 'project',
       type: 'autocomplete',
       message: 'Project:',
-      source: (answers, input) =>
-        (displayUtils.autocompleteListSearch(projects, input, entry.project)),
+      source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, entry.project)),
       pageSize: 10,
     },
     {
       name: 'timeType',
       type: 'autocomplete',
       message: 'Type of Type:',
-      source: (answers, input) =>
-        (displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType)),
+      source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType)),
       pageSize: 10,
     },
     {
@@ -121,7 +120,7 @@ async function handleEntryChanges(entry) {
 async function run() {
   let entry = null;
 
-  entryDate = dateUtils.getEntryDate(entryDate, commander.yesterday);
+  entryDate = dateUtils.getEntryDate(entryDate, opts.yesterday);
   LOG(`Using Entry Date: ${entryDate}`);
   if (!editLast) {
     entry = await getEntryToEdit(entryDate);

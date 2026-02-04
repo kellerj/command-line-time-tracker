@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import commander from 'commander';
+import { program } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import debug from 'debug';
@@ -9,12 +9,12 @@ import db from '../db';
 
 const LOG = debug('tt:timetype:add');
 
-commander
+program
   .description('Add a time type to the database')
   .arguments('<timeType>')
   .parse(process.argv);
 
-const inputName = commander.args.join(' ');
+const inputName = program.args.join(' ');
 
 async function performUpdate(timeTypeName) {
   // console.log(`Request to add timeType "${timeTypeName}"`)

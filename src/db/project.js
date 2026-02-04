@@ -3,7 +3,7 @@ import debug from 'debug';
 
 const LOG = debug('db:project');
 
-module.exports = getConnection => ({
+module.exports = (getConnection) => ({
   /**
    * Get all project entries.
    */

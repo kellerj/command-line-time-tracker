@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import commander from 'commander';
+import { program } from 'commander';
 import chalk from 'chalk';
 import Table from 'easy-table';
 import debug from 'debug';
@@ -9,7 +9,7 @@ import db from '../db';
 
 const LOG = debug('tt:timetype:list');
 
-commander
+program
   .description('List all current time types in alphabetical order.')
   .parse(process.argv);
 

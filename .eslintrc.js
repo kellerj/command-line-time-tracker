@@ -11,10 +11,16 @@ module.exports = {
       ignoreRegExpLiterals: true,
       ignoreStrings: true,
       ignoreTemplateLiterals: true,
-    }]
+    }],
+    // Babel handles mixed ES6 imports with module.exports fine
+    "import/no-import-module-exports": "off",
+    // Allow console in CLI application
+    "no-console": "off",
+    // Allow default params in any position (existing pattern)
+    "default-param-last": "off",
   },
   env: {
     node: true,
-    mocha: true,
+    jest: true,
   }
 }

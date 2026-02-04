@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import commander from 'commander';
+import { program } from 'commander';
 
-commander
+program
   .description('Manage time types (meeting, email, development) for time tracking.')
   .command('add', 'Add a time type to the database')
   .alias('a')

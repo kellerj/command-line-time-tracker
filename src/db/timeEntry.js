@@ -1,8 +1,7 @@
 import assert from 'assert';
 import chalk from 'chalk';
-import moment from 'moment'; // TODO: Convert to use date-fns
 import debug from 'debug';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 
 import * as Constants from '../constants';
 
@@ -24,7 +23,7 @@ async function insert(db, timeEntry) {
   // add the timing data to the object
   if (!timeEntry.entryDate) {
     // it's possible the date may be specified from the command line - if so, don't set
-    timeEntry.entryDate = moment().startOf('day').format(Constants.DATE_FORMAT);
+    timeEntry.entryDate = format(startOfDay(new Date()), Constants.DATE_FORMAT);
     LOG(`Defaulting entry date to ${timeEntry.entryDate}`);
   }
 
@@ -112,7 +111,7 @@ async function get(db, startDate, endDate) {
   }
 
   // Convert wasteOfTime from integer back to boolean and parse insertTime
-  const processedEntries = entries.map(entry => ({
+  const processedEntries = entries.map((entry) => ({
     ...entry,
     wasteOfTime: entry.wasteOfTime === 1,
     insertTime: new Date(entry.insertTime),
@@ -222,7 +221,7 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
  * The default export is a function which must be passed the DB connection, which will then be used
  * by all calls to this module in that code so simplify further use of the module.
  */
-module.exports = getConnection => ({
+module.exports = (getConnection) => ({
   async insert(timeEntry) {
     return insert(getConnection(), timeEntry);
   },

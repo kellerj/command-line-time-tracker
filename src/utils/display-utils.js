@@ -1,5 +1,4 @@
-import moment from 'moment';
-// TODO: Convert to use date-fns
+import { format } from 'date-fns';
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import Table from 'easy-table';
@@ -32,9 +31,9 @@ module.exports = {
   writeSimpleTable: (list, propName, title) => {
     let data = [];
     if (propName) {
-      data = list.map(e => ({ name: e[propName] }));
+      data = list.map((e) => ({ name: e[propName] }));
     } else {
-      data = list.map(e => ({ name: e }));
+      data = list.map((e) => ({ name: e }));
     }
     const header = { name: { name: chalk.white.bold(title) } };
     process.stdout.write(chalk.yellow(Table.print(data, header)));
@@ -42,24 +41,26 @@ module.exports = {
 
   // eslint-disable-next-line no-unused-vars
   datePrinter: (val, width) => {
-    const str = moment(val).format('ddd, MMM Do');
+    const str = format(val, 'EEE, MMM do');
     return str;
   },
 
   // eslint-disable-next-line no-unused-vars
   timePrinter: (val, width) => {
-    const str = moment(val).format('h:mm a');
+    const str = format(val, 'h:mm a');
     return str;
   },
 
   durationPrinter: (val, width) => {
-    const duration = moment.duration(val, 'minutes');
+    const minutes = val;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
     let str = '';
-    if (duration.asHours() >= 1) {
-      str += `${Math.floor(duration.asHours())}h `;
+    if (hours >= 1) {
+      str += `${hours}h `;
     }
-    if (duration.minutes()) {
-      str += `${duration.minutes()}m`.padStart(3);
+    if (mins) {
+      str += `${mins}m`.padStart(3);
     } else {
       str += '   ';
     }
@@ -70,14 +71,16 @@ module.exports = {
   // this method returns a printer function for easy-table
   // after incorporating the total time into the function
   // so it can display percents
-  timeAndPercentPrinter: totalTime => (val, width) => {
-    const duration = moment.duration(val, 'minutes');
+  timeAndPercentPrinter: (totalTime) => (val, width) => {
+    const minutes = val;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
     let str = '';
-    if (duration.asHours() >= 1) {
-      str += `${Math.floor(duration.asHours())}h `;
+    if (hours >= 1) {
+      str += `${hours}h `;
     }
-    if (duration.minutes()) {
-      str += `${duration.minutes()}m`.padStart(3);
+    if (mins) {
+      str += `${mins}m`.padStart(3);
     } else {
       str += '   ';
     }
@@ -92,9 +95,9 @@ module.exports = {
     return width ? str.padStart(width) : str;
   },
 
-  formatEntryChoice: entry => sprintf(
+  formatEntryChoice: (entry) => sprintf(
     '%-8.8s : %-20.20s : %4i : %-15.15s : %-15.15s',
-    moment(entry.insertTime).format('h:mm a'),
+    format(entry.insertTime, 'h:mm a'),
     entry.entryDescription,
     entry.minutes,
     entry.project,
@@ -120,7 +123,7 @@ module.exports = {
     }
     if (left !== 'Other' && right === 'Other') {
       return -1;
-    } else if (left === 'Other' && right !== 'Other') {
+    } if (left === 'Other' && right !== 'Other') {
       return 1;
     }
     if (!left) {
@@ -128,7 +131,6 @@ module.exports = {
     }
     return left.localeCompare(right);
   },
-
 
   autocompleteListSearch: (list, input, defaultValue) => new Promise((resolve) => {
     let searchString = input;
@@ -141,10 +143,10 @@ module.exports = {
     let result = list;
     // process.stderr.write(`\nSearching for ${searchString}\n\n`);
     if (searchString && typeof searchString === 'string') {
-      result = fuzzy.filter(searchString.trim(), list.filter(e => typeof e === 'string'));
+      result = fuzzy.filter(searchString.trim(), list.filter((e) => typeof e === 'string'));
       result.sort(compareScore);
       // process.stderr.write(`\nResults:  ${JSON.stringify(result)}\n\n`);
-      result = result.map(el => el.original);
+      result = result.map((el) => el.original);
     }
     resolve(result);
   }),

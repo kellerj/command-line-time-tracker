@@ -2,7 +2,7 @@
 import debug from 'debug';
 import parseTime from 'parse-loose-time';
 import {
-  parse, startOfDay, isValid,
+  parseISO, startOfDay, isValid,
   startOfISOWeek, endOfISOWeek, subDays,
   subWeeks, subMonths, startOfMonth, endOfMonth, isAfter,
 } from 'date-fns';
@@ -13,7 +13,7 @@ function validateAndDefaultInputDateString(dateString) {
   if (!dateString) {
     return startOfDay(new Date());
   }
-  const parsedDate = parse(dateString);
+  const parsedDate = parseISO(dateString);
   if (!isValid(parsedDate)) {
     return `Date ${dateString} is not a valid date.`;
   }
@@ -25,9 +25,9 @@ module.exports = {
   validateMinutes: (val, maxMinutes = 480) => {
     if (Number.isNaN(Number.parseInt(val, 10))) {
       return 'Invalid Integer';
-    } else if (Number.parseInt(val, 10) < 1) {
+    } if (Number.parseInt(val, 10) < 1) {
       return 'Time must be positive';
-    } else if (maxMinutes !== -1 && Number.parseInt(val, 10) > maxMinutes) {
+    } if (maxMinutes !== -1 && Number.parseInt(val, 10) > maxMinutes) {
       return `Time must be <= ${maxMinutes / 60} hours`;
     }
     return true;

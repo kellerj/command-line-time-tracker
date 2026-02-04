@@ -1,9 +1,14 @@
 import { expect } from 'chai';
-import moment from 'moment'; // TODO: Convert to use date-fns
-import dateFns from 'date-fns';
+import {
+  format, startOfDay, startOfISOWeek, endOfISOWeek, startOfMonth, endOfMonth,
+  subWeeks, subMonths, subDays, parseISO,
+} from 'date-fns';
 
 // import { DATE_FORMAT } from '../../src/constants';
 import validations from '../../src/utils/validations';
+
+// Helper to format dates consistently for comparison (ISO format)
+const formatDate = (date) => format(date, "yyyy-MM-dd'T'HH:mm:ssxxx");
 
 describe('validations', () => {
   describe('validateMinutes', () => {
@@ -53,16 +58,16 @@ describe('validations', () => {
 
   describe('validateAndDefaultInputDateString', () => {
     it('returns today when no date passed', () => {
-      const today = dateFns.startOfDay(new Date());
+      const today = startOfDay(new Date());
       expect(validations.validateAndDefaultInputDateString()).to.be.a('Date');
       expect(validations.validateAndDefaultInputDateString().toISOString())
         .to.equal(today.toISOString());
     });
     it('Strips off time component of a given date.', () => {
-      const today = dateFns.startOfDay(new Date());
-      expect(validations.validateAndDefaultInputDateString(dateFns.format(today)))
+      const today = startOfDay(new Date());
+      expect(validations.validateAndDefaultInputDateString(format(today, 'yyyy-MM-dd')))
         .to.be.a('Date');
-      expect(validations.validateAndDefaultInputDateString(dateFns.format(today)).toISOString())
+      expect(validations.validateAndDefaultInputDateString(format(today, 'yyyy-MM-dd')).toISOString())
         .to.equal(today.toISOString());
     });
     it('returns error message when the date is invalid', () => {
@@ -85,9 +90,9 @@ describe('validations', () => {
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
           expect(result.startDate.toISOString())
-            .to.equal(dateFns.startOfISOWeek(new Date()).toISOString());
+            .to.equal(startOfISOWeek(new Date()).toISOString());
           expect(result.endDate.toISOString())
-            .to.equal(dateFns.startOfDay(dateFns.endOfISOWeek(new Date())).toISOString());
+            .to.equal(startOfDay(endOfISOWeek(new Date())).toISOString());
         });
 
         it('returns mon-sun of the given week when date set', () => {
@@ -101,10 +106,10 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(dateFns.format(result.startDate))
-            .to.equal(dateFns.format(dateFns.startOfISOWeek(input.date)));
-          expect(dateFns.format(result.endDate))
-            .to.equal(dateFns.format(dateFns.startOfDay(dateFns.endOfISOWeek(input.date))));
+          expect(formatDate(result.startDate))
+            .to.equal(formatDate(startOfISOWeek(parseISO(input.date))));
+          expect(formatDate(result.endDate))
+            .to.equal(formatDate(startOfDay(endOfISOWeek(parseISO(input.date)))));
         });
       });
       describe('--last is set', () => {
@@ -119,12 +124,12 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'week')
-            .startOf('isoWeek').startOf('day')
-            .format());
-          expect(moment(result.endDate).format()).to.equal(moment().subtract(1, 'week')
-            .endOf('isoWeek').startOf('day')
-            .format());
+          expect(formatDate(result.startDate)).to.equal(
+            formatDate(startOfDay(startOfISOWeek(subWeeks(new Date(), 1)))),
+          );
+          expect(formatDate(result.endDate)).to.equal(
+            formatDate(startOfDay(endOfISOWeek(subWeeks(new Date(), 1)))),
+          );
         });
 
         it('returns mon-sun of the week before the given week when date set', () => {
@@ -139,12 +144,12 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
-            .startOf('isoWeek').startOf('day')
-            .format());
-          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'week')
-            .endOf('isoWeek').startOf('day')
-            .format());
+          expect(formatDate(result.startDate)).to.equal(
+            formatDate(startOfDay(startOfISOWeek(subWeeks(parseISO(input.date), 1)))),
+          );
+          expect(formatDate(result.endDate)).to.equal(
+            formatDate(startOfDay(endOfISOWeek(subWeeks(parseISO(input.date), 1)))),
+          );
         });
       });
     });
@@ -161,8 +166,8 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(moment(result.startDate).format()).to.equal(moment().startOf('month').startOf('day').format());
-          expect(moment(result.endDate).format()).to.equal(moment().endOf('month').startOf('day').format());
+          expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(startOfMonth(new Date()))));
+          expect(formatDate(result.endDate)).to.equal(formatDate(startOfDay(endOfMonth(new Date()))));
         });
 
         it('returns 1st to last day of the given month when date set', () => {
@@ -176,8 +181,8 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('month').startOf('day').format());
-          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').endOf('month').startOf('day').format());
+          expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(startOfMonth(parseISO(input.date)))));
+          expect(formatDate(result.endDate)).to.equal(formatDate(startOfDay(endOfMonth(parseISO(input.date)))));
         });
       });
       describe('--last is set', () => {
@@ -192,12 +197,12 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'month')
-            .startOf('month').startOf('day')
-            .format());
-          expect(moment(result.endDate).format()).to.equal(moment().subtract(1, 'month')
-            .endOf('month').startOf('day')
-            .format());
+          expect(formatDate(result.startDate)).to.equal(
+            formatDate(startOfDay(startOfMonth(subMonths(new Date(), 1)))),
+          );
+          expect(formatDate(result.endDate)).to.equal(
+            formatDate(startOfDay(endOfMonth(subMonths(new Date(), 1)))),
+          );
         });
 
         it('returns 1st to last day of the month before the given month when date set', () => {
@@ -212,12 +217,12 @@ describe('validations', () => {
           expect(result).to.have.ownPropertyDescriptor('endDate');
           expect(result.startDate).to.be.a('Date');
           expect(result.endDate).to.be.a('Date');
-          expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
-            .startOf('month').startOf('day')
-            .format());
-          expect(moment(result.endDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'month')
-            .endOf('month').startOf('day')
-            .format());
+          expect(formatDate(result.startDate)).to.equal(
+            formatDate(startOfDay(startOfMonth(subMonths(parseISO(input.date), 1)))),
+          );
+          expect(formatDate(result.endDate)).to.equal(
+            formatDate(startOfDay(endOfMonth(subMonths(parseISO(input.date), 1)))),
+          );
         });
       });
     });
@@ -229,8 +234,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment().startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(new Date())));
+        expect(formatDate(result.endDate)).to.equal(formatDate(result.startDate));
       });
       it('when --last, returns yesterday as the start and end date when no date input', () => {
         const input = {
@@ -239,8 +244,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment().subtract(1, 'day').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(subDays(new Date(), 1))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(result.startDate));
       });
       it('returns the given date as the start and end date', () => {
         const input = {
@@ -249,8 +254,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(parseISO(input.date))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(result.startDate));
       });
       it('when --last, returns the day before given date as the start and end date', () => {
         const input = {
@@ -260,8 +265,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment(input.date, 'YYYY-MM-DD').subtract(1, 'day').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(result.startDate).format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(subDays(parseISO(input.date), 1))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(result.startDate));
       });
       it('returns the given start date as the start and today as the end date when no end date given', () => {
         const input = {
@@ -270,8 +275,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment().startOf('day').format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(parseISO(input.startDate))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(startOfDay(new Date())));
       });
       it('returns the given start and end dates as the start and end dates when both given', () => {
         const input = {
@@ -281,8 +286,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(parseISO(input.startDate))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(startOfDay(parseISO(input.endDate))));
       });
       it('returns the given start and end dates as the start and end dates when both given', () => {
         const input = {
@@ -292,8 +297,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment(input.startDate, 'YYYY-MM-DD').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(parseISO(input.startDate))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(startOfDay(parseISO(input.endDate))));
       });
       it('sets the start date to the end date when end date before start date', () => {
         const input = {
@@ -303,8 +308,8 @@ describe('validations', () => {
         const result = validations.getStartAndEndDates(input);
         expect(result.startDate).to.be.a('Date');
         expect(result.endDate).to.be.a('Date');
-        expect(moment(result.startDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
-        expect(moment(result.endDate).format()).to.equal(moment(input.endDate, 'YYYY-MM-DD').startOf('day').format());
+        expect(formatDate(result.startDate)).to.equal(formatDate(startOfDay(parseISO(input.endDate))));
+        expect(formatDate(result.endDate)).to.equal(formatDate(startOfDay(parseISO(input.endDate))));
       });
       it('returns an error message when given an invalid date', () => {
         const input = {

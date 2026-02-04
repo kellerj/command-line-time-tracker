@@ -1,4 +1,4 @@
-import commander from 'commander';
+import { program } from 'commander';
 import chalk from 'chalk';
 import debug from 'debug';
 
@@ -15,7 +15,7 @@ import {
 
 const LOG = debug('tt:summary');
 
-commander
+program
   .description('Summarize time entry data in various formats.')
 //.option('--csv', 'Output in a CSV format instead of ASCII table.')
   .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
@@ -29,22 +29,22 @@ commander
   .option('-m, --markdown', 'Output the table using markdown formatting')
   .parse(process.argv);
 
-// LOG(commander);
+const opts = program.opts();
 
-const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(commander);
+const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(opts);
 if (errorMessage) {
   throw new Error(errorMessage);
 }
 
 async function run() {
   let reportHeader = '';
-  if (!commander.noHeader) {
+  if (!opts.noHeader) {
     if (startDate.getTime() === endDate.getTime()) {
       reportHeader = `Time Summary for ${displayUtils.datePrinter(startDate)}`;
     } else {
       reportHeader = `Time Summary for ${displayUtils.datePrinter(startDate)} through ${displayUtils.datePrinter(endDate)}`;
     }
-    if (commander.markdown) {
+    if (opts.markdown) {
       process.stdout.write(`## ${reportHeader}\n\n`);
     } else {
       displayUtils.writeHeader(reportHeader);
@@ -62,11 +62,11 @@ async function run() {
   // need to transform the structure into a new grid format - group by project
   const grid = buildProjectByTimeTypeDataGrid(r);
   const totalTime = r.reduce((acc, item) => (acc + item.minutes), 0);
-  const columnInfo = buildColumnInfo(headings, totalTime, commander.markdown);
+  const columnInfo = buildColumnInfo(headings, totalTime, opts.markdown);
   // Calculate per-project totals for last column
   addTotalColumn(grid);
   const tableConfig = {};
-  if (commander.markdown) {
+  if (opts.markdown) {
     tableConfig.markdown = true;
   } else {
     tableConfig.dividerColorizer = chalk.dim;

@@ -1,4 +1,4 @@
-import commander from 'commander';
+import { program } from 'commander';
 import chalk from 'chalk';
 import debug from 'debug';
 
@@ -7,7 +7,7 @@ import db from '../db';
 
 const LOG = debug('tt:project:list');
 
-commander
+program
   .description('List all current projects in alphabetical order.')
   .parse(process.argv);
 

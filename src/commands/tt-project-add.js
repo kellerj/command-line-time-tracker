@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import commander from 'commander';
+import { program } from 'commander';
 import inquirer from 'inquirer';
 import debug from 'debug';
 
@@ -9,12 +9,12 @@ import { addNewProject } from '../lib/project';
 
 const LOG = debug('tt:commands:project:add');
 
-commander
+program
   .description('Add a time tracking project to the database')
   .arguments('<projectName>')
   .parse(process.argv);
 
-const inputProjectName = commander.args.join(' ');
+const inputProjectName = program.args.join(' ');
 
 async function run() {
   if (inputProjectName) {

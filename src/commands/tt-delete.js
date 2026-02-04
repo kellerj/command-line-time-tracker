@@ -1,4 +1,4 @@
-import commander from 'commander';
+import { program } from 'commander';
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -13,18 +13,19 @@ import * as Constants from '../constants';
 
 const LOG = debug('tt:delete');
 
-commander
+program
   .option('-d, --date <YYYY-MM-DD>', 'Date from which to remove items.')
   .option('--last', 'Remove the most recent entry.')
   .option('-y, --yesterday', 'List entries from yesterday to delete.')
   .parse(process.argv);
 
-let entryDate = commander.date;
-const deleteLast = commander.last;
-LOG(JSON.stringify(commander, null, 2));
+const opts = program.opts();
+let entryDate = opts.date;
+const deleteLast = opts.last;
+LOG(JSON.stringify(opts, null, 2));
 
 async function run() {
-  entryDate = dateUtils.getEntryDate(entryDate, commander.yesterday);
+  entryDate = dateUtils.getEntryDate(entryDate, opts.yesterday);
 
   let entries = [];
   if (deleteLast) {
@@ -43,7 +44,7 @@ async function run() {
   } else {
     throw new Error(chalk.yellow(`No Time Entries Entered for ${format(entryDate, Constants.DATE_FORMAT)}\n`));
   }
-  const entryList = entries.map(item => ({
+  const entryList = entries.map((item) => ({
     value: item._id,
     name: displayUtils.formatEntryChoice(item),
   }));
@@ -63,7 +64,7 @@ async function run() {
       type: 'confirm',
       message: 'Are you sure you want to delete these time entries?',
       default: false,
-      when: answers => (deleteLast
+      when: (answers) => (deleteLast
         || (answers.entries && answers.entries.length && answers.entries[0])),
     },
   ]);

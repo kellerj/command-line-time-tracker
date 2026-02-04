@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { stub, spy } from 'sinon';
 import {
-  format, parse, subDays, subHours, addHours,
+  format, parseISO, subDays, subHours, addHours,
   subMinutes, setMilliseconds, setSeconds,
   getYear, setYear, getMonth, setMonth, getDate, setDate,
 } from 'date-fns';
@@ -28,12 +28,12 @@ describe('lib/timeEntry', () => {
 
     describe('"date" parameter given', () => {
       it('returns the given date if given as a parameter (string)', () => {
-        const result = timeEntry.getEntryDate({ date: '2017-5-22' });
+        const result = timeEntry.getEntryDate({ date: '2017-05-22' });
         expect(result).to.be.a('string');
         expect(result).to.equal('2017-05-22');
       });
       it('returns the given date if given as a parameter (date)', () => {
-        const result = timeEntry.getEntryDate({ date: parse('2017-06-23') });
+        const result = timeEntry.getEntryDate({ date: parseISO('2017-06-23') });
         expect(result).to.be.a('string');
         expect(result).to.equal('2017-06-23');
       });
@@ -133,7 +133,8 @@ describe('lib/timeEntry', () => {
           .to.throw('Something is wrong with the date');
       });
       it('should always use the entry\'s date even when setting time on a different day', () => {
-        const yesterday = format(subDays(insertTime, 1), Constants.DATE_FORMAT);
+        const yesterdayDate = subDays(insertTime, 1);
+        const yesterday = format(yesterdayDate, Constants.DATE_FORMAT);
         let logTime = setSeconds(setMilliseconds(subHours(insertTime, 2), 0), 0);
         logTime = setYear(logTime, getYear(insertTime));
         logTime = setMonth(logTime, getMonth(insertTime));
@@ -144,7 +145,7 @@ describe('lib/timeEntry', () => {
           { insertTime, entryDate: yesterday },
         );
         expect(result).to.be.a('Date');
-        expect(format(result, Constants.DATE_FORMAT)).to.equal(format(yesterday, Constants.DATE_FORMAT));
+        expect(format(result, Constants.DATE_FORMAT)).to.equal(yesterday);
       });
     });
     describe('when neither is set', () => {

@@ -2,7 +2,7 @@ import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import parseTime from 'parse-loose-time';
 import {
-  format, parse, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes,
+  format, parseISO, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes,
   getYear, getMonth, getDate, setYear, setMonth, setDate,
 } from 'date-fns';
 
@@ -12,15 +12,15 @@ import validations from '../utils/validations';
 
 const LOG = require('debug')('tt:lib:timeEntry');
 
-
 export function getEntryDate({ date, yesterday }) {
   if (date) {
-    const parsedDate = parse(date);
+    // Handle both Date objects and string dates
+    const parsedDate = date instanceof Date ? date : parseISO(date);
     if (!isValid(parsedDate)) {
       throw new Error(`-d, --date: Invalid Date: ${date}`);
     }
     return format(parsedDate, DATE_FORMAT);
-  } else if (yesterday) {
+  } if (yesterday) {
     return format(subDays(new Date(), 1), DATE_FORMAT);
   }
   return format(new Date(), DATE_FORMAT);
@@ -41,7 +41,7 @@ export function getEntryMinutes({ time }) {
 
 export function getInsertTime({ backTime, logTime }, newEntry) {
   let { insertTime } = newEntry;
-  const entryDate = parse(newEntry.entryDate);
+  const entryDate = parseISO(newEntry.entryDate);
   insertTime = setYear(insertTime, getYear(entryDate));
   insertTime = setMonth(insertTime, getMonth(entryDate));
   insertTime = setDate(insertTime, getDate(entryDate));
@@ -77,11 +77,11 @@ export function getTimeType({ timeType: inputTimeType, entryDescription }, timeT
   if (inputTimeType) {
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    const timeType = timeTypes.find(t => (t.match(new RegExp(`^${inputTimeType.trim()}$`, 'i'))));
+    const timeType = timeTypes.find((t) => (t.match(new RegExp(`^${inputTimeType.trim()}$`, 'i'))));
     return timeType || null;
   }
   // see if we can find a name in the description
-  const timeType = timeTypes.find(t => (entryDescription.match(new RegExp(t, 'i'))));
+  const timeType = timeTypes.find((t) => (entryDescription.match(new RegExp(t, 'i'))));
   return timeType || null;
 }
 
@@ -90,11 +90,11 @@ export function getProjectName({ project: inputProjectName, entryDescription }, 
     LOG(`Input Project Name: ${inputProjectName}, checking project list.`);
     // perform a case insensitive match on the name - and use the name
     // from the official list which matches
-    const projectName = projects.find(p => (p.match(new RegExp(`^${inputProjectName.trim()}$`, 'i'))));
+    const projectName = projects.find((p) => (p.match(new RegExp(`^${inputProjectName.trim()}$`, 'i'))));
     return projectName || null;
   }
   // see if we can find a name in the description
-  const projectName = projects.find(p => (entryDescription.match(new RegExp(p, 'i'))));
+  const projectName = projects.find((p) => (entryDescription.match(new RegExp(p, 'i'))));
   return projectName || null;
 }
 

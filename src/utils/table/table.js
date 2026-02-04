@@ -8,11 +8,11 @@ const LOG = require('debug')('tt:utils:table:Table');
 
 class Table {
   constructor(config) {
-    this.config = Object.assign(
-      {},
-      (config && config.markdown) ? Table.markdownConfig() : Table.defaultConfig(),
-      config,
-    );
+    this.config = {
+
+      ...((config && config.markdown) ? Table.markdownConfig() : Table.defaultConfig()),
+      ...config,
+    };
     this.dataGrid = [];
     this.columnInfo = [];
     this.totalWidth = 0;
@@ -21,13 +21,14 @@ class Table {
   }
 
   static markdownConfig() {
-    return Object.assign({}, Table.defaultConfig(), {
+    return {
+      ...Table.defaultConfig(),
       columnDelimiter: '|',
       columnDelimiterAtStart: true,
       columnDelimiterAtEnd: true,
       columnPadding: 1,
       alignmentMarkerInHeader: true,
-    });
+    };
   }
 
   static defaultColorizer(value) {
@@ -54,7 +55,7 @@ class Table {
     // loop over all data
     this.dataGrid.forEach((row) => {
       Object.keys(row).forEach((col) => {
-        if (!columnInfo.find(e => (e.columnHeading === col))) {
+        if (!columnInfo.find((e) => (e.columnHeading === col))) {
           LOG(`${col} not in the columnInfo object, adding`);
           const colInfo = new ColumnInfo(col);
           // determine data type of each
@@ -81,7 +82,7 @@ class Table {
   applyUserColumnInfo(userColumnInfo) {
     const newColumnInfo = [];
     userColumnInfo.forEach((col) => {
-      const column = this.columnInfo.find(e => (e.columnHeading === col.columnHeading));
+      const column = this.columnInfo.find((e) => (e.columnHeading === col.columnHeading));
       // LOG(`${col.columnHeading} : ${JSON.stringify(column, null, 2)}`);
       if (!column) {
         throw new Error(`Configuration Error: Column ${col.columnHeading} does not exist in the derived columns.`);
@@ -97,7 +98,7 @@ class Table {
   createFooterData() {
     const footerData = {};
     // get the columns which need summary information
-    const summaryColumns = this.columnInfo.filter(e => (e && e.footerType && e.footerType !== 'none'));
+    const summaryColumns = this.columnInfo.filter((e) => (e && e.footerType && e.footerType !== 'none'));
     LOG(`Columns with Summary: ${JSON.stringify(summaryColumns)}`);
     // iterate over all rows
     this.dataGrid.forEach((row) => {
@@ -119,7 +120,7 @@ class Table {
 
   formatData() {
     // only use columns with printers
-    const cols = this.columnInfo.filter(e => (typeof e.printer === 'function'));
+    const cols = this.columnInfo.filter((e) => (typeof e.printer === 'function'));
     this.dataGrid.forEach((row) => {
       cols.forEach((col) => {
         const value = row[col.columnHeading];
@@ -144,7 +145,7 @@ class Table {
 
   colorizeColumnContents() {
     // only use columns with colorizers
-    const cols = this.columnInfo.filter(e => (typeof e.colorizer === 'function'));
+    const cols = this.columnInfo.filter((e) => (typeof e.colorizer === 'function'));
     // handle body
     this.dataGrid.forEach((row) => {
       cols.forEach((col) => {
@@ -155,7 +156,7 @@ class Table {
       });
     });
     // handle footer
-    const footerCols = this.columnInfo.filter(e => (typeof e.footerColorizer === 'function'));
+    const footerCols = this.columnInfo.filter((e) => (typeof e.footerColorizer === 'function'));
     if (this.footerData) {
       footerCols.forEach((col) => {
         const value = this.footerData[col.columnHeading];
@@ -168,7 +169,7 @@ class Table {
 
   processRowWidths(row) {
     Object.keys(row).forEach((col) => {
-      const column = this.columnInfo.find(e => (e.columnHeading === col));
+      const column = this.columnInfo.find((e) => (e.columnHeading === col));
       if (!column) {
         LOG(`Error, unable to find column info for column ${col}.  ColumnInfo contained: ${JSON.stringify(this.columnInfo)}`);
         return;
@@ -190,8 +191,7 @@ class Table {
     if (this.footerData) {
       this.processRowWidths(this.footerData);
     }
-    this.totalWidth = this.columnInfo.reduce((totalWidth, col) =>
-      (totalWidth + col.width + this.config.columnDelimiter.length
+    this.totalWidth = this.columnInfo.reduce((totalWidth, col) => (totalWidth + col.width + this.config.columnDelimiter.length
         + (this.config.columnPadding * 2)), 0);
     // if no column delimiter at start, subtract that since included in above
     if (!this.config.columnDelimiterAtStart) {
@@ -239,7 +239,7 @@ class Table {
     this.dataGrid = data.slice(0);
     // clone the array elements
     this.dataGrid.forEach((e, i, arr) => {
-      arr[i] = Object.assign({}, e);
+      arr[i] = { ...e };
     });
     // get the column types
     this.columnInfo = this.deriveColumnInfo();
@@ -309,7 +309,7 @@ class Table {
       if (this.config.alignmentMarkerInHeader) {
         if (col.align === 'right') {
           return this.config.dividerColorizer(`${'-'.repeat(col.width - 1)}:`);
-        } else if (col.align === 'center') {
+        } if (col.align === 'center') {
           return this.config.dividerColorizer(`:${'-'.repeat(col.width - 2)}:`);
         }
         return this.config.dividerColorizer(`:${'-'.repeat(col.width - 1)}`);
@@ -321,7 +321,7 @@ class Table {
 
   writeBody(w) {
     this.dataGrid.forEach((row, i) => {
-      const rowData = this.columnInfo.map(e => row[e.columnHeading]);
+      const rowData = this.columnInfo.map((e) => row[e.columnHeading]);
       const rowString = this.getRow(rowData);
       w.write(this.config.rowColorizer(rowString, i));
       w.write('\n');
@@ -334,7 +334,7 @@ class Table {
   }
 
   writeFooter(w) {
-    const rowData = this.columnInfo.map(e => this.footerData[e.columnHeading]);
+    const rowData = this.columnInfo.map((e) => this.footerData[e.columnHeading]);
     this.writeRow(w, rowData);
   }
 
