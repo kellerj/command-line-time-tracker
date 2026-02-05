@@ -4,8 +4,8 @@ import {
   subWeeks, subMonths, subDays, parseISO,
 } from 'date-fns';
 
-// import { DATE_FORMAT } from '../../src/constants';
-import validations from '../../src/utils/validations';
+// import { DATE_FORMAT } from '../../src/constants.js';
+import validations from '../../src/utils/validations.js';
 
 // Helper to format dates consistently for comparison (ISO format)
 const formatDate = (date) => format(date, "yyyy-MM-dd'T'HH:mm:ssxxx");

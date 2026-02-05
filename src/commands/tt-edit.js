@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import inquirer from 'inquirer';
-import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
+import { input, select, confirm } from '@inquirer/prompts';
+import autocomplete from 'inquirer-autocomplete-standalone';
 import chalk from 'chalk';
 import { format, setHours, setMinutes } from 'date-fns';
 import parseTime from 'parse-loose-time';
 import debug from 'debug';
 
-import * as Constants from '../constants';
-import db from '../db';
-import validations from '../utils/validations';
-import displayUtils from '../utils/display-utils';
-import { updateTimeEntry } from '../lib/timeEntry';
-import dateUtils from '../utils/date-utils';
+import * as Constants from '../constants.js';
+import db from '../db/index.js';
+import validations from '../utils/validations.js';
+import displayUtils from '../utils/display-utils.js';
+import { updateTimeEntry } from '../lib/timeEntry.js';
+import dateUtils from '../utils/date-utils.js';
 
 const LOG = debug('tt:edit');
 
@@ -38,21 +38,19 @@ async function getEntryToEdit(date) {
   } else {
     throw new Error(chalk.yellow(`No Time Entries Entered for ${format(date, Constants.DATE_FORMAT)}\n`));
   }
-  const entryList = entries.map((item) => ({
+  const entryChoices = entries.map((item) => ({
     value: item._id,
     name: displayUtils.formatEntryChoice(item),
   }));
-  entryList.push({ value: null, name: '(Cancel)' });
-  const answer = await inquirer.prompt([
-    {
-      name: 'entry',
-      type: 'list',
-      message: 'Select the Time Entry to Edit',
-      pageSize: Constants.LIST_DISPLAY_SIZE,
-      choices: entryList,
-    },
-  ]);
-  return entries.find((e) => (e._id === answer.entry));
+  entryChoices.push({ value: null, name: '(Cancel)' });
+
+  const selectedId = await select({
+    message: 'Select the Time Entry to Edit',
+    pageSize: Constants.LIST_DISPLAY_SIZE,
+    choices: entryChoices,
+  });
+
+  return entries.find((e) => (e._id === selectedId));
 }
 
 async function handleEntryChanges(entry) {
@@ -60,53 +58,55 @@ async function handleEntryChanges(entry) {
   const projects = (await db.project.getAll()).map((item) => (item.name));
   const timeTypes = (await db.timetype.getAll()).map((item) => (item.name));
 
-  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
-  const answer = await inquirer.prompt([
-    {
-      name: 'entryDescription',
-      type: 'input',
-      message: 'Entry Description:',
-      default: entry.entryDescription,
-      filter: (input) => (input.trim()),
-      validate: validations.validateEntryDescription,
+  // Ask questions sequentially
+  const entryDescription = await input({
+    message: 'Entry Description:',
+    default: entry.entryDescription,
+    validate: validations.validateEntryDescription,
+  });
+
+  const minutes = await input({
+    message: 'Minutes:',
+    default: String(entry.minutes),
+    validate: validations.validateMinutes,
+  });
+
+  const insertTimeStr = await input({
+    message: 'Entry Time:',
+    default: format(entry.insertTime, 'h:mm a'),
+    validate: validations.validateTime,
+  });
+
+  const project = await autocomplete({
+    message: 'Project:',
+    source: async (input) => {
+      const filtered = displayUtils.autocompleteListSearch(projects, input, entry.project);
+      return filtered.map((p) => (typeof p === 'string' ? { value: p, name: p } : p));
     },
-    {
-      name: 'minutes',
-      type: 'input',
-      message: 'Minutes:',
-      default: entry.minutes,
-      validate: validations.validateMinutes,
-      filter: (val) => (Number.parseInt(val, 10)),
+  });
+
+  const timeType = await autocomplete({
+    message: 'Type of Time:',
+    source: async (input) => {
+      const filtered = displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType);
+      return filtered.map((t) => (typeof t === 'string' ? { value: t, name: t } : t));
     },
-    {
-      name: 'insertTime',
-      type: 'input',
-      message: 'Entry Time:',
-      default: format(entry.insertTime, 'h:mm a'),
-      // filter: input => (format(parseTime(input), 'h:mm a')),
-      validate: validations.validateTime,
-    },
-    {
-      name: 'project',
-      type: 'autocomplete',
-      message: 'Project:',
-      source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, entry.project)),
-      pageSize: 10,
-    },
-    {
-      name: 'timeType',
-      type: 'autocomplete',
-      message: 'Type of Type:',
-      source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType)),
-      pageSize: 10,
-    },
-    {
-      name: 'wasteOfTime',
-      type: 'confirm',
-      message: 'Waste of Time?',
-      default: entry.wasteOfTime,
-    },
-  ]);
+  });
+
+  const wasteOfTime = await confirm({
+    message: 'Waste of Time?',
+    default: entry.wasteOfTime,
+  });
+
+  const answer = {
+    entryDescription: entryDescription.trim(),
+    minutes: Number.parseInt(minutes, 10),
+    insertTime: insertTimeStr,
+    project,
+    timeType,
+    wasteOfTime,
+  };
+
   LOG(`Answer Object: ${JSON.stringify(answer, null, 2)}`);
   answer._id = entry._id;
   answer.entryDate = entry.entryDate;

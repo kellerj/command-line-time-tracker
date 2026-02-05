@@ -1,8 +1,9 @@
+import * as chai from 'chai';
+import chaiShallowDeepEqual from 'chai-shallow-deep-equal';
+import { Table, ColumnInfo } from '../../../src/utils/table/index.js';
 
-import chai, { expect } from 'chai';
-import { Table, ColumnInfo } from '../../../src/utils/table';
-
-chai.use(require('chai-shallow-deep-equal'));
+const { expect } = chai;
+chai.use(chaiShallowDeepEqual);
 
 describe('class Table', () => {
   describe('constructor', () => {

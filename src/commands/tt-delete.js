@@ -1,15 +1,15 @@
 import { program } from 'commander';
 
-import inquirer from 'inquirer';
+import { checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import debug from 'debug';
 import { format } from 'date-fns';
 
-import db from '../db';
-import dateUtils from '../utils/date-utils';
-import displayUtils from '../utils/display-utils';
-import { deleteTimeEntries } from '../lib/timeEntry';
-import * as Constants from '../constants';
+import db from '../db/index.js';
+import dateUtils from '../utils/date-utils.js';
+import displayUtils from '../utils/display-utils.js';
+import { deleteTimeEntries } from '../lib/timeEntry.js';
+import * as Constants from '../constants.js';
 
 const LOG = debug('tt:delete');
 
@@ -44,42 +44,45 @@ async function run() {
   } else {
     throw new Error(chalk.yellow(`No Time Entries Entered for ${format(entryDate, Constants.DATE_FORMAT)}\n`));
   }
-  const entryList = entries.map((item) => ({
-    value: item._id,
-    name: displayUtils.formatEntryChoice(item),
-  }));
-  entryList.push({ value: null, name: '(Cancel)' });
 
-  const answer = await inquirer.prompt([
-    {
-      name: 'entries',
-      type: 'checkbox',
+  let selectedEntryIds = [];
+
+  if (!deleteLast) {
+    const entryChoices = entries.map((item) => ({
+      value: item._id,
+      name: displayUtils.formatEntryChoice(item),
+    }));
+    entryChoices.push({ value: null, name: '(Cancel)' });
+
+    selectedEntryIds = await checkbox({
       message: 'Select Time Entries to Remove',
       pageSize: Constants.LIST_DISPLAY_SIZE,
-      when: () => (!deleteLast),
-      choices: entryList,
-    },
-    {
-      name: 'confirm',
-      type: 'confirm',
+      choices: entryChoices,
+    });
+
+    // Filter out null (Cancel) selections
+    selectedEntryIds = selectedEntryIds.filter((id) => id !== null);
+  } else {
+    selectedEntryIds = [entries[0]._id];
+  }
+
+  // Only confirm if there are entries to delete
+  if (selectedEntryIds && selectedEntryIds.length) {
+    const confirmed = await confirm({
       message: 'Are you sure you want to delete these time entries?',
       default: false,
-      when: (answers) => (deleteLast
-        || (answers.entries && answers.entries.length && answers.entries[0])),
-    },
-  ]);
-  if (answer.confirm) {
-    if (deleteLast) {
-      answer.entries = [entries[0]._id];
-    }
-    const results = await deleteTimeEntries(answer.entries);
-    results.forEach((result) => {
-      if (result.deleted) {
-        process.stdout.write(chalk.green(`Time Entry ${chalk.white(result.entry)} Removed\n`));
-      } else {
-        process.stdout.write(chalk.red(`Time Entry ${chalk.white(result.entry)} Not Present In database\n`));
-      }
     });
+
+    if (confirmed) {
+      const results = await deleteTimeEntries(selectedEntryIds);
+      results.forEach((result) => {
+        if (result.deleted) {
+          process.stdout.write(chalk.green(`Time Entry ${chalk.white(result.entry)} Removed\n`));
+        } else {
+          process.stdout.write(chalk.red(`Time Entry ${chalk.white(result.entry)} Not Present In database\n`));
+        }
+      });
+    }
   }
 }
 

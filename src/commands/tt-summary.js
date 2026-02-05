@@ -2,16 +2,16 @@ import { program } from 'commander';
 import chalk from 'chalk';
 import debug from 'debug';
 
-import db from '../db';
-import { Table } from '../utils/table';
-import validations from '../utils/validations';
-import displayUtils from '../utils/display-utils';
+import db from '../db/index.js';
+import { Table } from '../utils/table/index.js';
+import validations from '../utils/validations.js';
+import displayUtils from '../utils/display-utils.js';
 import {
   buildTimeTypeHeadingsList,
   buildProjectByTimeTypeDataGrid,
   buildColumnInfo,
   addTotalColumn,
-} from '../lib/summarize';
+} from '../lib/summarize.js';
 
 const LOG = debug('tt:summary');
 

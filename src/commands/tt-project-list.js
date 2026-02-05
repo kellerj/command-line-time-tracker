@@ -2,8 +2,8 @@ import { program } from 'commander';
 import chalk from 'chalk';
 import debug from 'debug';
 
-import displayUtils from '../utils/display-utils';
-import db from '../db';
+import displayUtils from '../utils/display-utils.js';
+import db from '../db/index.js';
 
 const LOG = debug('tt:project:list');
 

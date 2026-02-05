@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import Table from 'easy-table';
 import debug from 'debug';
 
-import db from '../db';
+import db from '../db/index.js';
 
 const LOG = debug('tt:timetype:list');
 

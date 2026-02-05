@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import inquirer from 'inquirer';
+import { input } from '@inquirer/prompts';
 import chalk from 'chalk';
 import debug from 'debug';
 
-import db from '../db';
+import db from '../db/index.js';
 
 const LOG = debug('tt:timetype:add');
 
@@ -30,15 +30,11 @@ async function run() {
   if (inputName) {
     performUpdate(inputName);
   } else {
-    const answer = await inquirer.prompt([
-      {
-        name: 'timeTypeName',
-        type: 'input',
-        message: 'Please enter the new time type name:',
-      },
-    ]);
+    const timeTypeName = await input({
+      message: 'Please enter the new time type name:',
+    });
     // console.log(JSON.stringify(answer,null,'  '));
-    performUpdate(answer.timeTypeName);
+    performUpdate(timeTypeName);
   }
 }
 

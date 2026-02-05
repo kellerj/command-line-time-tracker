@@ -4,10 +4,10 @@ import { format } from 'date-fns';
 import debug from 'debug';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 
-import db from '../db';
-import { Table, ColumnInfo } from '../utils/table';
-import validations from '../utils/validations';
-import displayUtils from '../utils/display-utils';
+import db from '../db/index.js';
+import { Table, ColumnInfo } from '../utils/table/index.js';
+import validations from '../utils/validations.js';
+import displayUtils from '../utils/display-utils.js';
 
 const LOG = debug('tt:list');
 

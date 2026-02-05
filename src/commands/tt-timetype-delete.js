@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import inquirer from 'inquirer';
+import { checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import debug from 'debug';
 
-import db from '../db';
+import db from '../db/index.js';
 
 const LOG = debug('tt:timetype:delete');
 
@@ -33,29 +33,30 @@ async function run() {
   const r = await db.timetype.getAll();
   if (r) {
     LOG(JSON.stringify(r, null, 2));
-    const answer = await inquirer.prompt([
-      {
-        name: 'names',
-        type: 'checkbox',
+
+    let names = [];
+
+    // If no input name, show checkbox selection
+    if (inputName === '') {
+      names = await checkbox({
         message: 'Select Time Types to Remove',
-        choices: r.map((item) => (item.name)),
+        choices: r.map((item) => ({ value: item.name, name: item.name })),
         pageSize: 15,
-        when: () => (inputName === ''),
-      },
-      {
-        name: 'confirm',
-        type: 'confirm',
+      });
+    } else {
+      names = [inputName];
+    }
+
+    // Only prompt for confirmation if we have selections
+    if (names && names.length) {
+      const confirmed = await confirm({
         message: 'Are you sure you want to delete this time type?',
         default: false,
-        when: (answers) => ((answers.names && answers.names.length) || inputName),
-      },
-    ]);
-    if (answer.confirm) {
-      // If we got a name on the command line, use that
-      if (inputName !== '') {
-        answer.names = [inputName];
+      });
+
+      if (confirmed) {
+        await performUpdate(names);
       }
-      await performUpdate(answer.names);
     }
   } else {
     console.log(chalk.yellow('No Time Types Defined'));

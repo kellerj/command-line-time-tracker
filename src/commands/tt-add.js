@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import inquirer from 'inquirer';
-import inquirerAutoCompletePrompt from 'inquirer-autocomplete-prompt';
+import { input, confirm } from '@inquirer/prompts';
+import autocomplete from 'inquirer-autocomplete-standalone';
 import chalk from 'chalk';
 import { sprintf } from 'sprintf-js';
 import debug from 'debug';
 import { addMinutes } from 'date-fns';
 
-import validations from '../utils/validations';
-import displayUtils from '../utils/display-utils';
-import db from '../db';
+import validations from '../utils/validations.js';
+import displayUtils from '../utils/display-utils.js';
+import db from '../db/index.js';
 import {
   getEntryDate, getEntryMinutes, getInsertTime,
   getTimeType, getProjectName, getMinutesSinceLastEntry,
   addTimeEntry,
-} from '../lib/timeEntry';
-import { addNewProject } from '../lib/project';
+} from '../lib/timeEntry.js';
+import { addNewProject } from '../lib/project.js';
 
 const LOG = debug('tt:add');
 
@@ -53,6 +53,12 @@ LOG(`New Entry from Command Line: ${JSON.stringify(newEntry, null, 2)}`);
 newEntry.entryDate = getEntryDate(opts);
 newEntry.minutes = getEntryMinutes(opts);
 
+// Helper to write header lines (replaces BottomBar functionality)
+function writeHeaderLine(label, value) {
+  const columns = process.stdout.columns || 80; // Default to 80 if columns is undefined
+  console.log(chalk.black.bgWhite(sprintf(`%-25s : %-${columns - 29}s`, label, value)));
+}
+
 async function run() {
   // pull the lists of projects and time types from the database
   const projects = (await db.project.getAll()).map((item) => (item.name));
@@ -86,18 +92,11 @@ async function run() {
   }
   const timeTypeDefaulted = newEntry.timeType !== opts.type;
 
-  // Add the new project option to the end of the list
-  projects.push(new inquirer.Separator());
-  projects.push('(New Project)');
-  projects.push(new inquirer.Separator());
-
-  const ui = new inquirer.ui.BottomBar();
-  const writeHeaderLine = (label, value) => {
-    const columns = process.stdout.columns || 80; // Default to 80 if columns is undefined
-    ui.log.write(chalk.black.bgWhite(sprintf(`%-25s : %-${columns - 29}s`, label, value)));
-  };
-
-  inquirer.registerPrompt('autocomplete', inquirerAutoCompletePrompt);
+  // Build project choices with separator and new project option
+  const projectChoices = projects.map((p) => ({ value: p, name: p }));
+  projectChoices.push({ type: 'separator' });
+  projectChoices.push({ value: '(New Project)', name: '(New Project)' });
+  projectChoices.push({ type: 'separator' });
 
   // Display initial status information
   if (lastEntry) {
@@ -120,84 +119,77 @@ async function run() {
     writeHeaderLine('Time Type', newEntry.timeType);
   }
 
-  // Build questions array based on what's needed
-  const questions = [];
-
+  // Ask questions based on what's needed
   if (newEntry.entryDescription === '') {
-    questions.push({
-      name: 'entryDescription',
-      type: 'input',
+    const entryDescription = await input({
       message: 'Entry Description:',
-      filter: (input) => (input.trim()),
       validate: validations.validateEntryDescription,
     });
+    newEntry.entryDescription = entryDescription.trim();
   }
 
   if (newEntry.minutes === undefined || newEntry.minutes === null) {
-    questions.push({
-      name: 'minutes',
-      type: 'input',
+    const minutes = await input({
       message: 'Minutes:',
-      default: minutesSinceLastEntry,
+      default: String(minutesSinceLastEntry),
       validate: validations.validateMinutes,
-      filter: (val) => (Number.parseInt(val, 10)),
     });
+    newEntry.minutes = Number.parseInt(minutes, 10);
   }
 
   if (newEntry.project === undefined || projectDefaulted) {
-    questions.push({
-      name: 'project',
-      type: 'autocomplete',
+    const project = await autocomplete({
       message: 'Project:',
-      source: (answers, input) => (displayUtils.autocompleteListSearch(projects, input, newEntry.project)),
-      pageSize: 10,
+      source: async (inputValue) => {
+        const filtered = displayUtils.autocompleteListSearch(
+          projectChoices.map((c) => (c.type === 'separator' ? c : c.value)),
+          inputValue,
+          newEntry.project,
+        );
+        return filtered.map((p) => {
+          if (typeof p === 'object' && p.type === 'separator') {
+            return p;
+          }
+          return typeof p === 'string' ? { value: p, name: p } : p;
+        });
+      },
     });
+    newEntry.project = project;
   }
 
-  // Ask all the initial questions
-  const initialAnswers = await inquirer.prompt(questions);
-
-  // Update newEntry with answers
-  Object.assign(newEntry, initialAnswers);
-
   // Handle fill option - update insert time after we know minutes
-  if (initialAnswers.minutes && opts.fill) {
+  if (newEntry.minutes && opts.fill) {
     newEntry.insertTime = addMinutes(lastEntry.insertTime, newEntry.minutes);
     writeHeaderLine('Updated Log Time', displayUtils.timePrinter(newEntry.insertTime));
   }
 
   // If they selected (New Project), ask for new project name
   if (newEntry.project === '(New Project)') {
-    const newProjectAnswer = await inquirer.prompt([{
-      name: 'newProject',
-      type: 'input',
+    const newProjectName = await input({
       message: 'New Project Name:',
       validate: validations.validateProjectName,
-      filter: (input) => (input.trim()),
-    }]);
-    newEntry.newProject = newProjectAnswer.newProject;
+    });
+    newEntry.newProject = newProjectName.trim();
   }
 
   // Ask for time type if needed
   if (newEntry.timeType === undefined || timeTypeDefaulted) {
-    const timeTypeAnswer = await inquirer.prompt([{
-      name: 'timeType',
-      type: 'autocomplete',
+    const timeType = await autocomplete({
       message: 'Type of Time:',
-      source: (answers, input) => (displayUtils.autocompleteListSearch(timeTypes, input, newEntry.timeType)),
-      pageSize: 10,
-    }]);
-    newEntry.timeType = timeTypeAnswer.timeType;
+      source: async (inputValue) => {
+        const filtered = displayUtils.autocompleteListSearch(timeTypes, inputValue, newEntry.timeType);
+        return filtered.map((t) => (typeof t === 'string' ? { value: t, name: t } : t));
+      },
+    });
+    newEntry.timeType = timeType;
   }
 
   // Always ask waste of time question
-  const wasteAnswer = await inquirer.prompt([{
-    name: 'wasteOfTime',
-    type: 'confirm',
+  const wasteOfTime = await confirm({
     message: 'Waste of Time?',
     default: false,
-  }]);
-  newEntry.wasteOfTime = wasteAnswer.wasteOfTime;
+  });
+  newEntry.wasteOfTime = wasteOfTime;
 
   LOG(`Preparing to Add Entry:\n${JSON.stringify(newEntry, null, 2)}`);
 

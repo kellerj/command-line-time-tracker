@@ -1,15 +1,59 @@
 import { expect } from 'chai';
-import { stub, spy } from 'sinon';
+import { jest } from '@jest/globals';
 import {
   format, parseISO, subDays, subHours, addHours,
   subMinutes, setMilliseconds, setSeconds,
   getYear, setYear, getMonth, setMonth, getDate, setDate,
 } from 'date-fns';
 
-import * as Constants from '../../src/constants';
-import * as timeEntry from '../../src/lib/timeEntry';
-import validations from '../../src/utils/validations';
-import db from '../../src/db';
+import * as Constants from '../../src/constants.js';
+
+// Mock the db module before importing the module under test
+const mockTimeEntryInsert = jest.fn();
+const mockDb = {
+  project: {
+    insert: jest.fn(),
+    getAll: jest.fn(),
+    remove: jest.fn(),
+  },
+  timetype: {
+    insert: jest.fn(),
+    getAll: jest.fn(),
+    remove: jest.fn(),
+  },
+  timeEntry: {
+    insert: mockTimeEntryInsert,
+    update: jest.fn(),
+    get: jest.fn(),
+    remove: jest.fn(),
+    getMostRecentEntry: jest.fn(),
+    summarizeByProjectAndTimeType: jest.fn(),
+    setDebug: jest.fn(),
+  },
+};
+
+jest.unstable_mockModule('../../src/db/index.js', () => ({
+  default: mockDb,
+}));
+
+// Mock validations module for certain tests
+const mockValidateMinutes = jest.fn();
+const mockValidateTime = jest.fn();
+jest.unstable_mockModule('../../src/utils/validations.js', () => ({
+  default: {
+    validateMinutes: mockValidateMinutes,
+    validateTime: mockValidateTime,
+    validateEntryDescription: jest.fn(),
+    validateProjectName: jest.fn(),
+    validateAndDefaultInputDateString: jest.fn(),
+    getStartAndEndDates: jest.fn(),
+  },
+  validateMinutes: mockValidateMinutes,
+  validateTime: mockValidateTime,
+}));
+
+// Import after setting up mocks
+const timeEntry = await import('../../src/lib/timeEntry.js');
 
 describe('lib/timeEntry', () => {
   describe('#getEntryDate', () => {
@@ -50,28 +94,26 @@ describe('lib/timeEntry', () => {
 
   describe('#getEntryMinutes', () => {
     beforeEach(() => {
-      stub(validations, 'validateMinutes');
+      mockValidateMinutes.mockReset();
     });
-    afterEach(() => {
-      validations.validateMinutes.restore();
-    });
+
     it('returns null when no time parameter passed', () => {
       const result = timeEntry.getEntryMinutes({});
       // eslint-disable-next-line no-unused-expressions
       expect(result).to.be.null;
     });
     it('throws an error when the number does not validate.', () => {
-      validations.validateMinutes.returns('Time may not be negative.');
+      mockValidateMinutes.mockReturnValue('Time may not be negative.');
       expect(() => timeEntry.getEntryMinutes({ time: '-1' }))
         .to.throw();
     });
     it('reports the validation message in the error', () => {
-      validations.validateMinutes.returns('Time may not be negative.');
+      mockValidateMinutes.mockReturnValue('Time may not be negative.');
       expect(() => timeEntry.getEntryMinutes({ time: '-1' }))
         .to.throw('Time may not be negative.');
     });
     it('returns an integer equal to the passed in time', () => {
-      validations.validateMinutes.returns(true);
+      mockValidateMinutes.mockReturnValue(true);
       const result = timeEntry.getEntryMinutes({ time: '123' });
       expect(result).to.be.a('number');
       expect(result).to.equal(123);
@@ -81,17 +123,15 @@ describe('lib/timeEntry', () => {
   describe('#getInsertTime', () => {
     const insertTime = new Date();
     const entryDate = format(insertTime, Constants.DATE_FORMAT);
+
     beforeEach(() => {
-      stub(validations, 'validateMinutes');
-      stub(validations, 'validateTime');
+      mockValidateMinutes.mockReset();
+      mockValidateTime.mockReset();
     });
-    afterEach(() => {
-      validations.validateMinutes.restore();
-      validations.validateTime.restore();
-    });
+
     describe('when backTime is set', () => {
       it('backs up from the present time when the backTime parameter is passed', () => {
-        validations.validateMinutes.returns(true);
+        mockValidateMinutes.mockReturnValue(true);
         const result = timeEntry.getInsertTime(
           { backTime: 20 },
           { insertTime, entryDate },
@@ -106,7 +146,7 @@ describe('lib/timeEntry', () => {
         )).to.throw();
       });
       it('throws an exception backTime is invalid', () => {
-        validations.validateMinutes.returns('Time may not be negative.');
+        mockValidateMinutes.mockReturnValue('Time may not be negative.');
         expect(() => timeEntry.getInsertTime(
           { backTime: -1 },
           { insertTime, entryDate },
@@ -119,7 +159,7 @@ describe('lib/timeEntry', () => {
         logTime = setYear(logTime, getYear(insertTime));
         logTime = setMonth(logTime, getMonth(insertTime));
         logTime = setDate(logTime, getDate(insertTime));
-        validations.validateTime.returns(true);
+        mockValidateTime.mockReturnValue(true);
         const result = timeEntry.getInsertTime(
           { logTime: format(logTime, 'h:mm a') },
           { insertTime, entryDate },
@@ -128,7 +168,7 @@ describe('lib/timeEntry', () => {
         expect(result.toISOString()).to.equal(logTime.toISOString());
       });
       it('throws an exception if logTime does not parse', () => {
-        validations.validateTime.returns('Something is wrong with the date');
+        mockValidateTime.mockReturnValue('Something is wrong with the date');
         expect(() => timeEntry.getInsertTime({ logTime: 'I\'m not a date!' }, { insertTime }))
           .to.throw('Something is wrong with the date');
       });
@@ -139,7 +179,7 @@ describe('lib/timeEntry', () => {
         logTime = setYear(logTime, getYear(insertTime));
         logTime = setMonth(logTime, getMonth(insertTime));
         logTime = setDate(logTime, getDate(insertTime));
-        validations.validateTime.returns(true);
+        mockValidateTime.mockReturnValue(true);
         const result = timeEntry.getInsertTime(
           { logTime: format(logTime, 'h:mm a') },
           { insertTime, entryDate: yesterday },
@@ -159,33 +199,36 @@ describe('lib/timeEntry', () => {
   });
 
   describe('#addTimeEntry', () => {
+    let stdoutWriteSpy;
+
     beforeEach(() => {
-      stub(db.timeEntry, 'insert');
-      spy(process.stdout, 'write');
+      mockTimeEntryInsert.mockReset();
+      stdoutWriteSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
     });
+
     afterEach(() => {
-      db.timeEntry.insert.restore();
-      process.stdout.write.restore();
+      stdoutWriteSpy.mockRestore();
     });
+
     it('returns true with a summary message when insert succeeds', async () => {
-      db.timeEntry.insert.returns(true);
+      mockTimeEntryInsert.mockReturnValue(true);
       const result = await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
       expect(result).to.be.true; // eslint-disable-line no-unused-expressions
-      expect(process.stdout.write.getCall(0).args[0]).to.match(/.*Time Entry.*added.*/);
-      expect(process.stdout.write.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
+      expect(stdoutWriteSpy.mock.calls[0][0]).to.match(/.*Time Entry.*added.*/);
+      expect(stdoutWriteSpy.mock.calls[0][0]).to.match(/.*testValue.*/);
     });
     it('returns false with a summary message when insert fails', async () => {
-      db.timeEntry.insert.returns(false);
+      mockTimeEntryInsert.mockReturnValue(false);
       const result = await timeEntry.addTimeEntry({ entryDescription: 'testValue' });
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(process.stdout.write.getCall(0).args[0]).to.match(/.*Failed.*/);
-      expect(process.stdout.write.getCall(0).args[0], 'should have contained entry description').to.match(/.*testValue*/);
+      expect(stdoutWriteSpy.mock.calls[0][0]).to.match(/.*Failed.*/);
+      expect(stdoutWriteSpy.mock.calls[0][0]).to.match(/.*testValue.*/);
     });
     it('returns false and does not blow up when null object passed', async () => {
-      db.timeEntry.insert.returns(false);
+      mockTimeEntryInsert.mockReturnValue(false);
       const result = await timeEntry.addTimeEntry(null);
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(process.stdout.write.getCall(0).args[0]).to.match(/.*Failed.*/);
+      expect(stdoutWriteSpy.mock.calls[0][0]).to.match(/.*Failed.*/);
     });
   });
 

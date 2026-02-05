@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { format, subDays } from 'date-fns';
 
-import dateUtils from '../../src/utils/date-utils';
-import * as Constants from '../../src/constants';
+import dateUtils from '../../src/utils/date-utils.js';
+import * as Constants from '../../src/constants.js';
 
 describe('date-utils', () => {
   describe('#getEntryDate', () => {

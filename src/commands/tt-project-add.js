@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import inquirer from 'inquirer';
+import { input } from '@inquirer/prompts';
 import debug from 'debug';
 
-import displayUtils from '../utils/display-utils';
-import { addNewProject } from '../lib/project';
+import displayUtils from '../utils/display-utils.js';
+import { addNewProject } from '../lib/project.js';
 
 const LOG = debug('tt:commands:project:add');
 
@@ -20,14 +20,10 @@ async function run() {
   if (inputProjectName) {
     addNewProject(inputProjectName);
   } else {
-    const answer = await inquirer.prompt([
-      {
-        name: 'projectName',
-        type: 'input',
-        message: 'Please enter the new project name:',
-      },
-    ]);
-    addNewProject(answer.projectName);
+    const projectName = await input({
+      message: 'Please enter the new project name:',
+    });
+    addNewProject(projectName);
   }
 }
 

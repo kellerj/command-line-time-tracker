@@ -1,62 +1,100 @@
-import { expect, assert } from 'chai';
-import { stub, spy } from 'sinon';
+import { expect } from 'chai';
+import { jest, expect as jestExpect } from '@jest/globals';
 
-import * as project from '../../src/lib/project';
-import db from '../../src/db';
+// Mock the db module before importing the module under test
+const mockInsert = jest.fn();
+const mockDb = {
+  project: {
+    insert: mockInsert,
+    getAll: jest.fn(),
+    remove: jest.fn(),
+  },
+  timetype: {
+    insert: jest.fn(),
+    getAll: jest.fn(),
+    remove: jest.fn(),
+  },
+  timeEntry: {
+    insert: jest.fn(),
+    update: jest.fn(),
+    get: jest.fn(),
+    remove: jest.fn(),
+    getMostRecentEntry: jest.fn(),
+    summarizeByProjectAndTimeType: jest.fn(),
+    setDebug: jest.fn(),
+  },
+};
 
-describe('lib/timeEntry', () => {
+jest.unstable_mockModule('../../src/db/index.js', () => ({
+  default: mockDb,
+}));
+
+// Import after setting up mocks
+const { addNewProject } = await import('../../src/lib/project.js');
+
+describe('lib/project', () => {
+  let consoleLogSpy;
+
+  beforeEach(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    mockInsert.mockReset();
+  });
+
+  afterEach(() => {
+    consoleLogSpy.mockRestore();
+  });
+
   describe('#addNewProject', () => {
-    beforeEach(() => {
-      stub(db.project, 'insert');
-      spy(console, 'log');
-    });
-    afterEach(() => {
-      db.project.insert.restore();
-      console.log.restore();
-    });
     it('returns true with a summary message when insert succeeds', async () => {
-      db.project.insert.returns(true);
-      const result = await project.addNewProject('NewProjectName');
-      assert(db.project.insert.calledOnce, 'db insert should have been called');
-      assert(db.project.insert.calledWith('NewProjectName'), 'Should have passed in the project name to the db.insert call');
+      mockInsert.mockReturnValue(true);
+      const result = await addNewProject('NewProjectName');
+      jestExpect(mockInsert).toHaveBeenCalledWith('NewProjectName');
+      jestExpect(mockInsert).toHaveBeenCalledTimes(1);
       expect(result).to.be.true; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Project.*added.*/);
-      expect(console.log.getCall(0).args[0], 'should have contained project name').to.match(/.*NewProjectName*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*Project.*added.*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*NewProjectName.*/);
     });
+
     it('returns false with a summary message when insert fails', async () => {
-      db.project.insert.throws('MongoDB Error Happened');
-      const result = await project.addNewProject('NewProjectName');
-      assert(db.project.insert.calledOnce, 'db insert should have been called');
-      assert(db.project.insert.calledWith('NewProjectName'), 'Should have passed in the project name to the db.insert call');
+      mockInsert.mockImplementation(() => {
+        throw new Error('Database Error Happened');
+      });
+      const result = await addNewProject('NewProjectName');
+      jestExpect(mockInsert).toHaveBeenCalledWith('NewProjectName');
+      jestExpect(mockInsert).toHaveBeenCalledTimes(1);
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*MongoDB Error Happened.*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*Database Error Happened.*/);
     });
+
     it('returns false with a summary message project already exists', async () => {
-      db.project.insert.returns(false);
-      const result = await project.addNewProject('NewProjectName');
-      assert(db.project.insert.calledOnce, 'db insert should have been called');
-      assert(db.project.insert.calledWith('NewProjectName'), 'Should have passed in the project name to the db.insert call');
+      mockInsert.mockReturnValue(false);
+      const result = await addNewProject('NewProjectName');
+      jestExpect(mockInsert).toHaveBeenCalledWith('NewProjectName');
+      jestExpect(mockInsert).toHaveBeenCalledTimes(1);
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*already exists.*/);
-      expect(console.log.getCall(0).args[0], 'should have contained project name').to.match(/.*NewProjectName*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*already exists.*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*NewProjectName.*/);
     });
+
     it('returns false and does not blow up when null object passed', async () => {
-      const result = await project.addNewProject(null);
-      assert(db.project.insert.notCalled, 'The db insert command should not have been called');
+      const result = await addNewProject(null);
+      jestExpect(mockInsert).not.toHaveBeenCalled();
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Missing Project Name.*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*Missing Project Name.*/);
     });
+
     it('returns false and does not blow up when empty string passed', async () => {
-      const result = await project.addNewProject('');
-      assert(db.project.insert.notCalled, 'The db insert command should not have been called');
+      const result = await addNewProject('');
+      jestExpect(mockInsert).not.toHaveBeenCalled();
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Missing Project Name.*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*Missing Project Name.*/);
     });
+
     it('returns false and does not blow up when whitespace-only string passed', async () => {
-      const result = await project.addNewProject(' \t ');
-      assert(db.project.insert.notCalled, 'The db insert command should not have been called');
+      const result = await addNewProject(' \t ');
+      jestExpect(mockInsert).not.toHaveBeenCalled();
       expect(result).to.be.false; // eslint-disable-line no-unused-expressions
-      expect(console.log.getCall(0).args[0]).to.match(/.*Missing Project Name.*/);
+      expect(consoleLogSpy.mock.calls[0][0]).to.match(/.*Missing Project Name.*/);
     });
   });
 });
