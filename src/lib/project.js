@@ -1,8 +1,9 @@
 import chalk from 'chalk';
+import debug from 'debug';
 
-import db from '../db';
+import db from '../db/index.js';
 
-const LOG = require('debug')('tt:lib:project');
+const LOG = debug('tt:lib:project');
 
 export async function addNewProject(projectName) {
   LOG(`Adding project "${projectName}"`);

@@ -1,7 +1,7 @@
 /**
  * @class ColumnInfo
  */
-class ColumnInfo {
+export default class ColumnInfo {
   /**
    * [constructor description]
    * @param {string} name      [description]
@@ -44,5 +44,3 @@ class ColumnInfo {
     this.footerColorizer = col.footerColorizer || this.footerColorizer;
   }
 }
-
-module.exports = ColumnInfo;

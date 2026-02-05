@@ -1,16 +1,17 @@
 import { sprintf } from 'sprintf-js';
 import chalk from 'chalk';
 import parseTime from 'parse-loose-time';
+import debug from 'debug';
 import {
   format, parseISO, subDays, isValid, subMinutes, setHours, setMinutes, differenceInMinutes,
   getYear, getMonth, getDate, setYear, setMonth, setDate,
 } from 'date-fns';
 
-import db from '../db';
-import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants';
-import validations from '../utils/validations';
+import db from '../db/index.js';
+import { DATE_FORMAT, DEFAULT_MINUTES } from '../constants.js';
+import validations from '../utils/validations.js';
 
-const LOG = require('debug')('tt:lib:timeEntry');
+const LOG = debug('tt:lib:timeEntry');
 
 export function getEntryDate({ date, yesterday }) {
   if (date) {

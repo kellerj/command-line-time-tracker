@@ -1,13 +1,14 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import chalk from 'chalk';
 import debug from 'debug';
 import { format, startOfDay } from 'date-fns';
 
-import * as Constants from '../constants';
+import * as Constants from '../constants.js';
+import { getConnection } from './connection.js';
 
 const LOG = debug('db:timeEntry');
 
-function setDebug(enabled) {
+export function setDebug(enabled) {
   LOG.enabled = enabled;
 }
 
@@ -19,7 +20,8 @@ if (LOG.enabled) {
 /**
  * Insert the given timeEntry into the database.
  */
-async function insert(db, timeEntry) {
+export async function insert(timeEntry) {
+  const db = getConnection();
   // add the timing data to the object
   if (!timeEntry.entryDate) {
     // it's possible the date may be specified from the command line - if so, don't set
@@ -30,7 +32,7 @@ async function insert(db, timeEntry) {
   LOG(`Inserting ${JSON.stringify(timeEntry, null, 2)} into SQLite`);
 
   const stmt = db.prepare(`
-    INSERT INTO timeEntry (entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime) 
+    INSERT INTO timeEntry (entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
@@ -50,11 +52,12 @@ async function insert(db, timeEntry) {
   return true;
 }
 
-async function update(db, timeEntry) {
+export async function update(timeEntry) {
+  const db = getConnection();
   LOG(`Updating ${JSON.stringify(timeEntry, null, 2)} into SQLite`);
 
   const stmt = db.prepare(`
-    UPDATE timeEntry 
+    UPDATE timeEntry
     SET entryDescription = ?, project = ?, timeType = ?, minutes = ?, entryDate = ?, wasteOfTime = ?
     WHERE id = ?
   `);
@@ -75,7 +78,8 @@ async function update(db, timeEntry) {
   return true;
 }
 
-async function get(db, startDate, endDate) {
+export async function get(startDate, endDate) {
+  const db = getConnection();
   LOG(`Get Time Entries: ${startDate} -- ${endDate}`);
 
   if (!startDate) {
@@ -93,8 +97,8 @@ async function get(db, startDate, endDate) {
     const entryDate = format(startDate, Constants.DATE_FORMAT);
     stmt = db.prepare(`
       SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime
-      FROM timeEntry 
-      WHERE entryDate = ? 
+      FROM timeEntry
+      WHERE entryDate = ?
       ORDER BY insertTime
     `);
     entries = stmt.all(entryDate);
@@ -103,8 +107,8 @@ async function get(db, startDate, endDate) {
     const endDateStr = format(endDate, Constants.DATE_FORMAT);
     stmt = db.prepare(`
       SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime
-      FROM timeEntry 
-      WHERE entryDate >= ? AND entryDate <= ? 
+      FROM timeEntry
+      WHERE entryDate >= ? AND entryDate <= ?
       ORDER BY insertTime
     `);
     entries = stmt.all(startDateStr, endDateStr);
@@ -121,7 +125,8 @@ async function get(db, startDate, endDate) {
   return processedEntries;
 }
 
-async function remove(db, entryId) {
+export async function remove(entryId) {
+  const db = getConnection();
   // First get the entry to return it
   const selectStmt = db.prepare('SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime FROM timeEntry WHERE id = ?');
   const entry = selectStmt.get(entryId);
@@ -150,7 +155,8 @@ async function remove(db, entryId) {
   return processedEntry;
 }
 
-async function getMostRecentEntry(db, entryDate, beforeTime) {
+export async function getMostRecentEntry(entryDate, beforeTime) {
+  const db = getConnection();
   if (!beforeTime) {
     // eslint-disable-next-line no-param-reassign
     beforeTime = new Date();
@@ -165,9 +171,9 @@ async function getMostRecentEntry(db, entryDate, beforeTime) {
 
   const stmt = db.prepare(`
     SELECT id as _id, entryDescription, project, timeType, minutes, entryDate, insertTime, wasteOfTime
-    FROM timeEntry 
+    FROM timeEntry
     WHERE entryDate = ? AND insertTime < ?
-    ORDER BY insertTime DESC 
+    ORDER BY insertTime DESC
     LIMIT 1
   `);
 
@@ -184,7 +190,8 @@ async function getMostRecentEntry(db, entryDate, beforeTime) {
   return null;
 }
 
-async function summarizeByProjectAndTimeType(db, startDate, endDate) {
+export async function summarizeByProjectAndTimeType(startDate, endDate) {
+  const db = getConnection();
   LOG(`Summarize Time Entries: ${startDate} -- ${endDate}`);
 
   if (!startDate) {
@@ -201,11 +208,11 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
   const endDateStr = format(endDate, Constants.DATE_FORMAT);
 
   const stmt = db.prepare(`
-    SELECT 
-      project, 
-      timeType, 
+    SELECT
+      project,
+      timeType,
       SUM(minutes) as minutes
-    FROM timeEntry 
+    FROM timeEntry
     WHERE entryDate >= ? AND entryDate <= ?
     GROUP BY project, timeType
     ORDER BY project, timeType
@@ -217,33 +224,12 @@ async function summarizeByProjectAndTimeType(db, startDate, endDate) {
   return results;
 }
 
-/*
- * The default export is a function which must be passed the DB connection, which will then be used
- * by all calls to this module in that code so simplify further use of the module.
- */
-module.exports = (getConnection) => ({
-  async insert(timeEntry) {
-    return insert(getConnection(), timeEntry);
-  },
-
-  async update(timeEntry) {
-    return update(getConnection(), timeEntry);
-  },
-
-  async get(startDate, endDate) {
-    return get(getConnection(), startDate, endDate);
-  },
-
-  async remove(entryId) {
-    return remove(getConnection(), entryId);
-  },
-
-  async getMostRecentEntry(entryDateString, beforeTime) {
-    return getMostRecentEntry(getConnection(), entryDateString, beforeTime);
-  },
-
-  async summarizeByProjectAndTimeType(startDate, endDate) {
-    return summarizeByProjectAndTimeType(getConnection(), startDate, endDate);
-  },
+export default {
+  insert,
+  update,
+  get,
+  remove,
+  getMostRecentEntry,
+  summarizeByProjectAndTimeType,
   setDebug,
-});
+};

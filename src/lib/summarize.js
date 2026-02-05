@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
-import displayUtils from '../utils/display-utils';
-import { ColumnInfo } from '../utils/table';
+import displayUtils from '../utils/display-utils.js';
+import { ColumnInfo } from '../utils/table/index.js';
 
 export function buildTimeTypeHeadingsList(data) {
   return data.reduce((acc, item) => {
