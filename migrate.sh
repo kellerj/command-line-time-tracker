@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # MongoDB to SQLite Migration Script
-# 
+#
 # This script migrates your existing time tracker data from MongoDB to SQLite.
 # Run this ONCE after upgrading to the SQLite version.
 
@@ -26,17 +26,17 @@ if ! npm list mongodb &>/dev/null; then
 fi
 
 # Check if babel-register is available
-if ! npm list babel-register &>/dev/null; then
-    echo "❌ Error: babel-register dependency not found."
-    echo "   Please run 'npm install' first."
-    exit 1
-fi
+# if ! npm list babel-register &>/dev/null; then
+#     echo "❌ Error: babel-register dependency not found."
+#     echo "   Please run 'npm install' first."
+#     exit 1
+# fi
 
 echo "🚀 Starting migration..."
 echo
 
 # Run the migration
-if node -r babel-register migrate-mongodb-to-sqlite.js; then
+if node migrate-mongodb-to-sqlite.js; then
     echo
     echo "✅ Migration completed!"
     echo

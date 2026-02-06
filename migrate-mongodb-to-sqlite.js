@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable no-restricted-syntax */
+
 
 /**
  * MongoDB to SQLite Migration Script
@@ -22,6 +22,7 @@ import os from 'os';
 import fs from 'fs';
 import chalk from 'chalk';
 import debug from 'debug';
+import { fileURLToPath } from 'url';
 
 const LOG = debug('migrate');
 
@@ -55,7 +56,7 @@ class MigrationTool {
     console.log(chalk.blue('🔌 Connecting to MongoDB...'));
     try {
       this.mongoDb = await MongoClient.connect(MONGO_CONFIG.url, {
-        useUnifiedTopology: true,
+
       });
       console.log(chalk.green('✅ Connected to MongoDB'));
       return true;
@@ -336,7 +337,7 @@ async function main() {
 }
 
 // Run if called directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main();
 }
 
