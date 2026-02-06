@@ -4,7 +4,7 @@ import { program } from 'commander';
 import { input, select, confirm } from '@inquirer/prompts';
 import autocomplete from 'inquirer-autocomplete-standalone';
 import chalk from 'chalk';
-import { format, setHours, setMinutes } from 'date-fns';
+import { format, setHours, setMinutes, parseISO } from 'date-fns';
 import parseTime from 'parse-loose-time';
 import debug from 'debug';
 
@@ -80,7 +80,7 @@ async function handleEntryChanges(entry) {
   const project = await autocomplete({
     message: 'Project:',
     source: async (input) => {
-      const filtered = displayUtils.autocompleteListSearch(projects, input, entry.project);
+      const filtered = await displayUtils.autocompleteListSearch(projects, input, entry.project);
       return filtered.map((p) => (typeof p === 'string' ? { value: p, name: p } : p));
     },
   });
@@ -88,7 +88,7 @@ async function handleEntryChanges(entry) {
   const timeType = await autocomplete({
     message: 'Type of Time:',
     source: async (input) => {
-      const filtered = displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType);
+      const filtered = await displayUtils.autocompleteListSearch(timeTypes, input, entry.timeType);
       return filtered.map((t) => (typeof t === 'string' ? { value: t, name: t } : t));
     },
   });
@@ -111,7 +111,9 @@ async function handleEntryChanges(entry) {
   answer._id = entry._id;
   answer.entryDate = entry.entryDate;
   const parsedTime = parseTime(answer.insertTime);
-  answer.insertTime = setHours(answer.entryDate, parsedTime.hour);
+  // Parse entryDate string to Date object for date-fns functions
+  const entryDateObj = parseISO(answer.entryDate);
+  answer.insertTime = setHours(entryDateObj, parsedTime.hour);
   answer.insertTime = setMinutes(answer.insertTime, parsedTime.minute);
   LOG(`Adjusted Entry: ${JSON.stringify(answer, null, 2)}`);
   return answer;

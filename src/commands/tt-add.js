@@ -141,7 +141,7 @@ async function run() {
     const project = await autocomplete({
       message: 'Project:',
       source: async (inputValue) => {
-        const filtered = displayUtils.autocompleteListSearch(
+        const filtered = await displayUtils.autocompleteListSearch(
           projectChoices.map((c) => (c.type === 'separator' ? c : c.value)),
           inputValue,
           newEntry.project,
@@ -177,7 +177,7 @@ async function run() {
     const timeType = await autocomplete({
       message: 'Type of Time:',
       source: async (inputValue) => {
-        const filtered = displayUtils.autocompleteListSearch(timeTypes, inputValue, newEntry.timeType);
+        const filtered = await displayUtils.autocompleteListSearch(timeTypes, inputValue, newEntry.timeType);
         return filtered.map((t) => (typeof t === 'string' ? { value: t, name: t } : t));
       },
     });
