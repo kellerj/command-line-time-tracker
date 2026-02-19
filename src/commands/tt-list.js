@@ -1,6 +1,6 @@
 import { program } from 'commander';
 import chalk from 'chalk';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import debug from 'debug';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 
@@ -33,7 +33,7 @@ async function run() {
   if (r && r.length) {
     LOG(JSON.stringify(r, null, 2));
     const grid = r.map((item) => ({
-      Date: item.entryDate,
+      Date: parseISO(item.entryDate),
       Logged: item.insertTime,
       Project: item.project,
       Type: item.timeType,
