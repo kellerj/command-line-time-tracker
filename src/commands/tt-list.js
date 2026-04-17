@@ -1,4 +1,5 @@
 import { program } from 'commander';
+import autocomplete from 'inquirer-autocomplete-standalone';
 import chalk from 'chalk';
 import { format, parseISO } from 'date-fns';
 import debug from 'debug';
@@ -17,8 +18,10 @@ program
   .option('-d, --date <YYYY-MM-DD>', 'Specify the date to output, otherwise use today\'s date.')
   .option('-s, --startDate <YYYY-MM-DD>')
   .option('-e, --endDate <YYYY-MM-DD>')
-  .option('--last', 'When no date is specified, use yesterday\'s date')
+  .option('--week', 'List entries for the current week (starting Monday).')
+  .option('--last', 'When no date is specified, use yesterday\'s date. With --week, use the prior week.')
   .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
+  .option('-p, --project [projectName]', 'Filter entries to a specific project. If no name is given, prompt to pick one.')
   .parse(process.argv);
 
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(program.opts());
@@ -28,11 +31,36 @@ if (errorMessage) {
 }
 
 async function run() {
-  const r = await db.timeEntry.get(startDate, endDate);
+  const opts = program.opts();
+  let projectFilter = null;
 
-  if (r && r.length) {
-    LOG(JSON.stringify(r, null, 2));
-    const grid = r.map((item) => ({
+  if (opts.project !== undefined) {
+    const projects = (await db.project.getAll()).map((p) => p.name);
+
+    if (opts.project === true) {
+      projectFilter = await autocomplete({
+        message: 'Project:',
+        source: async (inputValue) => {
+          const filtered = await displayUtils.autocompleteListSearch(projects, inputValue);
+          return filtered.map((p) => ({ value: p, name: p }));
+        },
+      });
+    } else {
+      if (!projects.includes(opts.project)) {
+        displayUtils.writeError(`Project ${chalk.yellow(opts.project)} does not exist.  Known Projects:`);
+        displayUtils.writeSimpleTable(projects, null, 'Project Name');
+        throw new Error();
+      }
+      projectFilter = opts.project;
+    }
+  }
+
+  const r = await db.timeEntry.get(startDate, endDate);
+  const filtered = projectFilter ? r.filter((e) => e.project === projectFilter) : r;
+
+  if (filtered && filtered.length) {
+    LOG(JSON.stringify(filtered, null, 2));
+    const grid = filtered.map((item) => ({
       Date: parseISO(item.entryDate),
       Logged: item.insertTime,
       Project: item.project,
@@ -82,7 +110,7 @@ async function run() {
     t.setData(grid, columnInfo);
     t.write(process.stdout);
   } else {
-    throw new Error(chalk.yellow(`No Time Entries Defined for ${format(startDate, 'yyyy-MM-dd')}`));
+    throw new Error(chalk.yellow(`No Time Entries Defined for ${format(startDate, 'yyyy-MM-dd')}${projectFilter ? ` on project ${projectFilter}` : ''}`));
   }
 }
 
