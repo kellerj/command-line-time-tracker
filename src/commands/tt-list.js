@@ -22,6 +22,7 @@ program
   .option('--last', 'When no date is specified, use yesterday\'s date. With --week, use the prior week.')
   .option('-y, --yesterday', 'When no date is specified, use yesterday\'s date')
   .option('-p, --project [projectName]', 'Filter entries to a specific project. If no name is given, prompt to pick one.')
+  .option('-f, --filter <substring>', 'Filter entries by a substring of the description (case-insensitive).')
   .parse(process.argv);
 
 const { startDate, endDate, errorMessage } = validations.getStartAndEndDates(program.opts());
@@ -56,7 +57,11 @@ async function run() {
   }
 
   const r = await db.timeEntry.get(startDate, endDate);
-  const filtered = projectFilter ? r.filter((e) => e.project === projectFilter) : r;
+  const descFilter = opts.filter ? opts.filter.toLowerCase() : null;
+  const filtered = r.filter((e) =>
+    (!projectFilter || e.project === projectFilter) &&
+    (!descFilter || (e.entryDescription && e.entryDescription.toLowerCase().includes(descFilter)))
+  );
 
   if (filtered && filtered.length) {
     LOG(JSON.stringify(filtered, null, 2));
@@ -110,7 +115,7 @@ async function run() {
     t.setData(grid, columnInfo);
     t.write(process.stdout);
   } else {
-    throw new Error(chalk.yellow(`No Time Entries Defined for ${format(startDate, 'yyyy-MM-dd')}${projectFilter ? ` on project ${projectFilter}` : ''}`));
+    throw new Error(chalk.yellow(`No Time Entries Defined for ${format(startDate, 'yyyy-MM-dd')}${projectFilter ? ` on project ${projectFilter}` : ''}${descFilter ? ` matching "${opts.filter}"` : ''}`));
   }
 }
 
