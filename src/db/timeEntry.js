@@ -58,7 +58,7 @@ export async function update(timeEntry) {
 
   const stmt = db.prepare(`
     UPDATE timeEntry
-    SET entryDescription = ?, project = ?, timeType = ?, minutes = ?, entryDate = ?, wasteOfTime = ?
+    SET entryDescription = ?, project = ?, timeType = ?, minutes = ?, entryDate = ?, insertTime = ?, wasteOfTime = ?
     WHERE id = ?
   `);
 
@@ -68,6 +68,7 @@ export async function update(timeEntry) {
     timeEntry.timeType,
     timeEntry.minutes,
     timeEntry.entryDate,
+    timeEntry.insertTime.toISOString(),
     timeEntry.wasteOfTime ? 1 : 0,
     timeEntry._id || timeEntry.id,
   );
